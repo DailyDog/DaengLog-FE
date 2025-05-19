@@ -24,3 +24,8 @@ zshrc -> export PATH=$HOME/.gem/bin:$PATH
 First
 1. open -a Simulator
 2. flutter run (2) -> iphone 16 pro
+
+모든 작업은
+lib/main.dart 
+
+세부 기능 (각 device별)은 해당 폴더에서 작업
