@@ -25,6 +25,7 @@ First
 1. open -a Simulator
 2. flutter run (2) -> iphone 16 pro
 3. 'r' 을 통해서 refresh
+- cf) 특정 dart파일을 실행하고 싶다면 dart run "경로"
 
 모든 작업은
 lib/main.dart 
