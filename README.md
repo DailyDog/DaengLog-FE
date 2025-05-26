@@ -42,3 +42,8 @@ lib/main.dart
 Flutter 
 1. 기본적으로 파일명->  snacke_case.dart (camelCase 사용 x)
 2. 클래스명 -> PascalCase
+
+충돌시 
+1. flutter clean
+2. flutter pub-get
+3. flutter doctor
