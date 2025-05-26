@@ -1,6 +1,6 @@
 // main.dart
 import 'package:flutter/material.dart';
-import 'features/splash/Splash.dart'; // 실제 홈 화면이 따로 있다면
+import 'features/splash/splash.dart'; // 실제 홈 화면이 따로 있다면
 
 void main() {
   runApp(const MyApp());
