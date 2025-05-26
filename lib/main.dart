@@ -1,51 +1,39 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
+  
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: TestButtonPage(),
-    );
-  }
-}
-
-class TestButtonPage extends StatefulWidget {
-  const TestButtonPage({super.key});
-
-  @override
-  State<TestButtonPage> createState() => _TestButtonPageState();
-}
-
-class _TestButtonPageState extends State<TestButtonPage> {
-  String displayText = "버튼을 눌러주세요";
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('테스트 버튼'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(displayText, style: const TextStyle(fontSize: 24)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  displayText = "버튼이 눌렸습니다!";
-                });
-              },
-              child: const Text('눌러보기'),
-            ),
-          ],
+    return MaterialApp(
+      home: Scaffold(
+        backgroundColor: Colors.orange, // 주황색 배경
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                '댕댕일기', // 제목
+                style: TextStyle(
+                  fontSize: 40,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white, // 텍스트 색상
+                ),
+              ),
+              SizedBox(height: 20), // 간격
+              Text(
+                '반려동물과의 커뮤니케이션', // 부제목
+                style: TextStyle(
+                  fontSize: 20,
+                  color: Colors.white, // 텍스트 색상
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
