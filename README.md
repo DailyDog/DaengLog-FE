@@ -32,8 +32,8 @@ lib/main.dart
 세부 기능 (각 device별)은 해당 폴더에서 작업
 
 📁 폴더 구조
-✨ lib/features/ 부터 기능 작업
-⚙️ lib/common/ + lib/core -> 공용 component
+    ✨ lib/features/ 부터 기능 작업
+    ⚙️ lib/common/ + lib/core -> 공용 component
 
     common -> 유틸리티, 위젯, 상수
     core -> 앱의 핵심 구조, 설정, 의존성, 아키텍쳐
