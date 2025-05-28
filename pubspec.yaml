@@ -10,6 +10,7 @@ version: 0.0.1+1
 environment:
   sdk: '>=2.19.4 <4.0.0'
 
+# http api 호출 라이브러리
 dependencies:
   flutter:
     sdk: flutter
