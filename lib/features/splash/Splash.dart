@@ -1,39 +1,42 @@
 import 'package:flutter/material.dart';
 
-void main() {
-  runApp(Splash());
-}
-
-class Splash extends StatelessWidget {
+class Splash extends StatefulWidget {
   const Splash({super.key});
 
   @override
+  State<Splash> createState() => _SplashState();
+}
+
+class _SplashState extends State<Splash> {
+  @override
+  void initState() {
+    super.initState();
+    // 3초 후에 /home_main으로 이동
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.pushReplacementNamed(context, '/home_main');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.orange, // 주황색 배경
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                '댕댕일기', // 제목
-                style: TextStyle(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // 텍스트 색상
-                ),
-              ),
-              SizedBox(height: 20), // 간격
-              Text(
-                '반려동물과의 커뮤니케이션', // 부제목
-                style: TextStyle(
-                  fontSize: 20,
-                  color: Colors.white, // 텍스트 색상
-                ),
-              ),
-            ],
-          ),
+    final size = MediaQuery.of(context).size;
+    final logoWidth = size.width * 0.6;
+    final logoHeight = size.height * 0.3;
+    final logoSize = logoWidth < logoHeight ? logoWidth : logoHeight;
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/entire.png',
+              width: logoSize,
+              height: logoSize,
+              fit: BoxFit.contain,
+            ),
+          ],
         ),
       ),
     );

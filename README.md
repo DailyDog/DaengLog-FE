@@ -47,3 +47,5 @@ Flutter
 1. flutter clean
 2. flutter pub-get
 3. flutter doctor
+
+alias sim16='open -a Simulator --args -CurrentDeviceUDID 92675CE6-3DE5-4B60-90ED-E2B8899EFE89'

@@ -17,6 +17,18 @@ import 'features/onboding/onboding_thr.dart';
 import 'features/collect_information/information_first.dart';
 // import 'features/collect_information/information_sec.dart'
 
+// 홈스크린 화면
+import 'features/homeScreen/home_prompt.dart';
+import 'features/homeScreen/home_main.dart';
+
+// 기록 화면
+
+// 마켓 화면 -> 임시 대표화면
+import 'features/purchase/close.dart';
+
+// 마이 화면
+
+
 void main() {
   runApp(const MyApp());
 }
@@ -29,10 +41,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/information_sec',
+      initialRoute: '/home_prompt',
       // routes 추가
       routes: {
-        '/': (context) => const Splash(),
+        '/splash': (context) => const Splash(),
         '/onboding': (context) => const OnbodingStart(),
         '/onboding_first': (context) => const OnbodingFirst(),
         '/onboding_sec': (context) => const OnbodingSec(),
@@ -40,6 +52,9 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/information_first': (context) => const InformationFirst(),
         //'/information_sec': (context) => const InformationSec()
+        '/home_prompt': (context) => const HomePromptScreen(),
+        '/home_main': (context) => const HomeMainScreen(), // 홈화면
+        '/close': (context) => const Close(),  // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
       },
     );
   }

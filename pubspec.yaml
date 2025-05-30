@@ -19,6 +19,9 @@ dependencies:
   english_words: ^4.0.0
   provider: ^6.0.0
 
+  image_picker: ^1.1.2
+  permission_handler: ^11.1.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -27,3 +30,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/images/daeng.png
+    - assets/images/text.png
+    - assets/images/entire.png
