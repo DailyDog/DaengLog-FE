@@ -72,7 +72,7 @@ class _HomePromptScreenState extends State<HomePromptScreen> {
       );
       // You can handle the response here if needed
     } catch (e) {
-      // Handle error
+      e;
     } finally {
       setState(() {
         _isLoading = false;
