@@ -12,6 +12,7 @@ environment:
 
 # http api 호출 라이브러리
 dependencies:
+  url_launcher: ^6.2.10
   flutter:
     sdk: flutter
   http: ^0.13.5
@@ -35,3 +36,12 @@ flutter:
     - assets/images/daeng.png
     - assets/images/text.png
     - assets/images/entire.png
+    - assets/images/login_logo.png
+    # 소셜 로그인 아이콘
+    - assets/images/naver_icon.png
+    - assets/images/google_icon.png
+    - assets/images/kakao_icon.png
+    - assets/images/apple_icon.png
+    
+    # 온보딩 이미지
+    - assets/images/onboding.png

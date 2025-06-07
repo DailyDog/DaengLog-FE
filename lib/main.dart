@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/home_prompt',
+      initialRoute: '/onboding',
       // routes 추가
       routes: {
         // 초기 화면
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
         '/onboding_thr': (context) => const OnbodingThr(),
 
         // 로그인 화면
-        '/login': (context) => const LoginPage(),
+        '/login': (context) => const SocialLoginScreen(),
 
         // 정보 입력 화면
         '/information_first': (context) => const InformationFirst(),
