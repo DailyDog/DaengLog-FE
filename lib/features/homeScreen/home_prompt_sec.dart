@@ -1,11 +1,23 @@
+// 프로젝트 라이브러리
 import 'package:daenglog_fe/common/bottom/bottom_nav_bar.dart';
+// 플러터 라이브러리
 import 'package:flutter/material.dart';
+// 날짜 포맷팅 초기화
+import 'package:intl/date_symbol_data_local.dart';
+// 날짜 포맷팅
+import 'package:intl/intl.dart';
 
 class HomePromptSec extends StatelessWidget {
   const HomePromptSec({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // 날짜 포맷팅 초기화
+    initializeDateFormatting('ko_KR');
+
+    final now = DateTime.now();
+    final formattedDate = DateFormat('yyyy.MM.dd (E)', 'ko_KR').format(now);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF7F3), // 연한 배경
       appBar: AppBar(
@@ -46,8 +58,8 @@ class HomePromptSec extends StatelessWidget {
                   color: const Color(0xFFFFE5CC),
                   borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Text(
-                  '25.05.03(금)',
+                child: Text(
+                  formattedDate, // 날짜 포맷팅
                   style: TextStyle(
                     color: Color(0xFFFF6600),
                     fontWeight: FontWeight.bold,
@@ -58,41 +70,55 @@ class HomePromptSec extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             // 사진 + 설명 버튼
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Image.asset(
-                    'assets/images/mango_profile.jpg',
-                    width: 120,
-                    height: 120,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFF6600),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
+                    Column(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.asset(
+                            'assets/images/daeng.png',
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 12),
-                        elevation: 0,
-                      ),
-                      onPressed: () {},
-                      child: const Text(
-                        '간식주고 찍은 사진',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(height: 8),
+                        const Text(
+                          '망고',
+                          style: TextStyle(
+                            color: Color(0xFFFF6600),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF6600),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    elevation: 0,
+                  ),
+                  onPressed: () {},
+                  child: const Text(
+                    '간식주고 찍은 사진',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -171,62 +197,62 @@ class HomePromptSec extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            // 입력창
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Row(
-                children: [
-                  // 사진 미리보기
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child:
-                        const Icon(Icons.close, size: 18, color: Colors.grey),
-                  ),
-                  const SizedBox(width: 12),
-                  // 텍스트 입력
-                  const Expanded(
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'ex. 방금 간식주고 찍은 사진',
-                        hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                    ),
-                  ),
-                  // 사진 첨부 버튼
-                  IconButton(
-                    icon: const Icon(Icons.image_outlined,
-                        color: Color(0xFFFF6600)),
-                    onPressed: () {},
-                  ),
-                  // 전송 버튼
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios,
-                        color: Color(0xFFFF6600)),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
           ],
+        ),
+      ),
+      // 텍스트 입력 및 사진 첨부 버튼
+      bottomSheet: Padding(
+        padding: const EdgeInsets.only(bottom: 21, left: 10, right: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 255, 255, 255),
+            borderRadius: BorderRadius.circular(21),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // 사진 미리보기
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.close, size: 18, color: Colors.grey),
+              ),
+              const SizedBox(width: 12),
+              // 텍스트 입력
+              const Expanded(
+                child: TextField(
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'ex. 방금 간식주고 찍은 사진',
+                    hintStyle: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ),
+              // 사진 첨부 버튼
+              IconButton(
+                icon:
+                    const Icon(Icons.image_outlined, color: Color(0xFFFF6600)),
+                onPressed: () {},
+              ),
+              // 전송 버튼
+              IconButton(
+                icon: const Icon(Icons.arrow_forward_ios,
+                    color: Color(0xFFFF6600)),
+                onPressed: () {},
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: commonBottomNavBar(
