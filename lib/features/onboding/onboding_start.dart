@@ -11,46 +11,16 @@ class OnbodingStart extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 80),
-              const Text(
-                '댕댕일기',
-                style: TextStyle(
-                  color: Color(0xFFFF4B00),
-                  fontSize: 48,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                '반려동물과의 커뮤니케이션',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 20,
-                ),
-              ),
+              const SizedBox(height: 30),
+              Image.asset('assets/images/onboding.png', width: 300, height: 100),
               const SizedBox(height: 48),
-              Container(
-                width: 180,
-                height: 180,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black12, width: 2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Center(
-                  child: Text(
-                    '대표로고',
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+
+              // 대표로고
+              Image.asset('assets/images/daeng.png', width: 100, height: 100),
               const SizedBox(height: 80),
               SizedBox(
-                width: 350,
-                height: 70,
+                width: 300,
+                height: 55,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFFF4B00),
@@ -64,8 +34,12 @@ class OnbodingStart extends StatelessWidget {
                     Navigator.pushNamed(context, '/onboding_first'); 
                   },
                   child: const Text(
-                    '시작',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                    '시작하기',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.normal,
+                    ),
                   ),
                 ),
               ),
@@ -86,6 +60,9 @@ class OnbodingStart extends StatelessWidget {
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     decoration: TextDecoration.underline,
+                    decorationColor: Color(0xFFFF4B00),
+                    decorationThickness: 2,
+                    decorationStyle: TextDecorationStyle.solid,
                   ),
                 ),
               ),
