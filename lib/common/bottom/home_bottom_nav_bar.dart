@@ -51,7 +51,7 @@ Widget commonBottomNavBar({
     color: backgroundColor,
     padding: const EdgeInsets.only(top: 8, bottom: 8),
     child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.spaceAround, // 양쪽 여백 균등 분배
       children: List.generate(items.length, (index) {
         final selected = index == currentIndex;
         return GestureDetector(

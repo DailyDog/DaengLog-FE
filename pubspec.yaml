@@ -39,29 +39,29 @@ flutter:
   uses-material-design: true # 머티리얼 디자인 사용 여부
   assets:
     # 로고
-    - assets/images/daeng.png
-    - assets/images/text.png
-    - assets/images/login_logo.png
-
+    - assets/images/home/daeng.png
+    - assets/images/home/text.png
+    
     # 스플래쉬
     - assets/images/splash/entire.png 
     
     
     # 소셜 로그인 아이콘
-    - assets/images/naver_icon.png
-    - assets/images/google_icon.png
-    - assets/images/kakao_icon.png
-    - assets/images/apple_icon.png
+    - assets/images/login/login_logo.png
+    - assets/images/login/naver_icon.png
+    - assets/images/login/google_icon.png
+    - assets/images/login/kakao_icon.png
+    - assets/images/login/apple_icon.png
     
     # 온보딩 이미지
-    - assets/images/onboding.png
+    - assets/images/onboding/onboding.png
     - assets/images/onboding/onboding_first.png
     - assets/images/onboding/onboding_sec.png
     - assets/images/onboding/onboding_trd.png
     - assets/images/onboding/onboding_fth.png
     
     # 서비스 수집 배경 이미지
-    - assets/images/info_background.png
+    - assets/images/information/info_background.png
   
   # 폰트
   fonts:

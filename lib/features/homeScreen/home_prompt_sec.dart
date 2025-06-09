@@ -1,5 +1,5 @@
 // 프로젝트 라이브러리
-import 'package:daenglog_fe/common/bottom/bottom_nav_bar.dart';
+import 'package:daenglog_fe/common/bottom/home_bottom_nav_bar.dart';
 // 플러터 라이브러리
 import 'package:flutter/material.dart';
 // 날짜 포맷팅 초기화
@@ -81,7 +81,7 @@ class HomePromptSec extends StatelessWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(16),
                           child: Image.asset(
-                            'assets/images/daeng.png',
+                            'assets/images/home/daeng.png',
                             width: 120,
                             height: 120,
                             fit: BoxFit.cover,

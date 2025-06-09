@@ -10,13 +10,16 @@ import 'features/splash/splash.dart';
 
 // 온보딩 화면
 import 'features/onboding/onboding_start.dart';
-import 'features/onboding/onboding_first.dart';
+import 'features/onboding/onboding_main.dart';
 import 'features/onboding/onboding_sec.dart';
 import 'features/onboding/onboding_trd.dart';
 
 // 정보 입력 화면
-import 'features/collect_information/information_first.dart';
-import 'features/collect_information/information_sec.dart';
+import 'features/collect_info/pet_info_kind.dart';
+import 'features/collect_info/pet_info_name.dart';
+//import 'features/collect_information/pet_info_character.dart';
+//import 'features/collect_information/pet_info_profile.dart';
+//import 'features/collect_information/pet_info_photos.dart';
 
 // 홈스크린 화면
 import 'features/homeScreen/home_prompt.dart';
@@ -43,7 +46,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/onboding_start',
+      initialRoute: '/pet_information_name',
       // routes 추가
       routes: {
         // 초기 화면
@@ -51,7 +54,7 @@ class MyApp extends StatelessWidget {
 
         // 온보딩 화면
         '/onboding_start': (context) => const OnbodingStart(),
-        '/onboding_first': (context) => const OnbodingFirst(),
+        '/onboding_main': (context) => const OnbodingMain(),
         '/onboding_sec': (context) => const OnbodingSec(),
         '/onboding_trd': (context) => const OnbodingTrd(),
         '/onboding_fth': (context) => const OnbodingFth(),
@@ -60,8 +63,11 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const SocialLoginScreen(),
 
         // 정보 입력 화면
-        '/information_first': (context) => const InformationFirst(),
-        '/information_sec': (context) => const InformationSec(),
+        '/pet_information_kind': (context) => const PetInformationKind(),
+        '/pet_information_name': (context) => const PetInformationName(),
+        //'/pet_information_character': (context) => const PetInformationCharacter(),
+        //'/pet_information_profile': (context) => const PetInformationProfile(),
+        //'/pet_information_photos': (context) => const PetInformationPhotos(),
 
         // 홈 화면
         '/home_prompt': (context) => const HomePromptScreen(),

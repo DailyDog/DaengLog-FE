@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/common/widgets/onboding/onboding.dart';
+import 'package:daenglog_fe/common/widgets/onboding.widgets/onboding.dart';
 
 class OnbodingFth extends StatelessWidget {
   const OnbodingFth({Key? key}) : super(key: key);
@@ -13,7 +13,7 @@ class OnbodingFth extends StatelessWidget {
       imagePath: 'assets/images/onboding/onboding_fth.png',
       indicatorIndex: 3,
       context: context,
-      navigationButtonText: '/home_prompt',
+      navigationButtonText: '/login',
     );
   }
 }

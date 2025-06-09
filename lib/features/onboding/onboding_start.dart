@@ -13,11 +13,11 @@ class OnbodingStart extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 30),
-              Image.asset('assets/images/onboding.png', width: 300, height: 100),
+              Image.asset('assets/images/onboding/onboding.png', width: 300, height: 100),
               const SizedBox(height: 48),
 
               // 대표로고
-              Image.asset('assets/images/daeng.png', width: 100, height: 100),
+              Image.asset('assets/images/home/daeng.png', width: 100, height: 100),
               const SizedBox(height: 80),
               SizedBox(
                 width: 300,
@@ -32,7 +32,7 @@ class OnbodingStart extends StatelessWidget {
 
                   // 시작 버트 클릭 시 라우트 이동
                   onPressed: () {
-                    Navigator.pushNamed(context, '/onboding_first'); 
+                    Navigator.pushNamed(context, '/onboding_main'); 
                   },
                   child: const Text(
                     '시작하기',

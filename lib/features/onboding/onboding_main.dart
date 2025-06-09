@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/common/widgets/onboding/onboding.dart';
+import 'package:daenglog_fe/common/widgets/onboding.widgets/onboding.dart';
 
-class OnbodingFirst extends StatelessWidget {
-  const OnbodingFirst({Key? key}) : super(key: key);
+class OnbodingMain extends StatelessWidget {
+  const OnbodingMain({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/common/widgets/onboding/onboding.dart';
+import 'package:daenglog_fe/common/widgets/onboding.widgets/onboding.dart';
 
 class OnbodingSec extends StatelessWidget {
   const OnbodingSec({Key? key}) : super(key: key);

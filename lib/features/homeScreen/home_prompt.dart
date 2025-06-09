@@ -91,7 +91,7 @@ class _HomePromptScreenState extends State<HomePromptScreen> {
             Column(
               children: [
                 Image.asset(
-                  'assets/images/daeng.png',
+                  'assets/images/home/daeng.png',
                   height: 100,
                 ),
                 const SizedBox(height: 24),
