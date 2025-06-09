@@ -36,7 +36,7 @@ class SocialLoginScreen extends StatelessWidget {
               const SizedBox(height: 80),
               Center(
                 child: Image.asset(
-                  'assets/images/login_logo.png',
+                  'assets/images/login/login_logo.png',
                   width: 120,
                   height: 120,
                 ),
@@ -44,25 +44,25 @@ class SocialLoginScreen extends StatelessWidget {
               const SizedBox(height: 24),
               const SizedBox(height: 60),
               _socialButton(
-                icon: Image.asset('assets/images/google_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/google_icon.png', width: 24),
                 text: '구글로 시작하기    ',
                 onTap: _redirect,
               ),
               const SizedBox(height: 16),
               _socialButton(
-                icon: Image.asset('assets/images/kakao_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/kakao_icon.png', width: 24),
                 text: '카카오로 시작하기',
                 onTap: _redirect,
               ),
               const SizedBox(height: 16),
               _socialButton(
-                icon: Image.asset('assets/images/naver_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/naver_icon.png', width: 24),
                 text: '네이버로 시작하기',
                 onTap: _redirect,
               ),
               const SizedBox(height: 16),
               _socialButton(
-                icon: Image.asset('assets/images/apple_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/apple_icon.png', width: 24),
                 text: '애플로 시작하기    ',
                 onTap: _redirect,
               ),

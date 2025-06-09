@@ -1,5 +1,5 @@
 // 바텀 네비게이션 위젯
-import 'package:daenglog_fe/common/bottom/bottom_nav_bar.dart';
+import 'package:daenglog_fe/common/bottom/home_bottom_nav_bar.dart';
 // 홈 메인 위젯 패키지
 import 'package:daenglog_fe/common/widgets/home_main.widgets/past_photo_item.dart'; // 과거 사진 위젯
 import 'package:daenglog_fe/common/widgets/home_main.widgets/photo_card.dart'; // 사진 카드 위젯
