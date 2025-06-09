@@ -1,4 +1,5 @@
 // main.dart
+import 'package:daenglog_fe/features/onboding/onboding_fth.dart';
 import 'package:flutter/material.dart';
 
 // 로그인 화면
@@ -11,11 +12,11 @@ import 'features/splash/splash.dart';
 import 'features/onboding/onboding_start.dart';
 import 'features/onboding/onboding_first.dart';
 import 'features/onboding/onboding_sec.dart';
-import 'features/onboding/onboding_thr.dart';
+import 'features/onboding/onboding_trd.dart';
 
 // 정보 입력 화면
 import 'features/collect_information/information_first.dart';
-// import 'features/collect_information/information_sec.dart'
+import 'features/collect_information/information_sec.dart';
 
 // 홈스크린 화면
 import 'features/homeScreen/home_prompt.dart';
@@ -42,24 +43,25 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/onboding',
+      initialRoute: '/onboding_start',
       // routes 추가
       routes: {
         // 초기 화면
         '/splash': (context) => const Splash(),
 
         // 온보딩 화면
-        '/onboding': (context) => const OnbodingStart(),
+        '/onboding_start': (context) => const OnbodingStart(),
         '/onboding_first': (context) => const OnbodingFirst(),
         '/onboding_sec': (context) => const OnbodingSec(),
-        '/onboding_thr': (context) => const OnbodingThr(),
+        '/onboding_trd': (context) => const OnbodingTrd(),
+        '/onboding_fth': (context) => const OnbodingFth(),
 
         // 로그인 화면
         '/login': (context) => const SocialLoginScreen(),
 
         // 정보 입력 화면
         '/information_first': (context) => const InformationFirst(),
-        //'/information_sec': (context) => const InformationSec()
+        '/information_sec': (context) => const InformationSec(),
 
         // 홈 화면
         '/home_prompt': (context) => const HomePromptScreen(),

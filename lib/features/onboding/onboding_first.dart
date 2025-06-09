@@ -1,111 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:daenglog_fe/common/widgets/onboding/onboding.dart';
 
 class OnbodingFirst extends StatelessWidget {
   const OnbodingFirst({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned(
-              top: 16,
-              left: 8,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios,
-                    color: Colors.grey, size: 32),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 60),
-                  const Text(
-                    '메인페이지',
-                    style: TextStyle(
-                      color: Color(0xFFFF4B00),
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    '반려동물의 사진을 첨부해\n생각을 읽어보세요!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 20,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  Container(
-                    width: 250,
-                    height: 250,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black26, width: 2),
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        '메인 페이지\n이미지',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 60),
-                  SizedBox(
-                    width: 350,
-                    height: 70,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFFF4B00),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40),
-                        ),
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/onboding_sec');
-                      },
-                      child: const Text(
-                        '다음',
-                        style: TextStyle(
-                            fontSize: 28, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // 페이지 인디케이터
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(
-                      4,
-                      (index) => Container(
-                        width: 12,
-                        height: 12,
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: index == 0
-                              ? const Color(0xFFEB420B)
-                              : const Color(0xFFD9D9D9), // 주황색과 흰색
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+    return buildOnboardingContent(
+      titleHighlight: '메인',
+      subtitle: '반려동물의 사진으로 \n속마음을 읽어보세요!',
+      imagePath: 'assets/images/onboding/onboding_first.png',
+      indicatorIndex: 0,
+      context: context,
+      navigationButtonText: '/onboding_sec',
     );
   }
 }

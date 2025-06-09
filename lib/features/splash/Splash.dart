@@ -13,7 +13,7 @@ class _SplashState extends State<Splash> {
     super.initState();
     // 3초 후에 /home_main으로 이동
     Future.delayed(const Duration(seconds: 1), () {
-      Navigator.pushReplacementNamed(context, '/home_main');
+      Navigator.pushReplacementNamed(context, '/onboding_start');
     });
   }
 
@@ -31,7 +31,7 @@ class _SplashState extends State<Splash> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/entire.png',
+              'assets/images/splash/entire.png',
               width: logoSize,
               height: logoSize,
               fit: BoxFit.contain,

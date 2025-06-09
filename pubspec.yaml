@@ -1,42 +1,52 @@
 # 앱에 관한 기본 정보(현재버전, 종속 항목, 함께 제공될 애넷 지정)
 
+# 프로젝트 이름
 name: daenglog_fe
 description: A new Flutter project.
 
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+# 퍼블리시 설정
+publish_to: 'none' 
 
+# 버전 설정
 version: 0.0.1+1
 
+# 환경 설정
 environment:
   sdk: '>=2.19.4 <4.0.0'
 
-# http api 호출 라이브러리
+# 의존성 추가
 dependencies:
-  url_launcher: ^6.2.10
   flutter:
     sdk: flutter
-  http: ^0.13.5
-  intl: ^0.19.0
+  url_launcher: ^6.2.10 # 링크 열기 라이브러리
+  http: ^0.13.5 # http 호출 라이브러리
+  intl: ^0.19.0 # 국제화 라이브러리
 
-  english_words: ^4.0.0
-  provider: ^6.0.0
+  english_words: ^4.0.0 # 영어 단어 라이브러리
+  provider: ^6.0.0 # 상태 관리 라이브러리
 
-  image_picker: ^1.1.2
-  permission_handler: ^11.1.0
+  image_picker: ^1.1.2 # 이미지 선택 라이브러리
+  permission_handler: ^11.1.0 # 권한 관리 라이브러리
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^2.0.0 # 린트 라이브러리
 
+# 플러터 설정
 flutter:
-  uses-material-design: true
+  uses-material-design: true # 머티리얼 디자인 사용 여부
   assets:
+    # 로고
     - assets/images/daeng.png
     - assets/images/text.png
-    - assets/images/entire.png
     - assets/images/login_logo.png
+
+    # 스플래쉬
+    - assets/images/splash/entire.png 
+    
+    
     # 소셜 로그인 아이콘
     - assets/images/naver_icon.png
     - assets/images/google_icon.png
@@ -45,3 +55,25 @@ flutter:
     
     # 온보딩 이미지
     - assets/images/onboding.png
+    - assets/images/onboding/onboding_first.png
+    - assets/images/onboding/onboding_sec.png
+    - assets/images/onboding/onboding_trd.png
+    - assets/images/onboding/onboding_fth.png
+    
+    # 서비스 수집 배경 이미지
+    - assets/images/info_background.png
+  
+  # 폰트
+  fonts:
+    # 폰트 프리텐다드
+    - family: Pretendard
+      fonts:
+        - asset: assets/fonts/pretendard/Pretendard-Regular.otf
+        - asset: assets/fonts/pretendard/Pretendard-Medium.otf
+        - asset: assets/fonts/pretendard/Pretendard-Bold.otf
+        - asset: assets/fonts/pretendard/Pretendard-ExtraBold.otf
+        - asset: assets/fonts/pretendard/Pretendard-Black.otf
+        - asset: assets/fonts/pretendard/Pretendard-Light.otf
+        - asset: assets/fonts/pretendard/Pretendard-Thin.otf
+        - asset: assets/fonts/pretendard/Pretendard-ExtraLight.otf
+        - asset: assets/fonts/pretendard/Pretendard-SemiBold.otf

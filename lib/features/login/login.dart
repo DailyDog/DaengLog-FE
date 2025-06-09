@@ -45,7 +45,7 @@ class SocialLoginScreen extends StatelessWidget {
               const SizedBox(height: 60),
               _socialButton(
                 icon: Image.asset('assets/images/google_icon.png', width: 24),
-                text: '구글로 시작하기',
+                text: '구글로 시작하기    ',
                 onTap: _redirect,
               ),
               const SizedBox(height: 16),
@@ -63,7 +63,7 @@ class SocialLoginScreen extends StatelessWidget {
               const SizedBox(height: 16),
               _socialButton(
                 icon: Image.asset('assets/images/apple_icon.png', width: 24),
-                text: '애플로 시작하기',
+                text: '애플로 시작하기    ',
                 onTap: _redirect,
               ),
             ],
