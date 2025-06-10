@@ -49,3 +49,7 @@ Flutter
 3. flutter doctor
 
 alias sim16='open -a Simulator --args -CurrentDeviceUDID 92675CE6-3DE5-4B60-90ED-E2B8899EFE89'
+
+초기화면 설정
+lib/main.dart -> 49번 라인 수정하면 됨
+ex) initialRoute: '/splash.dart'
