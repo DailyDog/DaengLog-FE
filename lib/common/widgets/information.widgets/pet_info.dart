@@ -38,8 +38,9 @@ Widget buildPetInfoScreen({
                       children: List.generate(4, (index) {
                         const labels = ['댕', '댕', '일', '기'];
                         bool isActive = false;
-                        if(currentStep != null)
-                          isActive = currentStep == index;
+                        if(currentStep != null) {
+                          isActive = index <= currentStep;
+                        }
                         return TextSpan(
                           text: labels[index],
                           style: TextStyle(
@@ -78,7 +79,7 @@ Widget buildPetInfoScreen({
               const SizedBox(height: 5),
               Text(subtitle, style: TextStyle(fontFamily: 'Pretendard-SemiBold', fontSize: 14, color: Color(0xFF8C8B8B))),
               const SizedBox(height: 40),
-              if (child != null) child!,
+              if (child != null) child,
             ],
           ),
         ),

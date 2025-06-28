@@ -28,10 +28,6 @@ dependencies:
   image_picker: ^1.1.2 # 이미지 선택 라이브러리
   permission_handler: ^11.1.0 # 권한 관리 라이브러리
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
   flutter_lints: ^2.0.0 # 린트 라이브러리
 
 # 플러터 설정
@@ -62,6 +58,7 @@ flutter:
     
     # 서비스 수집 배경 이미지
     - assets/images/information/info_background.png
+    - assets/images/information/camera.png
   
   # 폰트
   fonts:

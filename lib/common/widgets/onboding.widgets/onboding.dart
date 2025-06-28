@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 
 Widget buildOnboardingContent({
   required String titleHighlight, // 하이라이트 텍스트

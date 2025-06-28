@@ -17,9 +17,9 @@ import 'features/onboding/onboding_trd.dart';
 // 정보 입력 화면
 import 'features/collect_info/pet_info_kind.dart';
 import 'features/collect_info/pet_info_name.dart';
-//import 'features/collect_information/pet_info_character.dart';
-//import 'features/collect_information/pet_info_profile.dart';
-//import 'features/collect_information/pet_info_photos.dart';
+import 'features/collect_info/pet_info_character.dart';
+import 'features/collect_info/pet_info_profile.dart';
+//import 'features/collect_info/pet_info_photos.dart';
 
 // 홈스크린 화면
 import 'features/homeScreen/home_prompt.dart';
@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/pet_information_name',
+      initialRoute: '/pet_information_kind',
       // routes 추가
       routes: {
         // 초기 화면
@@ -65,8 +65,8 @@ class MyApp extends StatelessWidget {
         // 정보 입력 화면
         '/pet_information_kind': (context) => const PetInformationKind(),
         '/pet_information_name': (context) => const PetInformationName(),
-        //'/pet_information_character': (context) => const PetInformationCharacter(),
-        //'/pet_information_profile': (context) => const PetInformationProfile(),
+        '/pet_information_character': (context) => const PetInformationCharacter(),
+        '/pet_information_profile': (context) => const PetInformationProfile(),
         //'/pet_information_photos': (context) => const PetInformationPhotos(),
 
         // 홈 화면

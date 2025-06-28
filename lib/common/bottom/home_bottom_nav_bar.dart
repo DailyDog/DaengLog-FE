@@ -30,7 +30,7 @@ Widget commonBottomNavBar({
   const unselectedColor = Color(0xFF222222);
   const backgroundColor = Color(0xFFFCF7F4); // 연한 배경
 
-  void _onTap(int index) {
+  void onTap(int index) {
     switch (index) {
       case 0:
         Navigator.pushReplacementNamed(context, '/home_main');
@@ -55,7 +55,7 @@ Widget commonBottomNavBar({
       children: List.generate(items.length, (index) {
         final selected = index == currentIndex;
         return GestureDetector(
-          onTap: () => _onTap(index),
+          onTap: () => onTap(index),
           behavior: HitTestBehavior.opaque,
           child: Column(
             mainAxisSize: MainAxisSize.min,
