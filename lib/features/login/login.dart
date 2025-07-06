@@ -1,12 +1,16 @@
+import 'package:daenglog_fe/api/login/login_api.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:daenglog_fe/utils/secure_token_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SocialLoginScreen extends StatelessWidget {
   const SocialLoginScreen({Key? key}) : super(key: key);
 
   // 리다이렉션 URL
-  static const String redirectUrl = 'https://example.com/redirect';
+  static String redirectUrl = '${dotenv.env['API_URL']!}/oauth2/authorization/google';
 
+  // 리다이렉션 함수
   void _redirect() async {
     final Uri url = Uri.parse(redirectUrl);
     if (await canLaunchUrl(url)) {
@@ -46,7 +50,11 @@ class SocialLoginScreen extends StatelessWidget {
               _socialButton(
                 icon: Image.asset('assets/images/login/google_icon.png', width: 24),
                 text: '구글로 시작하기    ',
-                onTap: _redirect,
+                onTap: () async {
+                  _redirect(); // 리다이렉션 함수 호출
+                  SecureTokenStorage.saveToken('test_token');
+                  Navigator.pushNamed(context, '/home_main');
+                },
               ),
               const SizedBox(height: 16),
               _socialButton(

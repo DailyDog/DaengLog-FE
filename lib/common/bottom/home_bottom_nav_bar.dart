@@ -8,20 +8,16 @@ Widget commonBottomNavBar({
   // 아이콘과 라벨 정의
   const items = [
     _NavBarItem(
-      icon: Icons.home_rounded,
-      label: '홈',
+      iconPath: 'assets/images/home/home_icon.png'
     ),
     _NavBarItem(
-      icon: Icons.edit_note_rounded,
-      label: '기록',
+      iconPath: 'assets/images/home/record_icon.png'
     ),
     _NavBarItem(
-      icon: Icons.shopping_bag_rounded,
-      label: '마켓',
+      iconPath: 'assets/images/home/market_icon.png'
     ),
     _NavBarItem(
-      icon: Icons.person_outline_rounded,
-      label: '마이',
+      iconPath: 'assets/images/home/mypage_icon.png'
     ),
   ];
 
@@ -49,7 +45,7 @@ Widget commonBottomNavBar({
 
   return Container(
     color: backgroundColor,
-    padding: const EdgeInsets.only(top: 8, bottom: 8),
+    padding: const EdgeInsets.only(top: 10, bottom: 8),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround, // 양쪽 여백 균등 분배
       children: List.generate(items.length, (index) {
@@ -60,20 +56,13 @@ Widget commonBottomNavBar({
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                items[index].icon,
-                size: 48,
+              Image.asset(
+                items[index].iconPath,
+                width: 55,
+                height: 55,
                 color: selected ? selectedColor : unselectedColor,
               ),
-              const SizedBox(height: 4),
-              Text(
-                items[index].label,
-                style: TextStyle(
-                  color: selected ? selectedColor : unselectedColor,
-                  fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 16,
-                ),
-              ),
+              const SizedBox(height: 40),
             ],
           ),
         );
@@ -83,7 +72,6 @@ Widget commonBottomNavBar({
 }
 
 class _NavBarItem {
-  final IconData icon;
-  final String label;
-  const _NavBarItem({required this.icon, required this.label});
+  final String iconPath;
+  const _NavBarItem({required this.iconPath});
 }
