@@ -21,6 +21,11 @@ dependencies:
   url_launcher: ^6.2.10 # 링크 열기 라이브러리
   http: ^0.13.5 # http 호출 라이브러리
   intl: ^0.19.0 # 국제화 라이브러리
+  dio: ^5.8.0+1 # dio 라이브러리
+  retrofit: ^4.0.0 # retrofit 라이브러리
+  json_annotation: ^4.9.0 # json 라이브러리
+  build_runner: ^2.4.12 # build_runner 라이브러리
+  json_serializable: ^6.9.3 # json_serializable 라이브러리
 
   english_words: ^4.0.0 # 영어 단어 라이브러리
   provider: ^6.0.0 # 상태 관리 라이브러리
@@ -30,13 +35,29 @@ dependencies:
 
   flutter_lints: ^2.0.0 # 린트 라이브러리
 
+  shared_preferences: ^2.3.5 # 공유 프레퍼런스 라이브러리
+  
+  flutter_secure_storage: ^9.2.2 # 보안 저장소 라이브러리
+
+  geolocator: ^11.0.0 # 위치 정보 라이브러리
+  geocoding: ^2.1.0 # 위치 정보 라이브러리
+  flutter_dotenv: ^5.2.1 # 환경 변수 라이브러리
+
 # 플러터 설정
 flutter:
   uses-material-design: true # 머티리얼 디자인 사용 여부
   assets:
-    # 로고
+    - .env
+
+    # 메인
+    - assets/images/home/daeng.jpg
     - assets/images/home/daeng.png
     - assets/images/home/text.png
+    - assets/images/home/home_icon.png
+    - assets/images/home/market_icon.png
+    - assets/images/home/mypage_icon.png
+    - assets/images/home/record_icon.png
+    - assets/images/home/mango_image.png
     
     # 스플래쉬
     - assets/images/splash/entire.png 
