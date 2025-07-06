@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 class TabChip extends StatelessWidget {
   final String label;
   final bool selected;
+  final Function() onTap;
 
-  const TabChip({required this.label, required this.selected, Key? key})
+  const TabChip({required this.label, required this.selected, required this.onTap, Key? key})
       : super(key: key);
 
   @override

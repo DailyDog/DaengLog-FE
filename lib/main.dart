@@ -1,6 +1,7 @@
 // main.dart
 import 'package:daenglog_fe/features/onboding/onboding_fth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // 로그인 화면
 import 'features/login/login.dart';
@@ -34,7 +35,8 @@ import 'features/purchase/close.dart';
 // 마이 화면
 
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
   runApp(const MyApp());
 }
 
@@ -46,7 +48,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/pet_information_kind',
+      initialRoute: '/login',
       // routes 추가
       routes: {
         // 초기 화면
