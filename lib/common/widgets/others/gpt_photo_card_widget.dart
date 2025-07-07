@@ -30,7 +30,7 @@ class GptPhotoCardWidget extends StatelessWidget {
           ),
           child: Center(
             child: Image.asset(
-              'assets/images/your_dog_icon.png', // 실제 아이콘 경로로 교체
+              'assets/images/home/daeng.png', // 실제 아이콘 경로로 교체
               width: 32,
               height: 32,
             ),
@@ -56,7 +56,7 @@ class GptPhotoCardWidget extends StatelessWidget {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        "오늘의 일기 - ${gptResponse!.title} 🦴",
+                        "${gptResponse!.title} 🦴",
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
