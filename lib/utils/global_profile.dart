@@ -28,9 +28,9 @@ class GlobalProfile {
   }
 
   // 프로필 이미지 가져오기
-  String getProfileImage() {
-    return _profile?.imagePath ?? 'assets/images/home/mango_image.png';
-  }
+  // String getProfileImage() {
+  //   return _profile?.imagePath ?? 'assets/images/home/mango_image.png';
+  // }
 
   // 프로필 초기화
   void clearProfile() {

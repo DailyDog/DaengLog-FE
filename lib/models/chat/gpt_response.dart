@@ -1,5 +1,5 @@
-// 반려견의 일주일
-class Diary {
+// 반려견의 일주일 기록
+class GptResponse {
   final int? diaryId;
   final String title;
   final String content;
@@ -8,7 +8,7 @@ class Diary {
   final int recordNumber;
   final String keyword;
 
-  Diary({
+  GptResponse({
     required this.diaryId,
     required this.title,
     required this.content,
@@ -18,8 +18,8 @@ class Diary {
     required this.keyword,
   });
 
-  factory Diary.fromJson(Map<String, dynamic> json) {
-    return Diary(
+  factory GptResponse.fromJson(Map<String, dynamic> json) {
+    return GptResponse(
       diaryId: json['diaryId'],
       title: json['title'],
       content: json['content'],
