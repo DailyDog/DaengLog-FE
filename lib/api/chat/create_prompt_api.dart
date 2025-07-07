@@ -1,22 +1,25 @@
+import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:daenglog_fe/models/homeScreen/diary.dart';
 import 'package:daenglog_fe/utils/secure_token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:daenglog_fe/models/chat/gpt_response.dart';
 
-
-class AlbumDetailApi {
+class CreatePromptApi {
   final Dio _dio = Dio();
 
-  final String _baseUrl = '${dotenv.env['API_URL']!}/api/v1/diary/album';
   final token = dotenv.env['TOKEN']!;
+  final String _baseUrl = '${dotenv.env['API_URL']!}/api/v1/diary/preview';
 
-  Future<List<Diary>> getAlbumDetail({required String keyword}) async {
+  Future<GptResponse> createPrompt({required String prompt, required int petId, required File imageFile}) async {
     try {
       //final String? token = await SecureTokenStorage.getToken(); // 비동기 호출
 
-      final response = await _dio.get(
+      final response = await _dio.post(
         _baseUrl,
-        queryParameters: {'keyword': keyword},
+        queryParameters: {
+          'prompt': prompt,
+          'petId': petId,
+        }, 
         options: Options(
           headers: {
             //'Authorization': 'Bearer $token',
@@ -25,11 +28,13 @@ class AlbumDetailApi {
             'Content-Type': 'application/json',
           },
         ),
+        data: FormData.fromMap({
+          'image': await MultipartFile.fromFile(imageFile.path),
+        }),
       );
 
-      return (response.data as List)
-          .map((json) => Diary.fromJson(json))
-          .toList();
+      print(response.data);
+      return GptResponse.fromJson(response.data);
     } catch (e) {
       throw Exception('앨범 불러오기 실패: $e');
     }

@@ -2,6 +2,8 @@
 import 'package:daenglog_fe/features/onboding/onboding_fth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:provider/provider.dart';
+import 'package:daenglog_fe/common/widgets/others/default_profile.dart';
 
 // 로그인 화면
 import 'features/login/login.dart';
@@ -22,10 +24,12 @@ import 'features/collect_info/pet_info_character.dart';
 import 'features/collect_info/pet_info_profile.dart';
 //import 'features/collect_info/pet_info_photos.dart';
 
+// 채팅 화면
+import 'features/chat/home_prompt.dart';
+import 'features/chat/chat_service.dart';
+
 // 홈스크린 화면
-import 'features/homeScreen/home_prompt.dart';
 import 'features/homeScreen/home_main.dart';
-import 'features/homeScreen/home_prompt_sec.dart';
 
 // 기록 화면
 
@@ -34,10 +38,16 @@ import 'features/purchase/close.dart';
 
 // 마이 화면
 
-
+// 메인 함수
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => DefaultProfile(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -48,7 +58,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/login',
+      initialRoute: '/chat_service',
       // routes 추가
       routes: {
         // 초기 화면
@@ -72,9 +82,14 @@ class MyApp extends StatelessWidget {
         //'/pet_information_photos': (context) => const PetInformationPhotos(),
 
         // 홈 화면
+        '/home_main': (context) => ChangeNotifierProvider(
+          create: (_) => DefaultProfile(),
+          child: const HomeMainScreen(),
+        ), 
+        
+        // 채팅 화면
         '/home_prompt': (context) => const HomePromptScreen(),
-        '/home_main': (context) => const HomeMainScreen(), 
-        '/home_prompt_sec': (context) => const HomePromptSec(),
+        '/chat_service': (context) => const ChatService(),
 
         // 마켓 화면
         '/close': (context) => const Close(),  // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동

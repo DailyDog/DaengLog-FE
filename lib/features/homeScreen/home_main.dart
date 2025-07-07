@@ -275,15 +275,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                             const SizedBox(height: 16),
                             GestureDetector(
                               onTap: () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) => FractionallySizedBox(
-                                    heightFactor: 1.0,
-                                    child: HomePromptSec(),
-                                  ),
-                                );
+                                Navigator.pushNamed(context, '/chat_service');
                               },
                               child: Container(
                                 decoration: BoxDecoration(
