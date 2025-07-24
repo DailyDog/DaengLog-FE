@@ -1,5 +1,5 @@
 // 프로젝트 라이브러리
-import 'package:daenglog_fe/common/bottom/home_bottom_nav_bar.dart';
+import 'package:daenglog_fe/common/widgets/bottom/home_bottom_nav_bar.dart';
 // 플러터 라이브러리
 import 'package:flutter/material.dart';
 // 날짜 포맷팅 초기화

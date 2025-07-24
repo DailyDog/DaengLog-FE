@@ -8,7 +8,7 @@ class Profile {
   final String petFirstDiaryDate; // 첫 일기 날짜
   final List<String> petPersonality; // 성격
   final int petDaysSinceFirstDiary; // 첫 일기 이후 경과 일수
-  //final String imagePath; // 프로필 이미지 경로
+  final String imagePath; // 프로필 이미지 경로
 
   Profile({
     required this.id,
@@ -19,7 +19,7 @@ class Profile {
     required this.petFirstDiaryDate,
     required this.petPersonality,
     required this.petDaysSinceFirstDiary,
-    //required this.imagePath,
+    required this.imagePath,
   });
 
   factory Profile.fromJson(Map<String, dynamic> json) {
@@ -32,7 +32,7 @@ class Profile {
       petFirstDiaryDate: json['firstDiaryDate'] ?? '',
       petPersonality: List<String>.from(json['personalities'] ?? []), // API에서는 'personalities'
       petDaysSinceFirstDiary: json['daysSinceFirstDiary'] ?? 0,
-      //imagePath: json['profileImageUrl'] ?? '', 
+      imagePath: json['profileImageUrl'] ?? '', 
    );
   }
 }

@@ -27,6 +27,7 @@ import 'features/collect_info/pet_info_profile.dart';
 // 채팅 화면
 import 'features/chat/home_prompt.dart';
 import 'features/chat/chat_service.dart';
+import 'features/chat_photo/chat_photo.dart';
 
 // 홈스크린 화면
 import 'features/homeScreen/home_main.dart';
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/chat_service',
+      initialRoute: '/login',
       // routes 추가
       routes: {
         // 초기 화면
@@ -90,6 +91,9 @@ class MyApp extends StatelessWidget {
         // 채팅 화면
         '/home_prompt': (context) => const HomePromptScreen(),
         '/chat_service': (context) => const ChatService(),
+
+        // 포토카드 화면
+        '/chat_photo': (context) => const ChatPhoto(),
 
         // 마켓 화면
         '/close': (context) => const Close(),  // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동

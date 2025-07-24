@@ -5,7 +5,7 @@ import 'package:daenglog_fe/models/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WeatherApi {
-  final Dio _dio = Dio();
+  final Dio _dio = Dio(); 
   final LocationService _locationService = LocationService();
 
   final String apiKey = dotenv.env['KMA_API_KEY']!;

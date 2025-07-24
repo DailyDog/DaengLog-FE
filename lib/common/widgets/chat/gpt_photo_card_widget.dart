@@ -1,5 +1,8 @@
+import 'package:daenglog_fe/api/login/login_api.dart';
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/models/chat/gpt_response.dart';
+import 'package:daenglog_fe/utils/secure_token_storage.dart';
+import 'package:daenglog_fe/common/widgets/others/login_modal.dart';
 
 class GptPhotoCardWidget extends StatelessWidget {
   final String formattedDate;
@@ -21,8 +24,8 @@ class GptPhotoCardWidget extends StatelessWidget {
         // 왼쪽 동그란 아이콘
         Container(
           margin: const EdgeInsets.only(top: 12),
-          width: 48,
-          height: 48,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: const Color(0xFFFFF7F3),
             shape: BoxShape.circle,
@@ -30,9 +33,9 @@ class GptPhotoCardWidget extends StatelessWidget {
           ),
           child: Center(
             child: Image.asset(
-              'assets/images/home/daeng.png', // 실제 아이콘 경로로 교체
-              width: 32,
-              height: 32,
+              'assets/images/home/daeng.png', // 사용자 프로필 이미지로 교체
+              width: 24,
+              height: 24,
             ),
           ),
         ),
@@ -40,10 +43,16 @@ class GptPhotoCardWidget extends StatelessWidget {
         // 오른쪽 카드
         Expanded(
           child: Container(
+            margin: const EdgeInsets.only(top: 30),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: const Color(0xFFFF6600), width: 1.5),
-              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFFF5F01), width: 1),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(0),
+                topRight: Radius.circular(15),
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
+              ),
             ),
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
             child: Column(
@@ -52,14 +61,13 @@ class GptPhotoCardWidget extends StatelessWidget {
                 // 제목
                 Row(
                   children: [
-                    const Icon(Icons.pets, color: Color(0xFFFF6600)),
-                    const SizedBox(width: 6),
                     Expanded(
                       child: Text(
                         "${gptResponse!.title} 🦴",
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                          fontFamily: 'Suite-ExtraBold',
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
                         ),
                       ),
                     ),
@@ -68,38 +76,53 @@ class GptPhotoCardWidget extends StatelessWidget {
                 const SizedBox(height: 12),
                 // 본문
                 Text(
-                  gptResponse!.content,
-                  style: const TextStyle(fontSize: 15, color: Colors.black87),
+                  gptResponse!.content.replaceAll("\n", " "), // null이 아님 보장 + 빈 문자열 처리 + 본문 
+                  style: const TextStyle(
+                    fontSize: 15,
+                    color: Colors.black87,
+                    fontFamily: 'Yeongdeok-Sea',
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 // 포토카드 보기 버튼
                 SizedBox(
-                  width: 160,
+                  height: 30,
+                  width: 110,
                   child: OutlinedButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/example', arguments: gptResponse);
+                    onPressed: () async {
+                      // 토큰 체크
+                      final token = await SecureTokenStorage.getToken();
+                      if (token == null || token.isEmpty) {
+                        // 토큰이 없으면 로그인 모달 띄우기
+                        await showLoginModal(context);
+                      } else {
+                        // 토큰이 있으면 포토카드 페이지로 이동
+                        Navigator.pushNamed(context, '/chat_photo', arguments: gptResponse);
+                      }
                     },
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFF7F3),
+                      backgroundColor: const Color(0xFFFFEEE8),
                       side: BorderSide.none,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(4),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                     ),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: const [
                         Text(
                           '포토카드 보기',
                           style: TextStyle(
-                            color: Color(0xFFB85C00),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
+                            color: Color(0xFF5C5C5C),
+                            fontFamily: 'Suite-Regular',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFFB85C00)),
+                        SizedBox(width: 2),
+                        Icon(Icons.arrow_forward_ios, size: 15, color: Color(0xFF5C5C5C)),
                       ],
                     ),
                   ),
