@@ -1,7 +1,7 @@
 import 'package:geocoding/geocoding.dart'; // 위치 → 주소 변환용
 import 'package:daenglog_fe/services/location_service.dart';
 import 'package:dio/dio.dart';
-import 'package:daenglog_fe/models/weather.dart';
+import 'package:daenglog_fe/models/homeScreen/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WeatherApi {

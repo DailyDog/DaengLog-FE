@@ -18,7 +18,7 @@ import 'package:daenglog_fe/api/weather/weather_api.dart';
 // 모델 패키지
 import 'package:daenglog_fe/models/homeScreen/diary.dart';
 import 'package:daenglog_fe/models/homeScreen/category.dart';
-import 'package:daenglog_fe/models/weather.dart';
+import 'package:daenglog_fe/models/homeScreen/weather.dart';
 
 // 토큰 저장소 패키지
 
