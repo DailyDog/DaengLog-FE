@@ -1,15 +1,13 @@
 // 외부 패키지
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/date_symbol_data_local.dart'; // 날짜 포맷 초기화용
-import 'package:intl/intl.dart'; // 날짜 포맷
+// 날짜 포맷 초기화용
+// 날짜 포맷
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
 // 내부 패키지
-import 'package:daenglog_fe/common/widgets/bottom/home_bottom_nav_bar.dart';
 import 'package:daenglog_fe/common/widgets/others/default_profile.dart';
-import 'package:daenglog_fe/common/widgets/others/selectable_image.dart';
 import 'package:daenglog_fe/api/chat/create_prompt_api.dart';
 import 'package:daenglog_fe/models/chat/gpt_response.dart';
 import 'package:daenglog_fe/common/widgets/chat/gpt_photo_card_widget.dart';
@@ -35,6 +33,21 @@ class _ChatServiceState extends State<ChatService> {
   final Map<int, bool> _textVisible = {}; // 각 메시지의 텍스트 표시 여부
   final Map<int, bool> _gptMessageLoaded = {}; // GPT 메시지 로딩 완료 여부
   final CreatePromptApi _createPromptApi = CreatePromptApi(); // API 인스턴스
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map?;
+    if (args != null && _messages.isEmpty) {
+      final prompt = args['prompt'] as String?;
+      final image = args['image'] as XFile?;
+      if (prompt != null && image != null) {
+        _selectedImageXFile = image;
+        _textController.text = prompt;
+        WidgetsBinding.instance.addPostFrameCallback((_) => _sendPrompt());
+      }
+    }
+  }
 
   /// 맨 밑으로 스크롤하는 메서드
   void _scrollToBottom() {
@@ -168,7 +181,7 @@ class _ChatServiceState extends State<ChatService> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pushNamed(context, '/home_prompt'),
+          onPressed: () => Navigator.pop(context),
         ),
         actions: const [SizedBox(width: 8)],
       ),
@@ -280,7 +293,6 @@ class _ChatServiceState extends State<ChatService> {
         loading: _loading,
         error: _error,
       ),
-
     );
   }
 }

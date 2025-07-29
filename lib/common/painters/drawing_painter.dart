@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 // 그리기 포인트 모델
 class DrawPoint {

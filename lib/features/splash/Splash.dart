@@ -18,13 +18,7 @@ class _SplashState extends State<Splash> {
   Future<void> _checkTokenAndNavigate() async {
     final token = await SecureTokenStorage.getToken();
     await Future.delayed(const Duration(seconds: 1)); // 스플래시 1초 유지
-    if (mounted) {
-      if (token != null && token.isNotEmpty) {
-        Navigator.pushReplacementNamed(context, '/home_main'); // 로그인 후 홈 메인 화면
-      } else {
-        Navigator.pushReplacementNamed(context, '/home_prompt'); // 로그인 전 홈 프롬프트 화면
-      }
-    }
+    Navigator.pushReplacementNamed(context, '/onboding_start'); // 로그인 후 홈 메인 화면
   }
 
   @override

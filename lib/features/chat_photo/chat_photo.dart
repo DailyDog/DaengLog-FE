@@ -13,6 +13,10 @@ import 'package:daenglog_fe/features/chat_photo/image_custom.dart';
 import 'package:daenglog_fe/common/widgets/chat_photo/draw_custom.dart';
 import 'package:daenglog_fe/common/widgets/others/default_profile.dart';
 import 'package:provider/provider.dart';
+import 'package:daenglog_fe/utils/secure_token_storage.dart';
+import 'package:daenglog_fe/common/widgets/others/login_modal.dart';
+import 'package:daenglog_fe/features/family_share/send/family_share_share.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 // 스티커 모델 클래스
 class StickerItem {
@@ -120,6 +124,33 @@ class _ChatPhotoState extends State<ChatPhoto> {
     ]);
   }
 
+  // --- 갤러리에 이미지 저장 ---
+  void saveImageToGallery() async {
+    if (capturedImageBytes == null) return;
+    
+    try {
+      final result = await ImageGallerySaver.saveImage(
+        capturedImageBytes!,
+        quality: 100,
+        name: 'daenglog_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      
+      if (result['isSuccess'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('갤러리에 저장되었습니다!')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('저장에 실패했습니다.')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -160,7 +191,60 @@ class _ChatPhotoState extends State<ChatPhoto> {
                       });
                     },
                   )
-                : const Icon(Icons.cloud_upload_outlined, color: Color(0xFFFF6600)),
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Image.asset(
+                          'assets/images/chat/send_icon.png',
+                          width: 24,
+                          height: 24,
+                        ),
+                        onPressed: () async {
+                          // 공유하기 버튼 토큰 체크
+                          final token = await SecureTokenStorage.getToken();
+                          if (token != null && token.isNotEmpty) {
+                            // 바텀 시트로 가족 공유 화면 표시
+                            final gptResponse = ModalRoute.of(context)?.settings.arguments as GptResponse;
+                            showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              backgroundColor: Colors.transparent,
+                              builder: (context) => FamilyShareScreen(
+                                sharedContent: gptResponse.content,
+                                sharedImagePath: gptResponse.imageUrl,
+                              ),
+                            );
+                          } else {
+                            await showLoginModal(context);
+                          }
+                        },
+                      ),
+                      IconButton(
+                        icon: Image.asset(
+                          'assets/images/chat/download_icon.png',
+                          width: 30,
+                          height: 30,
+                        ),
+                        onPressed: () async {
+                          // 다운로드 버튼 토큰 체크
+                          final token = await SecureTokenStorage.getToken();
+                          if (token != null && token.isNotEmpty ) {
+                            if (capturedImageBytes != null) {
+                              // 다운로드 기능 구현
+                              saveImageToGallery();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('먼저 확정하기를 눌러주세요.')),
+                              );
+                            }
+                          } else {
+                            await showLoginModal(context);
+                          }
+                        },
+                      ),
+                    ],
+                  ),
           ),
         ],
       ),
@@ -176,7 +260,7 @@ class _ChatPhotoState extends State<ChatPhoto> {
                 Center(
                   child: Stack(
                     children: [
-                      Container(
+                      SizedBox(
                         key: imageKey,
                         width: imageWidth,
                         height: imageHeight,
@@ -542,24 +626,40 @@ class _ChatPhotoState extends State<ChatPhoto> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {
-                          setState(() {
-                            isDecorateMode = true;
-                          });
+                        onPressed: () async {
+                          if (isConfirmed) {
+                            // 클라우드 업로드 버튼일 때 토큰 체크
+                            final token = await SecureTokenStorage.getToken();
+                            if (token != null && token.isNotEmpty) {
+                              // 토큰이 있으면 클라우드 업로드 페이지로 이동
+                              Navigator.pushNamed(context, '/cloud_upload');
+                            } else {
+                              // 토큰이 없으면 로그인 페이지로 이동
+                              await showLoginModal(context);
+                            }
+                          } else {
+                            // 일기 꾸미기 버튼일 때
+                            setState(() {
+                              isDecorateMode = true;
+                            });
+                          }
                         },
                         style: OutlinedButton.styleFrom(
+                          backgroundColor: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
                           side: const BorderSide(color: Color(0xFFFF6600)),
-                          foregroundColor: const Color(0xFFFF6600),
+                          foregroundColor: isConfirmed ? Colors.white : const Color(0xFFFF6600),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(32),
                           ),
                           minimumSize: const Size.fromHeight(50),
                         ),
-                        child: const Text(
-                          '일기 꾸미기',
+                        child: Text(
+                          isConfirmed ? '클라우드 업로드' : '일기 꾸미기',
                           style: TextStyle(
                             fontFamily: 'Pretendard',
-                            fontSize: 18,
+                            fontWeight: isConfirmed ? FontWeight.w700 : FontWeight.w500,
+                            fontSize: isConfirmed ? 15 : 17,
+                            color: isConfirmed ? Colors.white : const Color(0xFFFF6600),
                           ),
                         ),
                       ),
@@ -567,10 +667,21 @@ class _ChatPhotoState extends State<ChatPhoto> {
                     const SizedBox(width: 16),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: imageLoaded ? (isConfirmed ? shareImage : captureAndConvertToJpg) : null,
+                        onPressed: imageLoaded ? (isConfirmed ? () async {
+                          // 공유하기 버튼일 때 토큰 체크
+                          final token = await SecureTokenStorage.getToken();
+                          if (token != null && token.isNotEmpty) {
+                            // 토큰이 있으면 공유 기능 실행
+                            shareImage();
+                          } else {
+                            // 토큰이 없으면 로그인 모달 표시
+                            await showLoginModal(context);
+                          }
+                        } : captureAndConvertToJpg) : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF6600),
-                          foregroundColor: Colors.white,
+                          backgroundColor: isConfirmed ? Colors.white : const Color(0xFFFF6600),
+                          foregroundColor: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
+                          side: isConfirmed ? const BorderSide(color: Color(0xFFFF6600)) : null,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(32),
                           ),
@@ -578,9 +689,10 @@ class _ChatPhotoState extends State<ChatPhoto> {
                         ),
                         child: Text(
                           isConfirmed ? '공유하기' : '확정하기',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Pretendard',
-                            fontSize: 18,
+                            fontSize: 17,
+                            color: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
                           ),
                         ),
                       ),

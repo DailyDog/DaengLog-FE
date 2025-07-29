@@ -1,11 +1,7 @@
-import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:daenglog_fe/common/widgets/others/selectable_image.dart';
+import 'package:daenglog_fe/common/widgets/chat/chat_bottom_widget.dart';
 
 class HomePromptScreen extends StatefulWidget {
   const HomePromptScreen({Key? key}) : super(key: key);
@@ -16,43 +12,33 @@ class HomePromptScreen extends StatefulWidget {
 
 class _HomePromptScreenState extends State<HomePromptScreen> {
   final TextEditingController _controller = TextEditingController();
-  bool _isLoading = false;
+  bool _loading = false;
+  String? _error;
   XFile? _pickedImage;
 
-  void _onImageSelected(XFile image) {
+  void _onImageSelected(dynamic image) {
     setState(() {
       _pickedImage = image;
     });
   }
 
-  Future<void> _submitPrompt() async {
+  void _goToChatService() {
     final text = _controller.text.trim();
-    if (text.isEmpty) return;
-    setState(() {
-      _isLoading = true;
-    });
-    try {
-      // TODO: 사진과 텍스트를 함께 보내려면 multipart/form-data로 업로드 필요 (백엔드 명세에 따라 구현)
-      // 아래는 텍스트만 전송하는 예시입니다.
-      final response = await http.post(
-        Uri.parse('http://localhost:8080/prompt'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'prompt': text}),
-      );
-      // You can handle the response here if needed
-    } catch (e) {
-      e;
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    if (text.isEmpty || _pickedImage == null) return;
+    Navigator.pushNamed(
+      context,
+      '/chat_service',
+      arguments: {
+        'prompt': text,
+        'image': _pickedImage,
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFF6600),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -65,9 +51,9 @@ class _HomePromptScreenState extends State<HomePromptScreen> {
                 ),
                 const SizedBox(height: 24),
                 const Text(
-                  '오늘 망고의 기분은 어떤가요?',
+                  '오늘 반려동물의 기분은 어떤가요?',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Colors.black,
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -76,63 +62,27 @@ class _HomePromptScreenState extends State<HomePromptScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      children: [
-                        SelectableImage(
-                          image: _pickedImage,
-                          onImageSelected: _onImageSelected,
-                          placeholderBuilder: () => Icon(Icons.add_a_photo, size: 40, color: Colors.orange),
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: _controller,
-                            decoration: const InputDecoration(
-                              hintText: 'ex. 방금 간식주고 찍은 사진',
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 18),
-                            ),
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.send, color: Colors.orange),
-                          onPressed: _isLoading ? null : _submitPrompt,
-                        ),
-                      ],
-                    ),
+                    color: Colors.white,
+                    child: ChatBottomWidget(
+                    textController: _controller,
+                    selectedImageXFile: _pickedImage,
+                    onImageSelected: _onImageSelected,
+                    onSendPressed: _goToChatService,
+                    onCancelPressed: () {
+                      // 중단 콜백 추가
+                    },
+                    onErrorCleared: () {
+                      setState(() => _error = null);
+                    },
+                    loading: _loading,
+                    error: _error,
                   ),
+                  )
                 ),
-                if (_pickedImage != null)
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.file(
-                      File(_pickedImage!.path),
-                      height: 100,
-                    ),
-                  ),
+                
               ],
             ),
             const Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 32),
-              child: GestureDetector(
-                onTap: () {
-                  Navigator.pushReplacementNamed(context, '/home_main');
-                },
-                child: const Text(
-                  '닫기 x',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
           ],
         ),
       ),

@@ -44,17 +44,8 @@ class LoginModal extends StatelessWidget {
                   icon: Image.asset('assets/images/login/google_icon.png', width: 20),
                   text: '구글로 시작하기',
                   onTap: () async {
-                    final success = await performGoogleLogin();
-                    if (success) {
-                      Navigator.of(context).pop();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('로그인 성공!')),
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('구글 로그인에 실패했습니다.')),
-                      );
-                    }
+                    await performGoogleLogin();
+                    Navigator.pushNamed(context, '/home_main');
                   },
                 ),
                 const SizedBox(height: 12),
@@ -66,7 +57,7 @@ class LoginModal extends StatelessWidget {
             top: 0,
             right: 0,
             child: IconButton(
-              icon: Icon(Icons.close, color: Color(0xFFF2B2B2B)),
+              icon: Icon(Icons.close, color: Color(0xfff2b2b2b)),
               onPressed: () => Navigator.of(context).pop(),
             ),
           ),

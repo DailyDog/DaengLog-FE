@@ -83,7 +83,7 @@ class _HomePromptScreenState extends State<HomePromptScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFF6600),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [

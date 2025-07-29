@@ -1,4 +1,3 @@
-import 'package:daenglog_fe/api/login/login_api.dart';
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/models/chat/gpt_response.dart';
 import 'package:daenglog_fe/utils/secure_token_storage.dart';
@@ -33,7 +32,7 @@ class GptPhotoCardWidget extends StatelessWidget {
           ),
           child: Center(
             child: Image.asset(
-              'assets/images/home/daeng.png', // 사용자 프로필 이미지로 교체
+              'assets/images/home/daeng.png',
               width: 24,
               height: 24,
             ),
@@ -92,14 +91,15 @@ class GptPhotoCardWidget extends StatelessWidget {
                   child: OutlinedButton(
                     onPressed: () async {
                       // 토큰 체크
-                      final token = await SecureTokenStorage.getToken();
-                      if (token == null || token.isEmpty) {
-                        // 토큰이 없으면 로그인 모달 띄우기
-                        await showLoginModal(context);
-                      } else {
-                        // 토큰이 있으면 포토카드 페이지로 이동
-                        Navigator.pushNamed(context, '/chat_photo', arguments: gptResponse);
-                      }
+                      // final token = await SecureTokenStorage.getToken();
+                      // if (token == null || token.isEmpty) {
+                      //   // 토큰이 없으면 로그인 모달 띄우기
+                      //  await showLoginModal(context);
+                      // } else {
+                      //   // 토큰이 있으면 포토카드 페이지로 이동
+                      //   Navigator.pushNamed(context, '/chat_photo', arguments: gptResponse);
+                      // }
+                      Navigator.pushNamed(context, '/chat_photo', arguments: gptResponse);
                     },
                     style: OutlinedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFEEE8),
