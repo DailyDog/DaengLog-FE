@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// 태그 선택 컴포넌트
 class SelectableTag extends StatelessWidget {
   final String label;
   final bool isSelected;
@@ -17,21 +18,26 @@ class SelectableTag extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        height: 40, // 고정 높이 설정
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFFFF3EC) : const Color(0xFFEDEDED),
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? const Color(0xFFFF5F01) : Colors.transparent,
             width: 2,
           ),
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontFamily: 'Pretendard-SemiBold',
-            fontSize: 14,
-            color: isSelected ? const Color(0xFFFF5F01) : const Color(0xFF5C5C5C),
+        child: Center(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              color: isSelected ? const Color(0xFFFF5F01) : const Color(0xFF5C5C5C),
+            ),
           ),
         ),
       ),

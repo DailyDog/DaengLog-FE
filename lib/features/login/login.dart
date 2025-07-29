@@ -36,17 +36,9 @@ class SocialLoginScreen extends StatelessWidget {
                 text: '구글로 시작하기    ',
                 onTap: () async {
                   // 구글 로그인 및 서버 인증 (통합)
-                  final success = await performGoogleLogin();
-                  
-                  if (success) {
-                    // 로그인 성공 시 홈으로 이동
+                  final result = await performGoogleLogin();
+                    // 기존 사용자는 홈 메인 화면으로
                     Navigator.pushNamed(context, '/home_main');
-                  } else {
-                    // 로그인 실패
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('로그인에 실패했습니다.')),
-                    );
-                  }
                 },
               ),
               const SizedBox(height: 16),

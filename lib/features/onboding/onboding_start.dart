@@ -32,7 +32,7 @@ class OnbodingStart extends StatelessWidget {
 
                   // 시작 버트 클릭 시 라우트 이동
                   onPressed: () {
-                    Navigator.pushNamed(context, '/onboding_main'); 
+                    Navigator.pushNamed(context, '/home_prompt'); 
                   },
                   child: const Text(
                     '시작하기',

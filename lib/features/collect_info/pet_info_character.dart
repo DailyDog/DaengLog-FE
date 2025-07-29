@@ -3,7 +3,11 @@ import 'package:daenglog_fe/common/widgets/information.widgets/pet_info.dart';
 import 'package:daenglog_fe/common/widgets/information.widgets/selectable_tag.dart';
 
 class PetInformationCharacter extends StatefulWidget {
-  const PetInformationCharacter({Key? key}) : super(key: key);
+  final void Function(List<String> characters) onNext;
+  final VoidCallback? onPrevious;
+  final String? petName;
+  final TextEditingController _controller = TextEditingController();
+  PetInformationCharacter({Key? key, required this.onNext, this.onPrevious, this.petName}) : super(key: key);
 
   @override
   State<PetInformationCharacter> createState() => _PetInformationCharacterState();
@@ -52,17 +56,23 @@ class _PetInformationCharacterState extends State<PetInformationCharacter> {
     ];
 
     return buildPetInfoScreen(
-      currentStep: 1,
+      currentStep: 2,
+      subject: widget.petName != null ? '${widget.petName}의 ' : '반려동물의 ',
       title: '성격',
       titleSub: '를 선택해 주세요!',
       subtitle: '최대 5개까지 선택 가능해요.',
-      onPrevious: () {
+      onPrevious: widget.onPrevious ?? () {
         Navigator.pop(context);
       },
       onNext: selectedTags.isNotEmpty
           ? () {
-              // 다음 단계로 이동
-              Navigator.pushNamed(context, '/pet_information_profile');
+              final characters = selectedTags.toList();
+              if (characters.isNotEmpty) {
+                widget.onNext(characters);
+                // 부모에게 값 전달
+              } else {
+                // 예: 스낵바 등으로 안내
+              }
             }
           : null,
       child: Padding(

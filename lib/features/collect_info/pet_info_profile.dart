@@ -5,7 +5,11 @@ import 'package:daenglog_fe/common/widgets/information.widgets/pet_info.dart';
 import 'package:daenglog_fe/common/widgets/others/selectable_image.dart';
 
 class PetInformationProfile extends StatefulWidget {
-  const PetInformationProfile({Key? key}) : super(key: key);
+  final void Function(XFile profileImage) onNext;
+  final VoidCallback? onPrevious;
+  final String? petName;
+  final TextEditingController _controller = TextEditingController();
+  PetInformationProfile({Key? key, required this.onNext, this.onPrevious, this.petName}) : super(key: key);
 
   @override
   State<PetInformationProfile> createState() => _PetInformationProfileState();
@@ -17,16 +21,19 @@ class _PetInformationProfileState extends State<PetInformationProfile> {
   @override
   Widget build(BuildContext context) {
     return buildPetInfoScreen(
-      currentStep: 2,
+      currentStep: 3,
+      subject: widget.petName != null ? '${widget.petName}의 ' : '반려동물의 ',
       title: '프로필',
       titleSub: '을 올려주세요',
       subtitle: '선택사항이지만 첨부해주시면 좋아요',
-      onPrevious: () {
-        Navigator.pushNamed(context, '/pet_information_character');
+      onPrevious: widget.onPrevious ?? () {
+        Navigator.pop(context);
       },
-      onNext: () {
-        Navigator.pushNamed(context, '/pet_information_photo');
-      },
+      onNext: _selectedImage != null
+          ? () {
+              widget.onNext(_selectedImage!);
+            }
+          : null,
       // 이미지 선택 컴포넌트
       child: Column(
         children: [

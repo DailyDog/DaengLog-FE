@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 // 반려동물 정보 입력 화면 위젯
 Widget buildPetInfoScreen({
   required int? currentStep, // 추가된 부분
+  required String subject,
   required String title,
   required String titleSub,
   required String subtitle,
@@ -44,7 +45,7 @@ Widget buildPetInfoScreen({
                         return TextSpan(
                           text: labels[index],
                           style: TextStyle(
-                            fontFamily: 'Pretendard Medium',
+                            fontFamily: 'Pretendard',
                             fontSize: 20,
                             color: isActive ? Color(0xFFFF5F01) : Color(0xFFADADAD),
                           ),
@@ -69,15 +70,15 @@ Widget buildPetInfoScreen({
               RichText(
                 text: TextSpan(
                   children: [
-                    TextSpan(text: '반려동물의 ', style: TextStyle(fontFamily: 'Pretendard-Bold', fontSize: 20, color: Color(0xFF272727))),
-                    TextSpan(text: title, style: TextStyle(fontFamily: 'Pretendard-ExtraBold', fontSize: 20, color: Color(0xFFFF5F01))),
-                    TextSpan(text: titleSub, style: TextStyle(fontFamily: 'Pretendard-ExtraBold', fontSize: 20, color: Color(0xFF272727))),
+                    TextSpan(text: subject, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF272727))),
+                    TextSpan(text: title, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFFFF5F01))),
+                    TextSpan(text: titleSub, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF272727))),
                   ],
                 ),
               ),
               // 서브타이틀
               const SizedBox(height: 5),
-              Text(subtitle, style: TextStyle(fontFamily: 'Pretendard-SemiBold', fontSize: 14, color: Color(0xFF8C8B8B))),
+              Text(subtitle, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF8C8B8B))),
               const SizedBox(height: 40),
               if (child != null) child,
             ],

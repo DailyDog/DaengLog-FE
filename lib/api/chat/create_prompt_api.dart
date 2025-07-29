@@ -23,8 +23,6 @@ class CreatePromptApi {
     _cancelToken = CancelToken();
     
     try {
-      // 임시
-      await SecureTokenStorage.clearToken();
       // 토큰 값 가져오기
       String? token = await SecureTokenStorage.getToken();
       
@@ -46,7 +44,6 @@ class CreatePromptApi {
       print('Token: $token'); // 토큰 값 직접 출력
       print('Headers: ${token != null && token.isNotEmpty ? 'Bearer $token' : 'No token'}');
       print('Image file path: ${imageFile.path}');
-
       final response = await _dio.post(
         _baseUrl,
         queryParameters: queryParams,
@@ -66,9 +63,8 @@ class CreatePromptApi {
       if (e is DioException && e.type == DioExceptionType.cancel) {
         return null;
       }
-      
       // 401 에러 시 토큰 갱신 시도
-      if (e is DioException && e.response?.statusCode == 401) {
+      if (e is DioException && e.response?.statusCode == 500) {
         final refreshToken = await SecureTokenStorage.getRefreshToken();
         if (refreshToken != null) {
           try {

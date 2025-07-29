@@ -89,12 +89,12 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(widget.error!, style: const TextStyle(color: Colors.red)),
               ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.grey.shade300, width: 1),
-              ),
+                          Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(color: Color(0xFFFF5F01), width: 1),
+                ),
               child: Row(
                 children: [
                   // 이미지 선택 버튼

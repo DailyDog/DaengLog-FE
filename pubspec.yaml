@@ -41,6 +41,8 @@ dependencies:
 
   share_plus: ^7.2.1 # 공유 기능 라이브러리
   path_provider: ^2.1.2 # 파일 경로 관리 라이브러리
+  image_gallery_saver: ^2.0.3 # 갤러리 저장 라이브러리
+  lottie: ^3.0.0 # Lottie 애니메이션 라이브러리
 
   geolocator: ^11.0.0 # 위치 정보 라이브러리
   geocoding: ^2.1.0 # 위치 정보 라이브러리
@@ -48,7 +50,7 @@ dependencies:
   flutter_colorpicker: ^1.0.3 # 색상 선택 라이브러리
 
   google_sign_in: ^6.1.1 # 구글 로그인 라이브러리
-  
+
 # 플러터 설정
 flutter:
   uses-material-design: true # 머티리얼 디자인 사용 여부
@@ -86,7 +88,21 @@ flutter:
     # 서비스 수집 배경 이미지
     - assets/images/information/info_background.png
     - assets/images/information/camera.png
-  
+
+    # 채팅 화면 아이콘
+    - assets/images/chat/download_icon.png
+    - assets/images/chat/send_icon.png
+
+    # 가족 공유 화면 아이콘
+    - assets/images/family/envelope.png
+
+    # 가족 공유 화면 애니메이션
+    - assets/images/family/send.json
+    - assets/images/family/send_back.jpg
+
+    # 테스트 이미지
+    - assets/images/test.png
+
   # 폰트
   fonts:
     # 폰트 프리텐다드

@@ -3,23 +3,6 @@ import 'package:daenglog_fe/utils/secure_token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-// 토큰 갱신 함수
-Future<String?> refreshAccessToken(String refreshToken) async {
-  try {
-    final dio = Dio();
-    final response = await dio.post(
-      '${dotenv.env['API_URL']!}/api/v1/token/refresh',
-      data: {'refreshToken': refreshToken},
-    );
-    final data = response.data;
-    final newAccessToken = data['accessToken'];
-    await SecureTokenStorage.saveToken(newAccessToken);
-    return newAccessToken;
-  } catch (e) {
-    return null;
-  }
-}
-
 // 구글 로그인 인스턴스
 final GoogleSignIn _googleSignIn = GoogleSignIn(
   scopes: [
@@ -29,11 +12,11 @@ final GoogleSignIn _googleSignIn = GoogleSignIn(
 );
 
 // 구글 로그인 및 서버 인증 (통합)
-Future<bool> performGoogleLogin() async {
+Future<Map<String, dynamic>> performGoogleLogin() async {
   // 1. 구글 로그인
   final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
   if (googleUser == null) {
-    return false; // 사용자가 로그인 취소
+    return {'success': false, 'isNewUser': false}; // 사용자가 로그인 취소
   }
   
   // 2. 구글 인증 정보 가져오기
@@ -41,16 +24,16 @@ Future<bool> performGoogleLogin() async {
   final idToken = googleAuth.idToken;
   
   if (idToken == null) {
-    return false;
+    return {'success': false, 'isNewUser': false};
   }
   
   // 3. 서버에 idToken 전달하여 자체 토큰 발급
   try {
     final dio = Dio();
-    final baseUrl = '${dotenv.env['API_URL']!}/api/v1/token/google';
+    final loginUrl = dotenv.env['LOGIN_API_URL']!;
       
     final response = await dio.post(
-      baseUrl,
+      loginUrl,
       queryParameters: {
         'idToken': idToken
       },
@@ -66,13 +49,31 @@ Future<bool> performGoogleLogin() async {
     final refreshToken = data['refreshToken'];
 
     // 4. 토큰 저장
-    await SecureTokenStorage.saveToken(accessToken);
-    await SecureTokenStorage.saveRefreshToken(refreshToken);
+    await SecureTokenStorage.clear();
+    await SecureTokenStorage.saveToken(accessToken); // 액세스 토큰 저장
+    if(await SecureTokenStorage.getRefreshToken() == null) {
+      await SecureTokenStorage.saveRefreshToken(refreshToken); // 리프레시 토큰 저장
+    }
     
-    return true; // 로그인 성공
+    // 5. 사용자 프로필 정보 확인 (기존 사용자인지 새로운 사용자인지 판단)
+    bool isNewUser = true;
+    try {
+      final profileDio = Dio(BaseOptions(
+        baseUrl: dotenv.env['API_URL']!,
+        headers: {'Authorization': 'Bearer $accessToken'},
+      ));
+      
+      await profileDio.get('api/v1/pet/default');
+      isNewUser = false; // 프로필 정보가 있으면 기존 사용자
+    } catch (e) {
+      // 404 에러 등으로 프로필이 없으면 새로운 사용자
+      isNewUser = true;
+    }
+    
+    return {'success': true, 'isNewUser': isNewUser}; // 로그인 성공
   } catch (e) {
     print('Login failed: $e');
-    return false; // 로그인 실패
+    return {'success': false, 'isNewUser': false}; // 로그인 실패
   }
 }
 

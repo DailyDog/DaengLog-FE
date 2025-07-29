@@ -5,16 +5,12 @@ import 'package:daenglog_fe/common/widgets/home_main.widgets/past_photo_item.dar
 import 'package:daenglog_fe/common/widgets/home_main.widgets/photo_card.dart'; // 사진 카드 위젯
 import 'package:daenglog_fe/common/widgets/home_main.widgets/tap_chip.dart'; // 카테고리 탭 위젯
 // 홈 화면 패키지
-import 'package:daenglog_fe/features/homeScreen/home_prompt_sec.dart';
 // 플러터 위젯 패키지
 import 'package:flutter/material.dart';
 
 // dio 패키지
-import 'package:dio/dio.dart';
 // retrofit 패키지
-import 'package:retrofit/retrofit.dart';
 // json 패키지
-import 'package:json_annotation/json_annotation.dart';
 // 홈 스크린 패키지
 import 'package:daenglog_fe/api/homeScreen/album_detail_api.dart';
 import 'package:daenglog_fe/api/homeScreen/category_api.dart';
@@ -25,15 +21,12 @@ import 'package:daenglog_fe/models/homeScreen/category.dart';
 import 'package:daenglog_fe/models/weather.dart';
 
 // 토큰 저장소 패키지
-import 'package:daenglog_fe/utils/secure_token_storage.dart';
 
 // 프로필 패키지
 import 'package:daenglog_fe/api/homeScreen/profile_detail_api.dart';
 import 'package:daenglog_fe/models/homeScreen/profile.dart';
 
 // 날씨 패키지
-import 'package:daenglog_fe/api/weather/weather_api.dart';
-import 'package:daenglog_fe/models/weather.dart';
 
 // 홈 메인 화면 위젯
 class HomeMainScreen extends StatefulWidget {
@@ -473,13 +466,6 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                             scrollDirection: Axis.horizontal,
                             children: [
                               // for(var i = 0; i < 3; i++)
-                              PastPhotoItem(
-                                  imagePath: "assets/images/mango1.jpg",
-                                  date: "12/3"),
-                              PastPhotoItem(
-                                  imagePath: "assets/images/mango2.jpg", date: "3/2"),
-                              PastPhotoItem(
-                                  imagePath: "assets/images/mango3.jpg", date: "4/1"),
                             ],
                           ),
                         ),
