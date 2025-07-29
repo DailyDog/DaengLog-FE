@@ -36,7 +36,6 @@ import 'features/chat_photo/chat_photo.dart';
 import 'features/family_share/send/family_share_share.dart';
 import 'features/family_share/send/family_send.dart';
 import 'features/family_share/receive/envelope_receive.dart';
-import 'features/family_share/receive/envelope_open.dart';
 
 // 홈스크린 화면
 import 'features/homeScreen/home_main.dart';
@@ -139,7 +138,6 @@ class MyApp extends StatelessWidget {
         },
         '/family_send': (context) => const FamilySendScreen(), // 가족 공유 화면
         '/envelope_receive': (context) => const EnvelopeReceiveScreen(), // 가족 공유 화면
-        '/open_envelope': (context) => const EnvelopeOpenScreen(), // 편지 열기 화면
 
         // 마켓 화면
         '/close': (context) => const Close(),  // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
