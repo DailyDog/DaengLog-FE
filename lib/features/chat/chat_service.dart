@@ -280,6 +280,7 @@ class _ChatServiceState extends State<ChatService> {
 //--------------------------------- 하단 네비게이션 바 위 영역 --------------------------------- 
       // 입력 및 전송 영역
       bottomSheet: ChatBottomWidget(
+        color: 0XFFF56F01,
         textController: _textController,
         selectedImageXFile: _selectedImageXFile,
         onImageSelected: (img) {

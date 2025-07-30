@@ -64,19 +64,20 @@ class _HomePromptScreenState extends State<HomePromptScreen> {
                   child: Container(
                     color: Colors.white,
                     child: ChatBottomWidget(
-                    textController: _controller,
-                    selectedImageXFile: _pickedImage,
-                    onImageSelected: _onImageSelected,
-                    onSendPressed: _goToChatService,
-                    onCancelPressed: () {
-                      // 중단 콜백 추가
-                    },
-                    onErrorCleared: () {
-                      setState(() => _error = null);
-                    },
-                    loading: _loading,
-                    error: _error,
-                  ),
+                      color: 0XFFF56F01,
+                      textController: _controller,
+                      selectedImageXFile: _pickedImage,
+                      onImageSelected: _onImageSelected,
+                      onSendPressed: _goToChatService,
+                      onCancelPressed: () {
+                        // 중단 콜백 추가
+                      },
+                      onErrorCleared: () {
+                        setState(() => _error = null);
+                      },
+                      loading: _loading,
+                      error: _error,
+                    ),
                   )
                 ),
                 

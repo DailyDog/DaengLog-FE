@@ -1,8 +1,23 @@
 // 망고의 일주일 영역
+import 'package:daenglog_fe/models/homeScreen/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:daenglog_fe/common/widgets/home_main.widgets/tap_chip.dart';
+import 'package:daenglog_fe/models/homeScreen/category.dart';
+import 'package:daenglog_fe/api/homeScreen/category_api.dart';
+import 'package:daenglog_fe/models/homeScreen/diary.dart';
+import 'package:daenglog_fe/api/homeScreen/album_detail_api.dart';
+import 'package:daenglog_fe/common/widgets/home_main.widgets/photo_card.dart';
 
-class MiddleSectionWidget extends StatelessWidget {
-  const MiddleSectionWidget({super.key});
+class MiddleSectionWidget extends StatefulWidget {
+  MiddleSectionWidget({super.key, required this.profile});
+  Profile? profile;
+
+  @override
+  State<MiddleSectionWidget> createState() => _MiddleSectionWidgetState();
+}
+
+class _MiddleSectionWidgetState extends State<MiddleSectionWidget> {
+  String selectedKeyword = "전체";
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +43,7 @@ class MiddleSectionWidget extends StatelessWidget {
                     text: TextSpan(
                       children: [
                         TextSpan(
-                          text: getPetName(),
+                          text: widget.profile?.petName ?? '',
                           style: const TextStyle(
                             color: Colors.orange,
                             fontWeight: FontWeight.bold,
@@ -59,11 +74,11 @@ class MiddleSectionWidget extends StatelessWidget {
                         if (snapshot.connectionState == ConnectionState.waiting) {
                           return const Center(child: CircularProgressIndicator());
                         } else if (snapshot.hasError) {
-                          return const Center(child: Text('카테고리 불러오기 실'));
+                          return const Center(child: Text('카테고리 불러오기 실패'));
                         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
                           return const Center(child: Text('카테고리 없음'));
                         }
-
+                        final length = snapshot.data!.length;
                         final categories = snapshot.data!;
                         return Row(
                           children: [
@@ -81,6 +96,7 @@ class MiddleSectionWidget extends StatelessWidget {
                                 ),
                               ),
                             ),
+                            //나중에 스크롤바 구현하기
                           ],
                         );
                       },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:daenglog_fe/common/widgets/others/selectable_image.dart';
 import 'dart:async';
 
+// 프롬프트 입력 위젯
 class ChatBottomWidget extends StatefulWidget {
   final TextEditingController textController; // 텍스트 입력 컨트롤러 추가
   final dynamic selectedImageXFile; // 선택된 이미지 파일 추가
@@ -11,9 +12,13 @@ class ChatBottomWidget extends StatefulWidget {
   final VoidCallback? onErrorCleared; // 에러 메시지 지우기 콜백 추가
   final bool loading; // 로딩 상태 추가
   final String? error; // 에러 메시지 추가
+  final int? color;
+  final double? borderWidth; // 테두리 너비 추가
+  final double? borderRadius; // 테두리 둥글기 추가
 
   const ChatBottomWidget({
     super.key,
+    this.color,
     required this.textController,
     required this.selectedImageXFile,
     required this.onImageSelected,
@@ -22,6 +27,8 @@ class ChatBottomWidget extends StatefulWidget {
     this.onErrorCleared,
     this.loading = false,
     this.error,
+    this.borderWidth,
+    this.borderRadius,
   });
 
   @override
@@ -92,8 +99,8 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                           Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(color: Color(0xFFFF5F01), width: 1),
+                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 25),
+                  border: Border.all(color: widget.color != null ? Color(widget.color!) : Color(0xFFFF5F01), width: widget.borderWidth ?? 1),
                 ),
               child: Row(
                 children: [
