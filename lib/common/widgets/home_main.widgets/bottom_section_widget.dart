@@ -3,9 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/models/homeScreen/widget_item.dart';
 import 'package:daenglog_fe/common/componenet/bottom_section_widget/widget_section_modal.dart';
+import 'package:daenglog_fe/models/homeScreen/profile.dart';
 
 class BottomSectionWidget extends StatefulWidget {
-  const BottomSectionWidget({super.key});
+  const BottomSectionWidget({super.key, required this.profile});
+  final Profile? profile;
 
   @override
   State<BottomSectionWidget> createState() => _BottomSectionWidgetState();
@@ -42,8 +44,8 @@ class _BottomSectionWidgetState extends State<BottomSectionWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      color: const Color(0XFFF9F9F9),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -52,10 +54,10 @@ class _BottomSectionWidgetState extends State<BottomSectionWidget> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.2,
+              crossAxisCount: 2, // 2개씩 표시
+              crossAxisSpacing: 12, // 가로 간격
+              mainAxisSpacing: 12, // 세로 간격
+              childAspectRatio: 1, // 위젯 비율
             ),
             itemCount: selectedWidgets.length + 1, // 위젯 개수 + 선택 버튼 1개
             itemBuilder: (context, index) {
@@ -93,14 +95,12 @@ class _BottomSectionWidgetState extends State<BottomSectionWidget> {
         elevation: 8,
         borderRadius: BorderRadius.circular(12),
         child: Container(
-          width: 150,
-          height: 120,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -111,9 +111,9 @@ class _BottomSectionWidgetState extends State<BottomSectionWidget> {
                     fontWeight: FontWeight.bold,
                     color: Colors.black,
                   ),
-                  overflow: TextOverflow.ellipsis,
+                  overflow: TextOverflow.ellipsis, // 텍스트 오버플로우 처리
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 8), // 위젯 간격
                 Expanded(
                   child: Text(
                     widget.description,
@@ -121,12 +121,13 @@ class _BottomSectionWidgetState extends State<BottomSectionWidget> {
                       fontSize: 12,
                       color: Colors.grey,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2, // 최대 2줄까지 표시
+                    overflow: TextOverflow.ellipsis, // 텍스트 오버플로우 처리
                   ),
                 ),
+                const SizedBox(height: 8), // 위젯 간격
                 Align(
-                  alignment: Alignment.bottomRight,
+                  alignment: Alignment.bottomRight, // 아이콘 위치
                   child: Icon(
                     widget.icon,
                     color: widget.color,

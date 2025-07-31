@@ -12,18 +12,15 @@ import 'package:flutter/material.dart';
 // retrofit 패키지
 // json 패키지
 // 홈 스크린 패키지
-import 'package:daenglog_fe/api/homeScreen/album_detail_api.dart';
-import 'package:daenglog_fe/api/homeScreen/category_api.dart';
 import 'package:daenglog_fe/api/weather/weather_api.dart';
 // 모델 패키지
 import 'package:daenglog_fe/models/homeScreen/diary.dart';
-import 'package:daenglog_fe/models/homeScreen/category.dart';
 import 'package:daenglog_fe/models/homeScreen/weather.dart';
 
 // 토큰 저장소 패키지
 
 // 프로필 패키지
-import 'package:daenglog_fe/api/homeScreen/profile_detail_api.dart';
+import 'package:daenglog_fe/api/pets/profile_detail_api.dart';
 import 'package:daenglog_fe/models/homeScreen/profile.dart';
 
 // 날씨 패키지
@@ -39,82 +36,11 @@ class HomeMainScreen extends StatefulWidget {
 class _HomeMainScreenState extends State<HomeMainScreen> {
   String selectedKeyword = "전체"; // 기본값
   Profile? _profile; // 프로필 정보 변수
-
-  // 날씨 상태에 따른 이모지 반환
-  String _getWeatherEmoji(String weather) {
-    switch (weather) {
-      case '맑음':
-      case '맑은':
-        return '☀️';
-      case '흐림':
-      case '구름':
-        return '☁️';
-      case '비':
-      case '소나기':
-      case '가을비':
-        return '🌧️';
-      case '눈':
-      case '폭설':
-        return '❄️';
-      case '안개':
-      case '짙은안개':
-        return '🌫️';
-      case '천둥번개':
-      case '번개':
-        return '⛈️';
-      case '우박':
-        return '🧊';
-      case '황사':
-      case '미세먼지':
-        return '🌪️';
-      case '더움':
-      case '폭염':
-        return '🔥';
-      case '추움':
-      case '한파':
-        return '🥶';
-      default:
-        return '🌤️';
-    }
-  }
+  late ScrollController _scrollController; // 스크롤 컨트롤러 추가
+  double _lastScrollPosition = 0.0; // 마지막 스크롤 위치
 
   // 날씨 상태에 따른 설명 반환
-  String _getWeatherDescription(String weather) {
-    switch (weather) {
-      case '맑음':
-      case '맑은':
-        return '산책하기 완벽한 날씨!';
-      case '흐림':
-      case '구름':
-        return '산책하기 좋은 날씨';
-      case '비':
-      case '소나기':
-      case '가을비':
-        return '우산과 레인코트 필수!';
-      case '눈':
-      case '폭설':
-        return '미끄러지지 않게 조심하세요';
-      case '안개':
-      case '짙은안개':
-        return '시야가 좋지 않아요';
-      case '천둥번개':
-      case '번개':
-        return '실내에서만 놀아주세요';
-      case '우박':
-        return '위험하니 실내에서만!';
-      case '황사':
-      case '미세먼지':
-        return '마스크 착용 필수!';
-      case '더움':
-      case '폭염':
-        return '시원한 곳에서만 산책하세요';
-      case '추움':
-      case '한파':
-        return '따뜻하게 입고 나가세요';
-      default:
-        return '산책하기 좋은 날씨';
-    }
-  }
+
 
   // 디폴트 프로필 정보 가져오기
   Future<Profile> _getProfile() async {
@@ -128,94 +54,122 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
     _getProfile(); // Load profile data when screen initializes
   }
 
   @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // 스크롤 리스너 - 아래로 스크롤하는 것을 막음
+  void _onScroll() {
+    // 스크롤이 맨 아래에 도달했을 때 더 이상 아래로 스크롤하지 못하게 함
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+      // 이미 맨 아래에 있으면 더 이상 스크롤하지 않음
+    }
+  }
+
+  // 커스텀 스크롤 물리학 - 위로는 스크롤 가능, 아래로는 스크롤 불가
+  ScrollPhysics _getCustomScrollPhysics() {
+    return const NeverScrollableScrollPhysics();
+  }
+
+  @override
   Widget build(BuildContext context) {
+
+    // 날씨 상태에 따른 배경 이미지 설정
+    String backgroundImage = 'assets/images/home/sun.png';
+    final weather = WeatherApi().getWeather();
+    if(weather == '폭염' || weather == '맑음') {
+      backgroundImage = 'assets/images/home/sun.png';
+    } else if(weather == '흐림' || weather == '소나기' || weather == '비' || weather == '폭우' || weather == '비/눈') {
+      backgroundImage = 'assets/images/home/rain.png';
+    } else if(weather == '한파' || weather == '눈' || weather == '눈/비') {
+      backgroundImage = 'assets/images/home/snow.png';
+    }
+
     return Scaffold(
-      backgroundColor: const Color(0xFFFF6600), // 배경 변경 (둥근 모서리 효과 보이게)
-      body: Column(
-        children: [
-          // 상단 오렌지 배경 + 강아지 사진 + 텍스트 (고정 영역)
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFF6600),
-            ),
-            padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white, width: 4),
-                    shape: BoxShape.circle,
-                  ),
-                  child: CircleAvatar(
-                    radius: 56,
-                    backgroundImage:
-                        AssetImage('assets/images/home/mango_image.png'),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(backgroundImage),
+            fit: BoxFit.cover,
+            alignment: Alignment.topCenter,
+          ),
+        ),
+        child: NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) {
+            return [
+                SliverAppBar(
+                  expandedHeight: 180,
+                  centerTitle: false,
+                  floating: true,
+                  pinned: true,
+                  backgroundColor: Colors.transparent, 
+                  elevation: 0,
+                  flexibleSpace: FlexibleSpaceBar(
+                    background: Container(
+                      padding: const EdgeInsets.fromLTRB(40, 0, 0, 50),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FutureBuilder<Weather>(
+                            future: weather,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                final weather = snapshot.data!;
+                                return Text('오늘 날씨는\n\'${weather.weather}\' 입니다',
+                                    style: const TextStyle(color: Color(0XFFFFFFFF), fontFamily: 'Yeongdeok-Sea', fontWeight: FontWeight.w700, fontSize: 27, height: 1.2));
+                              } else {
+                                return const SizedBox.shrink();
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 24),
-                Expanded(
+            ];
+          },
+          body: Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: CustomScrollView(
+              physics: _getCustomScrollPhysics(),
+              slivers: [
+                SliverToBoxAdapter(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('${_profile?.petName}의 하루',
-                          style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white)),
-                      const SizedBox(height: 8),
-                      const Text('기분 | 🥰 최고',
-                          style:
-                              TextStyle(color: Colors.white, fontSize: 16)),
-                      // 날씨 정보를 동적으로 표시
-                      FutureBuilder<Weather>(
-                        future: WeatherApi().getWeather(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            final weather = snapshot.data!;
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('날씨 | ${_getWeatherEmoji(weather.weather)} ${_getWeatherDescription(weather.weather)}',
-                                    style: const TextStyle(color: Colors.white, fontSize: 16)),
-                                const SizedBox(height: 4),
-                                Text('${weather.location} (${_getWeatherEmoji(weather.weather)}${weather.weather}, 미세먼지 ${weather.airQuality})',
-                                    style: const TextStyle(color: Colors.white, fontSize: 12)),
-                              ],
-                            );
-                          } else {
-                            return const SizedBox.shrink(); // 데이터 로딩 중 빈 공간 처리
-                          }
-                        },
+                      TopSectionWidget(profile: _profile),
+                      // 회색 박스 추가
+                      Container(
+                        width: double.infinity,
+                        height: 8,
+                        color: Colors.grey[200],
                       ),
-                    ],
+                      MiddleSectionWidget(profile: _profile),
+                      BottomSectionWidget(profile: _profile)
+                    ]
                   ),
                 ),
-                const SizedBox.shrink(),
               ],
             ),
           ),
-
-          // 스크롤 가능한 영역 (오늘의 망고의 기분은 어떤가요? 부터)
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TopSectionWidget(),
-                  MiddleSectionWidget(profile: _profile),
-                  BottomSectionWidget(),
-                ]
-              )
-            ),
-          ),
-        ],
-      ),
+        ),
+    ),
       bottomNavigationBar: commonBottomNavBar(
         context: context,
         currentIndex: 0,

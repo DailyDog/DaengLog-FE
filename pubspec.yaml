@@ -66,6 +66,9 @@ flutter:
     - assets/images/home/mypage_icon.png
     - assets/images/home/record_icon.png
     - assets/images/home/mango_image.png
+    - assets/images/home/rain.png
+    - assets/images/home/sun.png
+    - assets/images/home/snow.png
     
     # 스플래쉬
     - assets/images/splash/entire.png 

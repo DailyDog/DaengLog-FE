@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/models/homeScreen/profile.dart';
-import 'package:daenglog_fe/api/homeScreen/profile_detail_api.dart';
+import 'package:daenglog_fe/api/pets/profile_detail_api.dart';
 
 class DefaultProfile extends ChangeNotifier {
   

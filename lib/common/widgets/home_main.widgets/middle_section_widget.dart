@@ -1,12 +1,9 @@
 // 망고의 일주일 영역
-import 'package:daenglog_fe/models/homeScreen/profile.dart';
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/common/widgets/home_main.widgets/tap_chip.dart';
-import 'package:daenglog_fe/models/homeScreen/category.dart';
-import 'package:daenglog_fe/api/homeScreen/category_api.dart';
-import 'package:daenglog_fe/models/homeScreen/diary.dart';
-import 'package:daenglog_fe/api/homeScreen/album_detail_api.dart';
 import 'package:daenglog_fe/common/widgets/home_main.widgets/photo_card.dart';
+import 'package:daenglog_fe/models/homeScreen/profile.dart';
+import 'package:daenglog_fe/models/homeScreen/weekly.dart';
+import 'package:daenglog_fe/api/diary/album_weekly_api.dart';
 
 class MiddleSectionWidget extends StatefulWidget {
   MiddleSectionWidget({super.key, required this.profile});
@@ -17,8 +14,6 @@ class MiddleSectionWidget extends StatefulWidget {
 }
 
 class _MiddleSectionWidgetState extends State<MiddleSectionWidget> {
-  String selectedKeyword = "전체";
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -34,112 +29,145 @@ class _MiddleSectionWidgetState extends State<MiddleSectionWidget> {
             ),
             child: Container(
               width: double.infinity,
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+              color: const Color(0XFFF9F9F9),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  RichText(
-                    text: TextSpan(
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextSpan(
-                          text: widget.profile?.petName ?? '',
-                          style: const TextStyle(
-                            color: Colors.orange,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                text: widget.profile?.petName == '' ? 'OO' : widget.profile?.petName,
+                                style: const TextStyle(
+                                  color: Color(0XFFF56F01),
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 20,
+                                ),
+                              ),
+                              const TextSpan(
+                                text: "의 일주일",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontFamily: 'Pretendard',
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const TextSpan(
-                          text: "의 일주일",
+                        const SizedBox(height: 4),
+                        Text(
+                          "일주일동안 ${widget.profile?.petName == '' ? 'OO' : widget.profile?.petName}는 어떻게 지냈을까요?",
                           style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 18,
+                            color: Color(0XFF959595),
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "일주일동안 망고는 어떻게 지냈을까요?",
-                    style: TextStyle(color: Colors.grey[700]),
-                  ),
                   const SizedBox(height: 12),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: FutureBuilder<List<Category>>(
-                      future: CategoryApi().getCategory(),
-                      builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
-                        } else if (snapshot.hasError) {
-                          return const Center(child: Text('카테고리 불러오기 실패'));
-                        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                          return const Center(child: Text('카테고리 없음'));
-                        }
-                        final length = snapshot.data!.length;
-                        final categories = snapshot.data!;
-                        return Row(
-                          children: [
-                            TabChip(
-                              label: "전체",
-                              selected: selectedKeyword == "전체",
-                              onTap: () => setState(() => selectedKeyword = "전체"),
-                            ),
-                            ...categories.map(
-                              (category) => TabChip(
-                                label: category.categoryName,
-                                selected: selectedKeyword == category.categoryName,
-                                onTap: () => setState(
-                                  () => selectedKeyword = category.categoryName,
+                  Container(
+                    width: double.infinity,
+                    color: Colors.white,
+                    child: SizedBox(
+                      height: 180,
+                      child: FutureBuilder<List<Weekly>>( // 주간 일기 모델 api
+                        future: AlbumWeeklyApi().getAlbumWeekly(petId: widget.profile?.id ?? 0),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) { // 프로필이 없을 경우 등록 할 것임 이제
+                            return Column(
+                              mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
+                              crossAxisAlignment: CrossAxisAlignment.center, // 중앙 정렬
+                              children: [
+                                RichText(
+                                  textAlign: TextAlign.center,
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: '텅 . .',
+                                        style: TextStyle(
+                                          color: Color(0XFF959595),
+                                          fontFamily: 'Yeongdeok-Sea',
+                                          fontSize: 40,
+                                        ),
+                                      ),
+                                      const TextSpan(text: '\n'),
+                                      TextSpan(
+                                        text: '${widget.profile?.petName == '' ? 'OO' : widget.profile?.petName}는 관심이 필요해요',
+                                        style: TextStyle(
+                                          color: Color(0XFF959595),
+                                          fontFamily: 'Yeongdeok-Sea',
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                            //나중에 스크롤바 구현하기
-                          ],
-                        );
-                      },
+                                const SizedBox(height: 8),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/pet_info');
+                                  },
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_circle_outline,
+                                        size: 24,
+                                        color: Color(0XFF959595),
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        '프로필 등록하기',
+                                        style: TextStyle(
+                                        color: Color(0XFF959595),
+                                        fontFamily: 'Pretendard',
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                            return const Center(child: Text('데이터 불러오기 실패')); // ~ 관심이 필요해요로 위에처럼 바꿀거임
+                          }
+
+                          final albums = snapshot.data!;
+                          return ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            itemCount: albums.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 12),
+                            itemBuilder: (context, index) {
+                              final album = albums[index];
+                              return PhotoCard( // 포토카드 model맞게 수정해야됨
+                                imagePath: album.additionalProperties ?? '',
+                                title: album.additionalProperties ?? '',
+                                date: album.additionalProperties ?? '',
+                              );
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
-          ),
-        ),
-
-        // 두 번째 영역
-        Container(
-          color: Colors.white,
-          child: SizedBox(
-            height: 180,
-            child: FutureBuilder<List<Diary>>(
-              future: AlbumDetailApi().getAlbumDetail(keyword: selectedKeyword),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return const Center(child: Text('데이터 불러오기 실패'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text('데이터 없음'));
-                }
-
-                final albums = snapshot.data!;
-                return ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: albums.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 12),
-                  itemBuilder: (context, index) {
-                    final album = albums[index];
-                    return PhotoCard(
-                      imagePath: album.thumbnailUrl,
-                      title: album.content,
-                      date: album.date,
-                    );
-                  },
-                );
-              },
             ),
           ),
         ),

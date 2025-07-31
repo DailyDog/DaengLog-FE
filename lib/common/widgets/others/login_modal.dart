@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/api/login/login_api.dart';
+import 'package:daenglog_fe/api/social_login/login_api.dart';
 
 class LoginModal extends StatelessWidget {
   const LoginModal({Key? key}) : super(key: key);

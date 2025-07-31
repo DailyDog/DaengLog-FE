@@ -15,7 +15,7 @@ class ChatBottomWidget extends StatefulWidget {
   final int? color;
   final double? borderWidth; // 테두리 너비 추가
   final double? borderRadius; // 테두리 둥글기 추가
-
+  final double? height; // 높이 추가
   const ChatBottomWidget({
     super.key,
     this.color,
@@ -29,6 +29,7 @@ class ChatBottomWidget extends StatefulWidget {
     this.error,
     this.borderWidth,
     this.borderRadius,
+    this.height,
   });
 
   @override
@@ -188,7 +189,7 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: widget.height ?? 40),
           ],
         ),
       );

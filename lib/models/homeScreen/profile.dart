@@ -25,12 +25,12 @@ class Profile {
   factory Profile.fromJson(Map<String, dynamic> json) {
     return Profile(
       id: json['id'],
-      petName: json['name'],
+      petName: json['name'] ?? '', // 프로필 이름 만약 없으면 null
       birthDate: json['birthday'] ?? '', // API에서는 'birthday'
       petGender: json['gender'] ?? '',
       petSpecies: json['species'] ?? '',
       petFirstDiaryDate: json['firstDiaryDate'] ?? '',
-      petPersonality: List<String>.from(json['personalities'] ?? []), // API에서는 'personalities'
+      petPersonality: List<String>.from(json['personalities'] ?? []),
       petDaysSinceFirstDiary: json['daysSinceFirstDiary'] ?? 0,
       imagePath: json['profileImageUrl'] ?? '', 
    );
