@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 // 내부 패키지
 import 'package:daenglog_fe/common/widgets/others/default_profile.dart';
-import 'package:daenglog_fe/api/chat/create_prompt_api.dart';
+import 'package:daenglog_fe/api/diary/create_prompt_api.dart';
 import 'package:daenglog_fe/models/chat/gpt_response.dart';
 import 'package:daenglog_fe/common/widgets/chat/gpt_photo_card_widget.dart';
 import 'package:daenglog_fe/common/widgets/chat/gpt_loading_box_widget.dart';
@@ -280,6 +280,7 @@ class _ChatServiceState extends State<ChatService> {
 //--------------------------------- 하단 네비게이션 바 위 영역 --------------------------------- 
       // 입력 및 전송 영역
       bottomSheet: ChatBottomWidget(
+        color: 0XFFF56F01,
         textController: _textController,
         selectedImageXFile: _selectedImageXFile,
         onImageSelected: (img) {

@@ -1,20 +1,21 @@
 import 'package:geocoding/geocoding.dart'; // 위치 → 주소 변환용
 import 'package:daenglog_fe/services/location_service.dart';
 import 'package:dio/dio.dart';
-import 'package:daenglog_fe/models/weather.dart';
+import 'package:daenglog_fe/models/homeScreen/weather.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WeatherApi {
   final Dio _dio = Dio(); 
   final LocationService _locationService = LocationService();
 
-  final String apiKey = dotenv.env['KMA_API_KEY']!;
-
+  final String weatherApiKey = dotenv.env['KMA_API_KEY']!;
+  
   Future<Weather> getWeather() async {
+    print(weatherApiKey);
     try {
       final position = await _locationService.getCurrentPosition();
       final grid = _locationService.latLngToGrid(position.latitude, position.longitude);
-
+      
       // 주소(행정동명) 얻기
       List<Placemark> placemarks = await placemarkFromCoordinates(
         position.latitude,
@@ -23,26 +24,46 @@ class WeatherApi {
       );
       String locationName = '${placemarks.first.locality} ${placemarks.first.subLocality}';
 
-      final now = DateTime.now();
+      final now = DateTime.now().toLocal();
       final baseDate = '${now.year}${now.month.toString().padLeft(2, '0')}${now.day.toString().padLeft(2, '0')}';
-      final baseTime = '${now.hour.toString().padLeft(2, '0')}00';
+      
+      // 기상청 API는 매시각 40분 이후에 해당 시각 자료를 제공
+      // 예: 02:40 이후에 02:00 자료 제공
+      int hour = now.hour;
+      if (now.minute < 40) {
+        hour = hour - 1;
+        if (hour < 0) hour = 23;
+      }
+      final baseTime = '${hour.toString().padLeft(2, '0')}00';
 
       final response = await _dio.get(
-        'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst',
+        'https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst',
         queryParameters: {
-          'serviceKey': apiKey,
-          'pageNo': '1',
+          'serviceKey': weatherApiKey,
           'numOfRows': '10',
+          'pageNo': '1',
           'dataType': 'JSON',
           'base_date': baseDate,
           'base_time': baseTime,
-          'nx': grid['nx'],
-          'ny': grid['ny'],
+          // 'nx': grid['nx'].toString(),
+          // 'ny': grid['ny'].toString(),
+          'nx': '55',
+          'ny': '127',
         },
       );
 
+      print(response.data);
+      
       // 기상청 API 응답 파싱
-      final items = response.data['response']['body']['items']['item'] as List;
+      final itemsData = response.data['response']['body']['items']['item'];
+      List items;
+      
+      // items가 단일 객체인지 배열인지 확인
+      if (itemsData is List) {
+        items = itemsData;
+      } else {
+        items = [itemsData]; // 단일 객체를 배열로 변환
+      }
       
       String temperature = '0';
       String humidity = '0';
