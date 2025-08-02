@@ -2,7 +2,7 @@ import 'package:daenglog_fe/api/social_login/login_api.dart';
 import 'package:flutter/material.dart';
 
 class SocialLoginScreen extends StatelessWidget {
-  const SocialLoginScreen({Key? key}) : super(key: key);
+  const SocialLoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
