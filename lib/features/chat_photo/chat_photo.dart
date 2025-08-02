@@ -13,7 +13,7 @@ import 'package:daenglog_fe/features/chat_photo/image_custom.dart';
 import 'package:daenglog_fe/common/widgets/chat_photo/draw_custom.dart';
 import 'package:daenglog_fe/common/widgets/others/default_profile.dart';
 import 'package:provider/provider.dart';
-import 'package:daenglog_fe/utils/secure_token_storage.dart';
+import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 import 'package:daenglog_fe/common/widgets/others/login_modal.dart';
 import 'package:daenglog_fe/features/family_share/send/family_share_share.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';

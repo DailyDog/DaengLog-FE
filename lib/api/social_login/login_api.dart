@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:daenglog_fe/utils/secure_token_storage.dart';
+import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 

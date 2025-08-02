@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/models/chat/gpt_response.dart';
-import 'package:daenglog_fe/utils/secure_token_storage.dart';
-import 'package:daenglog_fe/common/widgets/others/login_modal.dart';
 
 class GptPhotoCardWidget extends StatelessWidget {
   final String formattedDate;
