@@ -5,6 +5,10 @@ Widget commonBottomNavBar({
   required BuildContext context,
   int currentIndex = 0,
 }) {
+  // 화면 크기 가져오기
+  final screenWidth = MediaQuery.of(context).size.width;
+  final screenHeight = MediaQuery.of(context).size.height;
+  
   // 아이콘과 라벨 정의
   const items = [
     _NavBarItem(
@@ -38,14 +42,17 @@ Widget commonBottomNavBar({
         Navigator.pushReplacementNamed(context, '/close');
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/close');
+        Navigator.pushReplacementNamed(context, '/my_page');
         break;
     }
   }
 
   return Container(
     color: backgroundColor,
-    padding: const EdgeInsets.only(top: 10, bottom: 8),
+    padding: EdgeInsets.only(
+      top: screenHeight * 0.012, // 화면 높이의 1.2%
+      bottom: screenHeight * 0.01, // 화면 높이의 1%
+    ),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround, // 양쪽 여백 균등 분배
       children: List.generate(items.length, (index) {
@@ -58,11 +65,11 @@ Widget commonBottomNavBar({
             children: [
               Image.asset(
                 items[index].iconPath,
-                width: 55,
-                height: 55,
+                width: screenWidth * 0.14, // 화면 너비의 14%
+                height: screenWidth * 0.14, // 화면 너비의 14%
                 color: selected ? selectedColor : unselectedColor,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: screenHeight * 0.02), // 화면 높이의 5%
             ],
           ),
         );

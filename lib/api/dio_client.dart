@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../utils/secure_token_storage.dart';
+import '../shared/utils/secure_token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 

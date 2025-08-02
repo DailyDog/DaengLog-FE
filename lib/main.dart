@@ -1,5 +1,4 @@
 // main.dart
-import 'package:daenglog_fe/features/collect_info/loading_test.dart';
 import 'package:daenglog_fe/features/collect_info/pet_info.dart';
 import 'package:daenglog_fe/features/onboding/onboding_fth.dart';
 import 'package:flutter/material.dart';
@@ -40,7 +39,10 @@ import 'features/family_share/receive/envelope_receive.dart';
 // 홈스크린 화면
 import 'features/homeScreen/home_main.dart';
 
-// 기록 화면
+// 마이페이지 화면
+import 'features/mypage/my_page.dart';
+import 'features/mypage/my_info_page.dart';
+import 'features/mypage/alarm_page.dart';
 
 // 마켓 화면 -> 임시 대표화면
 import 'features/purchase/close.dart';
@@ -66,7 +68,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/home_main', // 초기 화면 설정
+      initialRoute: '/my_page', // 초기 화면 설정
       // routes 추가
       routes: {
         // 초기 화면
@@ -141,6 +143,11 @@ class MyApp extends StatelessWidget {
 
         // 마켓 화면
         '/close': (context) => const Close(),  // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
+
+        // 마이페이지 화면
+        '/my_page': (context) => const MyPage(), // 마이페이지 화면
+        '/my_info_page': (context) => const MyInfoPage(), // 마이페이지 화면
+        '/alarm_page': (context) => const AlarmPage(), // 알림 화면
       },
       // 라우트 설정 종료
     );

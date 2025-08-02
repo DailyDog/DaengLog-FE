@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/utils/secure_token_storage.dart';
+import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});

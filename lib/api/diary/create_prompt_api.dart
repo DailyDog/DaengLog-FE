@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:daenglog_fe/utils/secure_token_storage.dart';
+import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:daenglog_fe/models/chat/gpt_response.dart';
 import 'package:daenglog_fe/api/dio_client.dart';
