@@ -1,4 +1,4 @@
-import 'package:daenglog_fe/api/pets/pet_info.dart';
+import 'package:daenglog_fe/api/pets/models/pets_info.dart';
 import 'package:flutter/material.dart';
 
 class PetEditModal extends StatelessWidget {

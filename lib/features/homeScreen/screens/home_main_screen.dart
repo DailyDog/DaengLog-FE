@@ -43,7 +43,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
 
   // 디폴트 프로필 정보 가져오기
   Future<DefaultProfile> _getProfile() async {
-    final profile = await DefaultProfileApi().getDefaultProfile();
+    final profile = await DefaultProfileApi().getDefaultProfile(); // json 파싱
     setState(() {
       _profile = profile;
     });

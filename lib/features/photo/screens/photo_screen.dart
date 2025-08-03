@@ -1,66 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'dart:ui' as ui;
-import 'dart:typed_data';
-import 'dart:io';
 import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
 import 'package:daenglog_fe/features/photo/widgets/painters/hand_drawn_wave_painter.dart';
-import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:daenglog_fe/features/photo/widgets/painters/drawing_painter.dart';
 import 'package:daenglog_fe/features/photo/widgets/customs/image_custom.dart';
 import 'package:daenglog_fe/features/photo/widgets/customs/draw_custom.dart';
-import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:daenglog_fe/features/photo/widgets/photo_app_bar.dart';
+import 'package:daenglog_fe/features/photo/widgets/photo_bottom_buttons.dart';
+import 'package:daenglog_fe/features/photo/providers/photo_screen_provider.dart';
+import 'package:daenglog_fe/features/photo/services/photo_service.dart';
+import 'package:daenglog_fe/features/photo/widgets/painters/drawing_painter.dart';
 import 'package:provider/provider.dart';
-import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
-import 'package:daenglog_fe/shared/widgets/login_modal.dart';
-import 'package:daenglog_fe/features/family_share/send/family_share_share.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-
-// 스티커 모델 클래스
-class StickerItem {
-  final IconData icon;
-  final String name;
-  final Color color;
-  final double size;
-
-  StickerItem({
-    required this.icon,
-    required this.name,
-    required this.color,
-    this.size = 40.0,
-  });
-}
-
-// 이미지 위에 배치된 스티커 모델
-class PlacedSticker {
-  final StickerItem sticker;
-  final Offset position;
-  final double scale;
-  final double rotation;
-
-  PlacedSticker({
-    required this.sticker,
-    required this.position,
-    this.scale = 1.0,
-    this.rotation = 0.0,
-  });
-
-  PlacedSticker copyWith({
-    StickerItem? sticker,
-    Offset? position,
-    double? scale,
-    double? rotation,
-  }) {
-    return PlacedSticker(
-      sticker: sticker ?? this.sticker,
-      position: position ?? this.position,
-      scale: scale ?? this.scale,
-      rotation: rotation ?? this.rotation,
-    );
-  }
-}
 
 class PhotoScreen extends StatefulWidget {
   const PhotoScreen({super.key});
@@ -70,183 +18,34 @@ class PhotoScreen extends StatefulWidget {
 }
 
 class _PhotoScreenState extends State<PhotoScreen> {
-  // --- 상태 변수 ---
-  bool isConfirmed = false; // 확정 플래그
-  Uint8List? capturedImageBytes; // 이미지 바이트 데이터
-  final GlobalKey contentKey = GlobalKey(); // 전체 캡처용 키
-  bool imageLoaded = false; // 이미지 로딩 플래그
-  bool isDecorateMode = false; // 일기 꾸미기 모드 플래그
-  bool isDrawingMode = false; // 그림 그리기 모드 플래그
-  final GlobalKey imageKey = GlobalKey(); // 이미지 위젯 키(좌표 변환용)
-
-  // --- 그림 그리기 관련 상태 ---
-  List<DrawPoint?> points = []; // 그리기 포인트(색상, 좌표, 두께)
-  Color selectedColor = Colors.red; // 현재 선택된 색상
-  bool isEraser = false; // 지우개 모드 여부
-  double strokeWidth = 4.0; // 선 두께
-
-  // --- 프레임 색상 관련 상태 ---
-  Color selectedFrameColor = const Color(0xFFFF6600); // 선택된 프레임 색상 (기본: 오렌지)
-
-  // --- 스티커 관련 상태 ---
-  StickerItem? selectedSticker; // 현재 선택된 스티커
-  List<PlacedSticker> placedStickers = []; // 이미지 위에 배치된 스티커들
-  PlacedSticker? selectedPlacedSticker; // 현재 선택된 배치된 스티커 (드래그/조작용)
-
-  // --- 이미지 캡처 ---
-  Future<void> captureAndConvertToJpg() async {
-    try {
-      // 프레임 색상 변경이 반영되도록 더 긴 지연 시간
-      await Future.delayed(const Duration(milliseconds: 200));
-      RenderRepaintBoundary boundary = contentKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      if (byteData != null) {
-        setState(() {
-          capturedImageBytes = byteData.buffer.asUint8List();
-          isConfirmed = true;
-        });
-      }
-    } catch (e) {
-      print('이미지 캡처 오류: $e');
-    }
-  }
-
-  // --- 이미지 공유 ---
-  void shareImage() async {
-    if (capturedImageBytes == null) return;
-    final directory = await getTemporaryDirectory();
-    final imagePath = '${directory.path}/photo_card.jpg';
-    final imageFile = File(imagePath);
-    await imageFile.writeAsBytes(capturedImageBytes!);
-    await Share.shareXFiles([
-      XFile(imagePath),
-    ]);
-  }
-
-  // --- 갤러리에 이미지 저장 ---
-  void saveImageToGallery() async {
-    if (capturedImageBytes == null) return;
-    
-    try {
-      final result = await ImageGallerySaver.saveImage(
-        capturedImageBytes!,
-        quality: 100,
-        name: 'daenglog_${DateTime.now().millisecondsSinceEpoch}',
-      );
-      
-      if (result['isSuccess'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('갤러리에 저장되었습니다!')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('저장에 실패했습니다.')),
-        );
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
-      );
-    }
-  }
+  final GlobalKey contentKey = GlobalKey();
+  final GlobalKey imageKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (context) => PhotoScreenProvider(),
+      child: Consumer<PhotoScreenProvider>(
+        builder: (context, provider, child) {
+          return _buildPhotoScreen(context, provider);
+        },
+      ),
+    );
+  }
 
-    final defaultProfile = context.watch<DefaultProfileProvider>();
-
-    // 일기 데이터
-    final gptResponse = ModalRoute.of(context)?.settings.arguments as DiaryGptResponse; // 일기 데이터
-    String content(String text, {int chunk = 26}) => RegExp('.{1,$chunk}').allMatches(text).map((m) => m.group(0)).join('\n'); // 일기 내용 줄바꿈
-    String formattedDate = gptResponse.date.length >= 10 // 날짜 포맷팅
-        ? DateFormat('yy.MM.dd').format(DateTime.parse(gptResponse.date))
-        : gptResponse.date; // 날짜 포맷팅 안될 때
-
-    // 반응형 처리
-    final size = MediaQuery.of(context).size; // 화면 크기
-    final double imageHeight = size.height * (isDecorateMode ? 0.45 : 0.35); // 이미지 높이
-    final double imageWidth = size.width * (isDecorateMode ? 0.7 : 0.8); // 이미지 너비
+  Widget _buildPhotoScreen(BuildContext context, PhotoScreenProvider provider) {
+    final gptResponse = ModalRoute.of(context)?.settings.arguments as DiaryGptResponse;
+    final size = MediaQuery.of(context).size;
+    final double imageHeight = size.height * (provider.isDecorateMode ? 0.45 : 0.35);
+    final double imageWidth = size.width * (provider.isDecorateMode ? 0.7 : 0.8);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFFFF6600)),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        centerTitle: true,
-        title: const Text('', style: TextStyle(fontFamily: 'Pretendard-Bold', color: Color(0xFF272727))),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: isDecorateMode
-                ? IconButton(
-                    icon: const Icon(Icons.save, color: Color(0xFFFF6600)),
-                    onPressed: () {
-                      setState(() {
-                        isDecorateMode = false;
-                      });
-                    },
-                  )
-                : Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: Image.asset(
-                          'assets/images/chat/send_icon.png',
-                          width: 24,
-                          height: 24,
-                        ),
-                        onPressed: () async {
-                          // 공유하기 버튼 토큰 체크
-                          final token = await SecureTokenStorage.getToken();
-                          if (token != null && token.isNotEmpty) {
-                            // 바텀 시트로 가족 공유 화면 표시
-                            final gptResponse = ModalRoute.of(context)?.settings.arguments as DiaryGptResponse;
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                              builder: (context) => FamilyShareScreen(
-                                sharedContent: gptResponse.content,
-                                sharedImagePath: gptResponse.imageUrl,
-                              ),
-                            );
-                          } else {
-                            await showLoginModal(context);
-                          }
-                        },
-                      ),
-                      IconButton(
-                        icon: Image.asset(
-                          'assets/images/chat/download_icon.png',
-                          width: 30,
-                          height: 30,
-                        ),
-                        onPressed: () async {
-                          // 다운로드 버튼 토큰 체크
-                          final token = await SecureTokenStorage.getToken();
-                          if (token != null && token.isNotEmpty ) {
-                            if (capturedImageBytes != null) {
-                              // 다운로드 기능 구현
-                              saveImageToGallery();
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('먼저 확정하기를 눌러주세요.')),
-                              );
-                            }
-                          } else {
-                            await showLoginModal(context);
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-          ),
-        ],
+      appBar: PhotoAppBar(
+        isDecorateMode: provider.isDecorateMode,
+        onSave: () => provider.setDecorateMode(false),
+        onDownload: () => _handleDownload(context, provider),
+        gptResponse: gptResponse,
       ),
       body: RepaintBoundary(
         key: contentKey,
@@ -256,452 +55,248 @@ class _PhotoScreenState extends State<PhotoScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // --- 그림 그리기 오버레이 ---
-                Center(
-                  child: Stack(
-                    children: [
-                      SizedBox(
-                        key: imageKey,
-                        width: imageWidth,
-                        height: imageHeight,
-                        child: Stack(
-                          children: [
-                            // 이미지
-                            Container(
-                              width: imageWidth,
-                              height: imageHeight,
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(32),
-                              ),
-                              clipBehavior: Clip.antiAlias,
-                              child: Image.network(
-                                gptResponse.imageUrl,
-                                fit: BoxFit.cover,
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) {
-                                    if (!imageLoaded) {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        setState(() {
-                                          imageLoaded = true;
-                                        });
-                                      });
-                                    }
-                                    return child;
-                                  } else {
-                                    return const Center(child: CircularProgressIndicator());
-                                  }
-                                },
-                                errorBuilder: (c, e, s) => Container(
-                                  color: Colors.grey[200],
-                                  child: const Icon(Icons.pets, size: 80, color: Color(0xFFFF6600)),
-                                ),
-                              ),
-                            ),
-                            // HandDrawnWave 테두리
-                            Positioned.fill(
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(32),
-                                ),
-                                child: CustomPaint(
-                                  painter: HandDrawnBorderPainter(
-                                    color: selectedFrameColor,
-                                    strokeWidth: 3.0,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // --- 그림 그리기 오버레이 위젯 ---
-                      DrawCustomWidget(
-                        isDrawingMode: isDrawingMode,
-                        imageKey: imageKey,
-                        imageWidth: imageWidth,
-                        imageHeight: imageHeight,
-                        points: points,
-                        isEraser: isEraser,
-                        selectedColor: selectedColor,
-                        onPanUpdate: (rel, color, strokeWidth) {
-                          setState(() {
-                            if (color == Colors.transparent) {
-                              // 지우개 모드: 해당 영역의 점들을 제거
-                              final eraserRadius = strokeWidth / 8.0; // 지우개 반지름을 더 작게
-                              final newPoints = <DrawPoint?>[];
-                              
-                              for (int i = 0; i < points.length; i++) {
-                                final point = points[i];
-                                if (point == null) {
-                                  newPoints.add(null);
-                                  continue;
-                                }
-                                
-                                final distance = (point.offset - rel).distance;
-                                if (distance >= eraserRadius) {
-                                  // 지우개 반지름 밖에 있는 점은 유지
-                                  newPoints.add(point);
-                                }
-                                // 지우개 반지름 안에 있는 점은 제거 (null로 대체하지 않음)
-                              }
-                              
-                              points.clear();
-                              points.addAll(newPoints);
-                            } else {
-                              // 일반 그리기 모드
-                              points = List.from(points)..add(DrawPoint(rel, color, strokeWidth));
-                            }
-                          });
-                        },
-                        onPanEnd: () {
-                          setState(() => points.add(null));
-                        },
-                      ),
-                      // --- 스티커 오버레이 ---
-                      if (isDecorateMode)
-                        Positioned.fill(
-                          child: GestureDetector(
-                            onTapDown: (details) {
-                              if (selectedSticker != null) {
-                                // 이미지 좌표계로 변환
-                                final RenderBox renderBox = imageKey.currentContext!.findRenderObject() as RenderBox;
-                                final localPosition = renderBox.globalToLocal(details.globalPosition);
-                                
-                                // 포토카드 전체 영역에서 스티커 배치 가능
-                                setState(() {
-                                  placedStickers.add(PlacedSticker(
-                                    sticker: selectedSticker!,
-                                    position: localPosition,
-                                  ));
-                                  selectedSticker = null; // 스티커 선택 해제
-                                });
-                              }
-                            },
-                            child: Stack(
-                              children: [
-                                // 배치된 스티커들 표시
-                                ...placedStickers.map((placedSticker) => Positioned(
-                                  left: placedSticker.position.dx - placedSticker.sticker.size / 2,
-                                  top: placedSticker.position.dy - placedSticker.sticker.size / 2,
-                                                                      child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          selectedPlacedSticker = placedSticker;
-                                        });
-                                      },
-                                      onLongPress: () {
-                                        // 스티커 삭제 확인 다이얼로그
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext context) {
-                                            return AlertDialog(
-                                              title: const Text('스티커 삭제'),
-                                              content: Text('${placedSticker.sticker.name} 스티커를 삭제하시겠습니까?'),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () => Navigator.of(context).pop(),
-                                                  child: const Text('취소'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      placedStickers.remove(placedSticker);
-                                                      selectedPlacedSticker = null;
-                                                    });
-                                                    Navigator.of(context).pop();
-                                                  },
-                                                  child: const Text('삭제'),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
-                                      },
-                                      onPanUpdate: (details) {
-                                        if (selectedPlacedSticker == placedSticker) {
-                                          setState(() {
-                                            final index = placedStickers.indexOf(placedSticker);
-                                            if (index != -1) {
-                                              final RenderBox renderBox = imageKey.currentContext!.findRenderObject() as RenderBox;
-                                              final localPosition = renderBox.globalToLocal(details.globalPosition);
-                                              
-                                              // 포토카드 전체 영역에서 이동 가능
-                                              placedStickers[index] = placedSticker.copyWith(
-                                                position: localPosition,
-                                              );
-                                            }
-                                          });
-                                        }
-                                      },
-                                      onPanEnd: (details) {
-                                        setState(() {
-                                          selectedPlacedSticker = null;
-                                        });
-                                      },
-                                    child: Transform.scale(
-                                      scale: placedSticker.scale,
-                                      child: Transform.rotate(
-                                        angle: placedSticker.rotation,
-                                        child: Container(
-                                          width: placedSticker.sticker.size,
-                                          height: placedSticker.sticker.size,
-                                          decoration: BoxDecoration(
-                                            color: selectedPlacedSticker == placedSticker 
-                                                ? Colors.blue.withOpacity(0.3)
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Icon(
-                                            placedSticker.sticker.icon,
-                                            color: placedSticker.sticker.color,
-                                            size: placedSticker.sticker.size,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                )).toList(),
-                              ],
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                Consumer<PhotoScreenProvider>(
+                  builder: (context, photoProvider, child) {
+                    return _buildImageSection(context, photoProvider, gptResponse, imageWidth, imageHeight);
+                  },
                 ),
                 const SizedBox(height: 20),
-                Text(
-                              gptResponse.title,
-                              style: const TextStyle(
-                                fontFamily: 'Yeongdeok-Sea',
-                                fontWeight: FontWeight.w600,
-                                fontSize: 26,
-                                color: Color(0xFF272727),
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                const SizedBox(height:10),
-                // --- 꾸미기 모드: 꾸미기 메뉴 ---
-                isDecorateMode // 꾸미기 모드일 때
-                  ? ImageCustomWidget( // 꾸미기 메뉴 목록
-                      onComplete: () {
-                        setState(() {
-                          isDecorateMode = false;
-                        });
-                      },
-                      onDrawingMode: () {
-                        setState(() {
-                          isDrawingMode = true;
-                        });
-                      },
-                      selectedColor: selectedColor,
-                      isEraser: isEraser,
-                      onColorChanged: (color) {
-                        setState(() {
-                          selectedColor = color;
-                          isEraser = false;
-                        });
-                      },
-                      onEraserToggle: () {
-                        setState(() {
-                          isEraser = true;
-                        });
-                      },
-                      selectedFrameColor: selectedFrameColor,
-                      onFrameColorChanged: (color) {
-                        setState(() {
-                          selectedFrameColor = color;
-                        });
-                        // 프레임 색상 변경 후 강제 리빌드 및 캡처 상태 초기화
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          setState(() {
-                            isConfirmed = false; // 캡처 상태 초기화
-                            capturedImageBytes = null; // 기존 캡처 데이터 초기화
-                          });
-                        });
-                      },
-                      onStickerSelected: (sticker) {
-                        setState(() {
-                          selectedSticker = StickerItem(
-                            icon: sticker.icon,
-                            name: sticker.name,
-                            color: const Color(0xFF272727),
-                            size: 40.0,
-                          );
-                        });
-                      },
-                    )
-                  // --- 꾸미기 모드가 아닐 때: 원래 본문 ---
-                  : Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ...content(gptResponse.content.replaceAll('\n', ' '))
-                              .split('\n')
-                              .map((line) => Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(left:30.0, right:15.0),
-                                        child: Text(
-                                          line,
-                                          style: const TextStyle(
-                                            fontFamily: 'Yeongdeok-Sea',
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 18,
-                                            color: Color(0xFF272727),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Container(
-                                        margin: const EdgeInsets.symmetric(horizontal: 20),
-                                        width: double.infinity,
-                                        height: 5,
-                                        child: HandDrawnWave(
-                                          color: selectedFrameColor,
-                                          strokeWidth: 2.3,
-                                          amplitude: 1,
-                                          segment: 3,
-                                          jitter: 1.5,
-                                        ),
-                                      ),
-                                    ],
-                                  )),
-                          const SizedBox(height: 5),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 30.0),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    formattedDate,
-                                    style: const TextStyle(
-                                      fontFamily: 'Yeongdeok-Sea',
-                                      fontSize: 19,
-                                      color: Color(0xFFEB0B0B),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Image.asset(
-                                    'assets/images/home/daeng.png',
-                                    width: 20,
-                                    height: 28,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height:4),
-                          Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 20),
-                            width: double.infinity,
-                            height: 5,
-                            child: HandDrawnWave(
-                              color: selectedFrameColor,
-                              strokeWidth: 2.3,
-                              amplitude: 1,
-                              segment: 3,
-                              jitter: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                _buildTitleSection(gptResponse),
+                const SizedBox(height: 10),
+                Consumer<PhotoScreenProvider>(
+                    builder: (context, photoProvider, child) {
+                      return _buildContentSection(context, photoProvider, gptResponse);
+                    },
+                  ),
               ],
             ),
           ),
         ),
       ),
-      // --- 하단 버튼: 꾸미기 모드일 때는 숨김 ---
-      bottomNavigationBar: isDecorateMode
+      bottomNavigationBar: provider.isDecorateMode
           ? null
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () async {
-                          if (isConfirmed) {
-                            // 클라우드 업로드 버튼일 때 토큰 체크
-                            final token = await SecureTokenStorage.getToken();
-                            if (token != null && token.isNotEmpty) {
-                              // 토큰이 있으면 클라우드 업로드 페이지로 이동
-                              Navigator.pushNamed(context, '/cloud_upload');
-                            } else {
-                              // 토큰이 없으면 로그인 페이지로 이동
-                              await showLoginModal(context);
-                            }
-                          } else {
-                            // 일기 꾸미기 버튼일 때
-                            setState(() {
-                              isDecorateMode = true;
-                            });
-                          }
-                        },
-                        style: OutlinedButton.styleFrom(
-                          backgroundColor: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
-                          side: const BorderSide(color: Color(0xFFFF6600)),
-                          foregroundColor: isConfirmed ? Colors.white : const Color(0xFFFF6600),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                          minimumSize: const Size.fromHeight(50),
-                        ),
-                        child: Text(
-                          isConfirmed ? '클라우드 업로드' : '일기 꾸미기',
-                          style: TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontWeight: isConfirmed ? FontWeight.w700 : FontWeight.w500,
-                            fontSize: isConfirmed ? 15 : 17,
-                            color: isConfirmed ? Colors.white : const Color(0xFFFF6600),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: imageLoaded ? (isConfirmed ? () async {
-                          // 공유하기 버튼일 때 토큰 체크
-                          final token = await SecureTokenStorage.getToken();
-                          if (token != null && token.isNotEmpty) {
-                            // 토큰이 있으면 공유 기능 실행
-                            shareImage();
-                          } else {
-                            // 토큰이 없으면 로그인 모달 표시
-                            await showLoginModal(context);
-                          }
-                        } : captureAndConvertToJpg) : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isConfirmed ? Colors.white : const Color(0xFFFF6600),
-                          foregroundColor: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
-                          side: isConfirmed ? const BorderSide(color: Color(0xFFFF6600)) : null,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                          minimumSize: const Size.fromHeight(50),
-                        ),
-                        child: Text(
-                          isConfirmed ? '공유하기' : '확정하기',
-                          style: TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 17,
-                            color: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          : PhotoBottomButtons(
+              isConfirmed: provider.isConfirmed,
+              imageLoaded: provider.imageLoaded,
+              onLeftButtonPressed: () => provider.setDecorateMode(true),
+              onRightButtonPressed: () => _captureImage(provider),
+              onSharePressed: () => PhotoService.shareImage(provider.capturedImageBytes!),
             ),
     );
+  }
+
+  Widget _buildImageSection(
+    BuildContext context,
+    PhotoScreenProvider provider,
+    DiaryGptResponse gptResponse,
+    double imageWidth,
+    double imageHeight,
+  ) {
+    return Center(
+      child: Stack(
+        children: [
+          SizedBox(
+            key: imageKey,
+            width: imageWidth,
+            height: imageHeight,
+            child: Stack(
+              children: [
+                // 이미지
+                Container(
+                  width: imageWidth,
+                  height: imageHeight,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Image.network(
+                    gptResponse.imageUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) {
+                        if (!provider.imageLoaded) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            provider.setImageLoaded(true);
+                          });
+                        }
+                        return child;
+                      } else {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                    },
+                    errorBuilder: (c, e, s) => Container(
+                      color: Colors.grey[200],
+                      child: const Icon(Icons.pets, size: 80, color: Color(0xFFFF6600)),
+                    ),
+                  ),
+                ),
+                // HandDrawnWave 테두리
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    child: CustomPaint(
+                      painter: HandDrawnBorderPainter(
+                        color: provider.selectedFrameColor,
+                        strokeWidth: 3.0,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+                     // 그림 그리기 오버레이
+           DrawCustomWidget(
+             isDrawingMode: provider.isDrawingMode,
+             imageKey: imageKey,
+             imageWidth: imageWidth,
+             imageHeight: imageHeight,
+             points: provider.points,
+             isEraser: provider.isEraser,
+             selectedColor: provider.selectedColor,
+             onPanUpdate: (rel, color, strokeWidth) {
+               if (color == Colors.transparent) {
+                 provider.erasePoints(rel, strokeWidth);
+               } else {
+                 provider.addDrawPoint(DrawPoint(rel, color, strokeWidth));
+               }
+             },
+             onPanEnd: () => provider.addNullPoint(),
+           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTitleSection(DiaryGptResponse gptResponse) {
+    return Text(
+      gptResponse.title,
+      style: const TextStyle(
+        fontFamily: 'Yeongdeok-Sea',
+        fontWeight: FontWeight.w600,
+        fontSize: 26,
+        color: Color(0xFF272727),
+      ),
+      textAlign: TextAlign.center,
+    );
+  }
+
+  Widget _buildContentSection(BuildContext context, PhotoScreenProvider provider, DiaryGptResponse gptResponse) {
+    final formattedDate = PhotoService.formatDate(gptResponse.date);
+    final formattedContent = PhotoService.formatContent(gptResponse.content.replaceAll('\n', ' '));
+
+    return provider.isDecorateMode
+        ? ImageCustomWidget(
+            onComplete: () => provider.setDecorateMode(false),
+            onDrawingMode: () => provider.setDrawingMode(true),
+            selectedColor: provider.selectedColor,
+            isEraser: provider.isEraser,
+            onColorChanged: (color) => provider.setSelectedColor(color),
+            onEraserToggle: () => provider.setEraserMode(true),
+            selectedFrameColor: provider.selectedFrameColor,
+            onFrameColorChanged: (color) => provider.setFrameColor(color),
+                         onStickerSelected: (sticker) {
+               // 기존 Sticker 타입을 사용하므로 provider에서 처리
+               print('선택된 스티커: ${sticker.name}');
+             },
+          )
+        : Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ...formattedContent.split('\n').map((line) => Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left: 30.0, right: 15.0),
+                          child: Text(
+                            line,
+                            style: const TextStyle(
+                              fontFamily: 'Yeongdeok-Sea',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 18,
+                              color: Color(0xFF272727),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 20),
+                          width: double.infinity,
+                          height: 5,
+                          child: HandDrawnWave(
+                            color: provider.selectedFrameColor,
+                            strokeWidth: 2.3,
+                            amplitude: 1,
+                            segment: 3,
+                            jitter: 1.5,
+                          ),
+                        ),
+                      ],
+                    )),
+                const SizedBox(height: 5),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 30.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(width: 8),
+                        Text(
+                          formattedDate,
+                          style: const TextStyle(
+                            fontFamily: 'Yeongdeok-Sea',
+                            fontSize: 19,
+                            color: Color(0xFFEB0B0B),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Image.asset(
+                          'assets/images/home/daeng.png',
+                          width: 20,
+                          height: 28,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20),
+                  width: double.infinity,
+                  height: 5,
+                  child: HandDrawnWave(
+                    color: provider.selectedFrameColor,
+                    strokeWidth: 2.3,
+                    amplitude: 1,
+                    segment: 3,
+                    jitter: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          );
+  }
+
+  Future<void> _captureImage(PhotoScreenProvider provider) async {
+    final bytes = await PhotoService.captureAndConvertToJpg(contentKey);
+    if (bytes != null) {
+      provider.setCapturedImageBytes(bytes);
+    }
+  }
+
+  void _handleDownload(BuildContext context, PhotoScreenProvider provider) {
+    if (provider.capturedImageBytes != null) {
+      PhotoService.saveImageToGallery(provider.capturedImageBytes!, context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('먼저 확정하기를 눌러주세요.')),
+      );
+    }
   }
 }
 

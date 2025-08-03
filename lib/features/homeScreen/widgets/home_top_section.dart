@@ -30,7 +30,7 @@ class _HomeTopSectionState extends State<HomeTopSection> {
     if (text.isEmpty || _pickedImage == null) return;
     Navigator.pushNamed(
       context,
-      '/chat_service',
+      '/chat_communication',
       arguments: {
         'prompt': text,
         'image': _pickedImage,

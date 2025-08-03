@@ -25,14 +25,14 @@ class DefaultProfile {
   factory DefaultProfile.fromJson(Map<String, dynamic> json) {
     return DefaultProfile(
       id: json['id'] ?? 0,
-      petName: json['petName'] ?? '',
+      petName: json['name'] ?? '',
       birthDate: json['birthDate'] ?? '',
-      petGender: json['petGender'] ?? '',
-      petSpecies: json['petSpecies'] ?? '',
-      petFirstDiaryDate: json['petFirstDiaryDate'] ?? '',
-      petPersonality: List<String>.from(json['petPersonality'] ?? []),
-      petDaysSinceFirstDiary: json['petDaysSinceFirstDiary'] ?? 0,
-      imagePath: json['imagePath'] ?? '',
+      petGender: json['gender'] ?? '',
+      petSpecies: json['species'] ?? '',
+      petFirstDiaryDate: json['firstDiaryDate'] ?? '',
+      petPersonality: List<String>.from(json['personality'] ?? []),
+      petDaysSinceFirstDiary: json['daysSinceFirstDiary'] ?? 0,
+      imagePath: json['profileImageUrl'] ?? '',
     );  
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/common/widgets/family_share/share_bottom.dart';
+import 'package:daenglog_fe/features/family_share/widgets/share_bottom_widget.dart';
 
 class FamilyShareScreen extends StatefulWidget {
   final String sharedContent;

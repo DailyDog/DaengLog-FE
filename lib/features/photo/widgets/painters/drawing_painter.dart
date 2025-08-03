@@ -35,5 +35,17 @@ class DrawingPainter extends CustomPainter {
   }
   
   @override
-  bool shouldRepaint(DrawingPainter old) => old.points != points || old.width != width || old.height != height;
+  bool shouldRepaint(DrawingPainter old) {
+    // points 리스트의 길이나 내용이 변경되면 리페인트
+    if (old.points.length != points.length) return true;
+    
+    // 각 포인트를 비교하여 변경사항이 있으면 리페인트
+    for (int i = 0; i < points.length; i++) {
+      if (i >= old.points.length) return true;
+      if (points[i] != old.points[i]) return true;
+    }
+    
+    // 크기가 변경되면 리페인트
+    return old.width != width || old.height != height;
+  }
 }

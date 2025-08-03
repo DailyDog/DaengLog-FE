@@ -32,9 +32,9 @@ import 'features/chat/screens/chat_communication_screen.dart';
 import 'features/photo/screens/photo_screen.dart';
 
 // 가족 공유 화면
-import 'features/family_share/send/family_share_share.dart';
-import 'features/family_share/send/family_send.dart';
-import 'features/family_share/receive/envelope_receive.dart';
+import 'features/family_share/screens/family_share_share.dart';
+import 'features/family_share/screens/family_send.dart';
+import 'features/family_share/screens/envelope_receive.dart';
 
 // 홈스크린 화면
 import 'features/homeScreen/screens/home_main_screen.dart';
@@ -68,7 +68,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/my_page', // 초기 화면 설정
+      initialRoute: '/login', // 초기 화면 설정
       // routes 추가
       routes: {
         // 초기 화면
@@ -145,7 +145,7 @@ class MyApp extends StatelessWidget {
         '/close': (context) => const Close(),  // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
 
         // 마이페이지 화면
-        '/my_page': (context) => const MyPage(), // 마이페이지 화면
+        '/my_page': (context) => const MyPageMainScreen(), // 마이페이지 화면
         '/my_info_page': (context) => const MyInfoPage(), // 마이페이지 화면
         '/alarm_page': (context) => const AlarmPage(), // 알림 화면
       },

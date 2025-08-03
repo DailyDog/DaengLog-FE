@@ -237,7 +237,7 @@ class ColorPickerWidget extends StatelessWidget {
 }
 
 // --- 그림 그리기 오버레이 위젯 ---
-class DrawCustomWidget extends StatelessWidget {
+class DrawCustomWidget extends StatefulWidget {
   final bool isDrawingMode;
   final GlobalKey imageKey;
   final double imageWidth;
@@ -262,34 +262,47 @@ class DrawCustomWidget extends StatelessWidget {
   });
 
   @override
+  State<DrawCustomWidget> createState() => _DrawCustomWidgetState();
+}
+
+class _DrawCustomWidgetState extends State<DrawCustomWidget> {
+  @override
   Widget build(BuildContext context) {
-    if (!isDrawingMode) return const SizedBox.shrink();
+    if (!widget.isDrawingMode) return const SizedBox.shrink();
 
     return Positioned(
       left: 0,
       top: 0,
-      width: imageWidth,
-      height: imageHeight,
+      width: widget.imageWidth,
+      height: widget.imageHeight,
       child: GestureDetector(
         // 드래그로 그림 그리기
         onPanUpdate: (details) {
-          final box = imageKey.currentContext!.findRenderObject() as RenderBox;
+          final box = widget.imageKey.currentContext!.findRenderObject() as RenderBox;
           final local = box.globalToLocal(details.globalPosition);
-          final rel = Offset(local.dx / imageWidth, local.dy / imageHeight); // 이미지 비율에 맞게 좌표 변환
+          final rel = Offset(local.dx / widget.imageWidth, local.dy / widget.imageHeight); // 이미지 비율에 맞게 좌표 변환
           
-          if (isEraser) {
+          if (widget.isEraser) {
             // 지우개 모드일 때는 해당 영역의 점들을 제거
-            onPanUpdate(rel, Colors.transparent, 8.0); // 지우개는 더 큰 반지름으로
+            widget.onPanUpdate(rel, Colors.transparent, 8.0); // 지우개는 더 큰 반지름으로
           } else {
             // 일반 그리기 모드
-            onPanUpdate(rel, selectedColor, 4.0);
+            widget.onPanUpdate(rel, widget.selectedColor, 4.0);
           }
+          
+          // 강제로 리빌드
+          setState(() {});
         },
         // 손 떼면 선 끊기(null로 구분)
-        onPanEnd: (details) => onPanEnd(),
-        child: CustomPaint(
-          size: Size(imageWidth, imageHeight),
-          painter: DrawingPainter(points, imageWidth, imageHeight),
+        onPanEnd: (details) {
+          widget.onPanEnd();
+          setState(() {});
+        },
+        child: RepaintBoundary(
+          child: CustomPaint(
+            size: Size(widget.imageWidth, widget.imageHeight),
+            painter: DrawingPainter(widget.points, widget.imageWidth, widget.imageHeight),
+          ),
         ),
       ),
     );

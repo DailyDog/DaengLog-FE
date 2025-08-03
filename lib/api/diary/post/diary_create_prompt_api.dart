@@ -59,7 +59,7 @@ class DiaryCreatePromptApi {
         return null;
       }
       // 401 에러 시 토큰 갱신 시도
-      if (e is DioException && e.response?.statusCode == 500) {
+      if (e is DioException && e.response?.statusCode == 401) {
         final refreshToken = await SecureTokenStorage.getRefreshToken();
         if (refreshToken != null) {
           try {
