@@ -1,4 +1,7 @@
 // main.dart
+import 'package:daenglog_fe/features/record/screens/record_main_screen.dart';
+import 'package:daenglog_fe/features/record/screens/image_upload_screen.dart';
+import 'package:daenglog_fe/features/record/providers/record_provider.dart';
 import 'package:daenglog_fe/features/pet_info/screens/pet_info_screen.dart';
 import 'package:daenglog_fe/features/onboding/screens/onboding_fth.dart';
 import 'package:flutter/material.dart';
@@ -53,8 +56,13 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env"); // .env 파일 로드
   runApp(
-    ChangeNotifierProvider( // 기본 프로필 정보 제공
-      create: (_) => DefaultProfileProvider(),
+    // ChangeNotifierProvider( // 기본 프로필 정보 제공
+    //   create: (_) => DefaultProfileProvider(),
+    MultiProvider( // 여러 provider 제공
+      providers: [
+        ChangeNotifierProvider(create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
+        ChangeNotifierProvider(create: (_) => RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
+      ],
       child: const MyApp(), // 앱 실행
     ),
   );
@@ -68,7 +76,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/login', // 초기 화면 설정
+      initialRoute: '/record_main', // 초기 화면 설정
       // routes 추가
       routes: {
         // 초기 화면
@@ -148,6 +156,10 @@ class MyApp extends StatelessWidget {
         '/my_page': (context) => const MyPageMainScreen(), // 마이페이지 화면
         '/my_info_page': (context) => const MyInfoPage(), // 마이페이지 화면
         '/alarm_page': (context) => const AlarmPage(), // 알림 화면
+
+        // 기록 화면
+        '/record_main': (context) => const RecordMainScreen(), // 기록 화면
+        '/image_upload': (context) => const ImageUploadScreen(), // 이미지 업로드 화면
       },
       // 라우트 설정 종료
     );

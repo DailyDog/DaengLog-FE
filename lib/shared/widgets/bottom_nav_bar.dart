@@ -36,7 +36,7 @@ Widget commonBottomNavBar({
         Navigator.pushReplacementNamed(context, '/home_main');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/close');
+        Navigator.pushReplacementNamed(context, '/record_main');
         break;
       case 2:
         Navigator.pushReplacementNamed(context, '/close');

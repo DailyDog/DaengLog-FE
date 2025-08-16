@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 // 반려동물 정보 입력 화면 위젯
 Widget buildPetInfoScreen({
+  required BuildContext? context,
   required int? currentStep, // 추가된 부분
   required String subject,
   required String title,
@@ -10,10 +11,26 @@ Widget buildPetInfoScreen({
   required String subtitle,
   required VoidCallback onPrevious,  // 이전 버튼 클릭 시 동작
   required VoidCallback? onNext,  // 다음 버튼 클릭 시 동작
+  int isFirst = 0, // 0: 이전+다음 버튼, 1: 다음 버튼만
   Widget? child, // 추가된 부분
 }) {
   bool isActive = false;
   return Scaffold(
+
+    appBar: isFirst != 0 ? AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        onPressed: () {
+          Navigator.pop(context!, '/home_main');
+        },
+        icon: const Icon(
+          Icons.arrow_left,
+          color: Color(0xFFFF5F01),
+          size: 30,
+        ),
+      ),
+    ) : null,
     
     body: Stack(
       children: [
@@ -39,15 +56,17 @@ Widget buildPetInfoScreen({
                       children: List.generate(4, (index) {
                         const labels = ['댕', '댕', '일', '기'];
                         bool isActive = false;
-                        if(currentStep != null) {
+                        if (currentStep != null) {
                           isActive = index <= currentStep;
                         }
                         return TextSpan(
                           text: labels[index],
                           style: TextStyle(
-                            fontFamily: 'Pretendard',
-                            fontSize: 20,
-                            color: isActive ? Color(0xFFFF5F01) : Color(0xFFADADAD),
+                          fontFamily: 'Pretendard',
+                          fontSize: 20,
+                          color: isActive
+                              ? Color(0xFFFF5F01)
+                              : Color(0xFFADADAD),
                           ),
                         );
                       }),
@@ -90,41 +109,62 @@ Widget buildPetInfoScreen({
     bottomNavigationBar: SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
-        child: Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: onPrevious, // 이전 버튼 클릭 시 동작
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFFF5F01)),
-                  foregroundColor: const Color(0xFFFF5F01),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
+        child: isFirst == 0
+            ? Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: onPrevious, // 이전 버튼 클릭 시 동작
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFFF5F01)),
+                        foregroundColor: const Color(0xFFFF5F01),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      child: const Text('이전', style: TextStyle(fontSize: 18)),
+                    ),
                   ),
-                  minimumSize: const Size.fromHeight(48),
-                ),
-                child: const Text('이전', style: TextStyle(fontSize: 18)),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: onNext, // 다음 버튼 클릭 시 동작
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF5F01),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(32),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: onNext, // 다음 버튼 클릭 시 동작
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF5F01),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      child: const Text('다음',
+                          style:
+                              TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    ),
                   ),
-                  minimumSize: const Size.fromHeight(48),
-                ),
-                child: const Text('다음',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              )
+            : Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: onNext, // 다음 버튼 클릭 시 동작
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF5F01),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                      child: const Text('다음',
+                          style:
+                              TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
       ),
     ),
   );
