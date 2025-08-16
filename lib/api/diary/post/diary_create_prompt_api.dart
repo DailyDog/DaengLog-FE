@@ -31,7 +31,7 @@ class DiaryCreatePromptApi {
       final Map<String, dynamic> queryParams = {
         'prompt': prompt,
         // 토큰이 있을 때만 petId 추가
-        if (token != null && token.isNotEmpty) 'petId': petId,
+        if(petId != null) 'petId': petId,
       };
 
       // FormData에는 image만 포함
