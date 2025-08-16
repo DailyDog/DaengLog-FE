@@ -49,6 +49,7 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
   @override
   Widget build(BuildContext context) {
     return buildPetInfoScreen(
+      context: context,
       currentStep: 1,
       subject: '반려동물의 ',
       title: '정보',

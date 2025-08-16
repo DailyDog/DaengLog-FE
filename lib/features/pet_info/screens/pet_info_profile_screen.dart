@@ -21,6 +21,7 @@ class _PetInformationProfileScreenState extends State<PetInformationProfileScree
   @override
   Widget build(BuildContext context) {
     return buildPetInfoScreen(
+      context: context,
       currentStep: 3,
       subject: widget.petName != null ? '${widget.petName}의 ' : '반려동물의 ',
       title: '프로필',

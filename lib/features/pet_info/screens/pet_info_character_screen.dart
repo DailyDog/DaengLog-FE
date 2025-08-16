@@ -56,6 +56,7 @@ class _PetInformationCharacterScreenState extends State<PetInformationCharacterS
     ];
 
     return buildPetInfoScreen(
+      context: context,
       currentStep: 2,
       subject: widget.petName != null ? '${widget.petName}의 ' : '반려동물의 ',
       title: '성격',

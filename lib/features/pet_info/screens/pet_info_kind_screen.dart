@@ -18,14 +18,16 @@ class _PetInformationKindScreenState extends State<PetInformationKindScreen> {
   @override
   Widget build(BuildContext context) {
     return buildPetInfoScreen(
+      context: context,
       currentStep: 0,
       subject: '반려동물의 ',
       title: '종류를',
       titleSub: ' 선택해 주세요',
       subtitle: 'AI에게 전달되는 정보에요.',
       onPrevious: () {
-        Navigator.pop(context);
+        Navigator.pop(context,'/home_main');
       },
+      isFirst: 1,
       onNext: selectedKind != null
           ? () {
               widget.onNext(selectedKind!);
