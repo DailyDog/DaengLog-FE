@@ -33,6 +33,7 @@ import 'features/pet_info/screens/pet_info_loading_screen.dart';
 import 'features/chat/screens/chat_main_prompt_screen.dart';
 import 'features/chat/screens/chat_communication_screen.dart';
 import 'features/photo/screens/photo_screen.dart';
+import 'features/chat/screens/chat_history_screen.dart';
 
 // 가족 공유 화면
 import 'features/family_share/screens/family_share_share.dart';
@@ -81,7 +82,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/my_page', // 초기 화면 설정
+      initialRoute: '/chat_history', // 초기 화면 설정
       // routes 추가
       routes: {
         // 초기 화면
@@ -139,6 +140,7 @@ class MyApp extends StatelessWidget {
         // 채팅 화면
         '/chat_main_prompt': (context) => const ChatMainPromptScreen(), // 홈 프롬프트 화면
         '/chat_communication': (context) => ChatCommunicationScreen(), // 채팅 서비스 화면
+        '/chat_history': (context) => ChatHistoryScreen(), // 채팅 기록 화면
 
         // 포토카드 화면
         '/photo': (context) => const PhotoScreen(), // 채팅 포토카드 화면
