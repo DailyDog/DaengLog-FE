@@ -308,7 +308,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
           // 메뉴 아이템
           _buildMenuItem(context, '내정보 관리', Icons.person_outline, '/my_info_page'),
           _buildMenuItem(context, '이벤트/혜택', Icons.card_giftcard, '/event'),
-          _buildMenuItem(context, '요금제 관리', Icons.payment, '/payment'),
+          _buildMenuItem(context, '요금제 관리', Icons.payment, '/cloud_main'),
           _buildMenuItem(context, '공지사항', Icons.announcement, '/notice'),
           _buildMenuItem(context, '고객센터', Icons.help_outline, '/customer_center'),
           

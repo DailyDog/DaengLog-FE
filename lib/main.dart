@@ -50,6 +50,10 @@ import 'features/mypage/screens/mypage_alarm_screen.dart';
 // 마켓 화면 -> 임시 대표화면
 import 'features/purchase/close.dart';
 
+// 클라우드 화면
+import 'features/cloud/screens/cloud_main_screen.dart';
+import 'features/cloud/providers/cloud_screen_provider.dart';
+
 
 // 메인 함수
 Future<void> main() async {
@@ -62,6 +66,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
         ChangeNotifierProvider(create: (_) => RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
+        ChangeNotifierProvider(create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
       ],
       child: const MyApp(), // 앱 실행
     ),
@@ -76,7 +81,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/record_main', // 초기 화면 설정
+      initialRoute: '/my_page', // 초기 화면 설정
       // routes 추가
       routes: {
         // 초기 화면
@@ -160,6 +165,9 @@ class MyApp extends StatelessWidget {
         // 기록 화면
         '/record_main': (context) => const RecordMainScreen(), // 기록 화면
         '/image_upload': (context) => const ImageUploadScreen(), // 이미지 업로드 화면
+
+        // 클라우드
+        '/cloud_main': (context) => const CloudMainScreen(), // 클라우드 화면
       },
       // 라우트 설정 종료
     );
