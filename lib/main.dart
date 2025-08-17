@@ -82,7 +82,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/chat_history', // 초기 화면 설정
+      initialRoute: '/my_page', // 초기 화면 설정
       // routes 추가
       routes: {
         // 초기 화면
