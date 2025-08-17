@@ -1,24 +1,8 @@
-import 'package:daenglog_fe/api/login/login_api.dart';
+import 'package:daenglog_fe/api/social_login/login_api.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:daenglog_fe/utils/secure_token_storage.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class SocialLoginScreen extends StatelessWidget {
-  const SocialLoginScreen({Key? key}) : super(key: key);
-
-  // 리다이렉션 URL
-  static String redirectUrl = '${dotenv.env['API_URL']!}/oauth2/authorization/google';
-
-  // 리다이렉션 함수
-  void _redirect() async {
-    final Uri url = Uri.parse(redirectUrl);
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    } else {
-      debugPrint('Could not launch $url');
-    }
-  }
+  const SocialLoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -51,28 +35,29 @@ class SocialLoginScreen extends StatelessWidget {
                 icon: Image.asset('assets/images/login/google_icon.png', width: 24),
                 text: '구글로 시작하기    ',
                 onTap: () async {
-                  _redirect(); // 리다이렉션 함수 호출
-                  SecureTokenStorage.saveToken('test_token');
-                  Navigator.pushNamed(context, '/home_main');
+                  // 구글 로그인 및 서버 인증 (통합)
+                  final result = await performGoogleLogin();
+                    // 기존 사용자는 홈 메인 화면으로
+                    Navigator.pushNamed(context, '/home_main');
                 },
               ),
               const SizedBox(height: 16),
               _socialButton(
                 icon: Image.asset('assets/images/login/kakao_icon.png', width: 24),
                 text: '카카오로 시작하기',
-                onTap: _redirect,
+                onTap: () {},
               ),
               const SizedBox(height: 16),
               _socialButton(
                 icon: Image.asset('assets/images/login/naver_icon.png', width: 24),
                 text: '네이버로 시작하기',
-                onTap: _redirect,
+                onTap: () {},
               ),
               const SizedBox(height: 16),
               _socialButton(
                 icon: Image.asset('assets/images/login/apple_icon.png', width: 24),
                 text: '애플로 시작하기    ',
-                onTap: _redirect,
+                onTap: () {},
               ),
             ],
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});
@@ -11,10 +12,13 @@ class _SplashState extends State<Splash> {
   @override
   void initState() {
     super.initState();
-    // 3초 후에 /home_main으로 이동
-    Future.delayed(const Duration(seconds: 1), () {
-      Navigator.pushReplacementNamed(context, '/onboding_start');
-    });
+    _checkTokenAndNavigate();
+  }
+
+  Future<void> _checkTokenAndNavigate() async {
+    final token = await SecureTokenStorage.getToken();
+    await Future.delayed(const Duration(seconds: 1)); // 스플래시 1초 유지
+    Navigator.pushReplacementNamed(context, '/onboding_start'); // 로그인 후 홈 메인 화면
   }
 
   @override

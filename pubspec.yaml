@@ -39,9 +39,17 @@ dependencies:
   
   flutter_secure_storage: ^9.2.2 # 보안 저장소 라이브러리
 
+  share_plus: ^7.2.1 # 공유 기능 라이브러리
+  path_provider: ^2.1.2 # 파일 경로 관리 라이브러리
+  image_gallery_saver: ^2.0.3 # 갤러리 저장 라이브러리
+  lottie: ^3.0.0 # Lottie 애니메이션 라이브러리
+
   geolocator: ^11.0.0 # 위치 정보 라이브러리
   geocoding: ^2.1.0 # 위치 정보 라이브러리
   flutter_dotenv: ^5.2.1 # 환경 변수 라이브러리
+  flutter_colorpicker: ^1.0.3 # 색상 선택 라이브러리
+
+  google_sign_in: ^6.2.0 # 구글 로그인 라이브러리
 
 # 플러터 설정
 flutter:
@@ -58,6 +66,9 @@ flutter:
     - assets/images/home/mypage_icon.png
     - assets/images/home/record_icon.png
     - assets/images/home/mango_image.png
+    - assets/images/home/rain.png
+    - assets/images/home/sun.png
+    - assets/images/home/snow.png
     
     # 스플래쉬
     - assets/images/splash/entire.png 
@@ -80,18 +91,66 @@ flutter:
     # 서비스 수집 배경 이미지
     - assets/images/information/info_background.png
     - assets/images/information/camera.png
-  
+
+    # 채팅 화면 아이콘
+    - assets/images/chat/download_icon.png
+    - assets/images/chat/send_icon.png
+
+    # 가족 공유 화면 아이콘
+    - assets/images/family/envelope.png
+
+    # 가족 공유 화면 애니메이션
+    - assets/images/family/send.json
+    - assets/images/family/send_back.jpg
+
+    # 테스트 이미지
+    - assets/images/test.png
+
   # 폰트
   fonts:
     # 폰트 프리텐다드
     - family: Pretendard
       fonts:
-        - asset: assets/fonts/pretendard/Pretendard-Regular.otf
-        - asset: assets/fonts/pretendard/Pretendard-Medium.otf
-        - asset: assets/fonts/pretendard/Pretendard-Bold.otf
-        - asset: assets/fonts/pretendard/Pretendard-ExtraBold.otf
-        - asset: assets/fonts/pretendard/Pretendard-Black.otf
-        - asset: assets/fonts/pretendard/Pretendard-Light.otf
         - asset: assets/fonts/pretendard/Pretendard-Thin.otf
+          weight: 100
         - asset: assets/fonts/pretendard/Pretendard-ExtraLight.otf
+          weight: 200
+        - asset: assets/fonts/pretendard/Pretendard-Light.otf
+          weight: 300
+        - asset: assets/fonts/pretendard/Pretendard-Regular.otf
+          weight: 400
+        - asset: assets/fonts/pretendard/Pretendard-Medium.otf
+          weight: 500
         - asset: assets/fonts/pretendard/Pretendard-SemiBold.otf
+          weight: 600
+        - asset: assets/fonts/pretendard/Pretendard-Bold.otf
+          weight: 700
+        - asset: assets/fonts/pretendard/Pretendard-ExtraBold.otf
+          weight: 800
+        - asset: assets/fonts/pretendard/Pretendard-Black.otf
+          weight: 900
+
+    # 폰트 영덕 눈사람
+    - family: Yeongdeok-Snow-Crab
+      fonts:
+        - asset: assets/fonts/yeongdeok/Yeongdeok-Snow-Crab.ttf
+    # 폰트 영덕 바다
+    - family: Yeongdeok-Sea
+      fonts:
+        - asset: assets/fonts/yeongdeok/Yeongdeok-Sea.ttf
+    # 폰트 수트
+    - family: Suite-Regular
+      fonts:
+        - asset: assets/fonts/suite/SUITE-Regular.ttf
+    - family: Suite-Medium
+      fonts:
+        - asset: assets/fonts/suite/SUITE-Medium.ttf
+    - family: Suite-Bold
+      fonts:
+        - asset: assets/fonts/suite/SUITE-Bold.ttf
+    - family: Suite-ExtraBold
+      fonts:
+        - asset: assets/fonts/suite/SUITE-ExtraBold.ttf
+    - family: Suite-SemiBold
+      fonts:
+        - asset: assets/fonts/suite/SUITE-SemiBold.ttf
