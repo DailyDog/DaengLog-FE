@@ -31,7 +31,7 @@ class DiaryCreatePromptApi {
       final Map<String, dynamic> queryParams = {
         'prompt': prompt,
         // 토큰이 있을 때만 petId 추가
-        if(petId != null) 'petId': petId,
+        if(token != null && token.isNotEmpty && petId != null) 'petId': petId,
       };
 
       // FormData에는 image만 포함
@@ -59,7 +59,7 @@ class DiaryCreatePromptApi {
         return null;
       }
       // 401 에러 시 토큰 갱신 시도
-      if (e is DioException && e.response?.statusCode == 401) {
+      if (e is DioException && await SecureTokenStorage.getToken() != null && e.response?.statusCode == 401) {
         final refreshToken = await SecureTokenStorage.getRefreshToken();
         if (refreshToken != null) {
           try {
@@ -70,12 +70,12 @@ class DiaryCreatePromptApi {
               return await diaryCreatePrompt(prompt: prompt, petId: petId, imageFile: imageFile);
             }
           } catch (refreshError) {
-            print('토큰 갱신 실패: $refreshError');
+            print('갱신할 토큰이 없어잉 !: $refreshError');
           }
         }
       }
       
-      throw Exception('앨범 불러오기 실패: $e');
+      throw Exception('토큰이 아무것도 없어잉 !: $e');
     }
   }
 }

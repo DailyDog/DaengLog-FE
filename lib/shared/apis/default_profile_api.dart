@@ -4,7 +4,7 @@ import 'package:daenglog_fe/shared/services/dio_client.dart';
 
 // 기본 반려동물 조회
 class DefaultProfileApi {
-  final Dio _dio = getDioWithAuth('api/v1/pet/default');
+  final Dio _dio = getDioWithAuth('api/v1/pet');
 
   // 프로필 불러오기
   Future<DefaultProfile> getDefaultProfile() async {

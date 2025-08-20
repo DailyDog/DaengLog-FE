@@ -87,23 +87,47 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // 반응형 값 계산
+    final containerPadding = screenWidth * 0.025; // 화면 너비의 2.5%
+    final errorPadding = screenHeight * 0.01; // 화면 높이의 1%
+    final iconSize = screenWidth * 0.06; // 화면 너비의 6%
+    final fontSize = screenWidth * 0.04; // 화면 너비의 4%
+    final textPadding = screenWidth * 0.03; // 화면 너비의 3%
+    final bottomHeight = screenHeight * 0.05; // 화면 높이의 5%
+    
     return Container(
-        padding: const EdgeInsets.only(left: 10, right: 10, bottom: 10),
+        padding: EdgeInsets.only(
+          left: containerPadding, 
+          right: containerPadding, 
+          bottom: containerPadding
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min, // 컬럼 크기 조절
           children: [
             // 에러 메시지 출력
             if (widget.error != null)
               Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Text(widget.error!, style: const TextStyle(color: Colors.red)),
-              ),
-                          Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(widget.borderRadius ?? 25),
-                  border: Border.all(color: widget.color != null ? Color(widget.color!) : Color(0xFFFF5F01), width: widget.borderWidth ?? 1),
+                padding: EdgeInsets.only(bottom: errorPadding),
+                child: Text(
+                  widget.error!, 
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: fontSize * 0.8, // 에러 메시지는 약간 작게
+                  )
                 ),
+              ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(widget.borderRadius ?? screenWidth * 0.06), // 화면 너비의 6%
+                border: Border.all(
+                  color: widget.color != null ? Color(widget.color!) : const Color(0xFFFF5F01), 
+                  width: widget.borderWidth ?? 1
+                ),
+              ),
               child: Row(
                 children: [
                   // 이미지 선택 버튼
@@ -114,8 +138,8 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                       }
                     },
                     icon: Container(
-                      width: 24,
-                      height: 24,
+                      width: iconSize,
+                      height: iconSize,
                       decoration: widget.selectedImageXFile != null
                         ? BoxDecoration(
                             color: const Color(0xFFFF5F01),
@@ -130,11 +154,15 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                             ),
                           ),
                       child: widget.selectedImageXFile != null
-                          ? const Icon(Icons.check, size: 20, color: Colors.white)
+                          ? Icon(Icons.check, size: iconSize * 0.8, color: Colors.white)
                           : SelectableImage(
                               image: widget.selectedImageXFile,
                               onImageSelected: widget.onImageSelected,
-                              placeholderBuilder: () => const Icon(Icons.add, size: 20, color: Color.fromARGB(255, 0, 0, 0)),
+                              placeholderBuilder: () => Icon(
+                                Icons.add, 
+                                size: iconSize * 0.8, 
+                                color: const Color.fromARGB(255, 0, 0, 0)
+                              ),
                             ),
                     ),
                   ),
@@ -143,18 +171,24 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                   Expanded(
                     child: TextField(
                       controller: widget.textController,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: "Pretendard",
-                        fontSize: 16,
+                        fontSize: fontSize,
                         fontWeight: FontWeight.w500,
                         color: Colors.black,
                       ),
                       enabled: !widget.loading, // 로딩 중일 때 입력 비활성화
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: '방금 간식주고 찍은 사진',
-                        hintStyle: TextStyle(color: Colors.grey),
-                        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                        hintStyle: TextStyle(
+                          color: Colors.grey,
+                          fontSize: fontSize * 0.9, // 힌트 텍스트는 약간 작게
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: textPadding, 
+                          vertical: textPadding
+                        ),
                       ),
                     ),
                   ),
@@ -163,11 +197,11 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                   IconButton(
                     onPressed: widget.loading ? _cancelRequest : _sendPrompt,
                     icon: Container(
-                      width: 24,
-                      height: 24,
+                      width: iconSize,
+                      height: iconSize,
                       decoration: widget.loading
                         ? BoxDecoration(
-                            color: Color(0xFFFF5F01), // 중단 버튼일 때
+                            color: const Color(0xFFFF5F01), // 중단 버튼일 때
                             shape: BoxShape.circle,
                             border: Border.all(
                               color: const Color(0xFFFF5F01), 
@@ -183,14 +217,14 @@ class _ChatBottomWidgetState extends State<ChatBottomWidget> {
                             ),
                           ),
                       child: widget.loading
-                          ? const Icon(Icons.stop, color: Colors.white, size: 20) // 중단 아이콘
-                          : const Icon(Icons.arrow_upward, color: Colors.black, size: 16), // 전송 아이콘
+                          ? Icon(Icons.stop, color: Colors.white, size: iconSize * 0.8) // 중단 아이콘
+                          : Icon(Icons.arrow_upward, color: Colors.black, size: iconSize * 0.7), // 전송 아이콘
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: widget.height ?? 40),
+            SizedBox(height: widget.height ?? bottomHeight),
           ],
         ),
       );
