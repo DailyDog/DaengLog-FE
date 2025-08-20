@@ -3,8 +3,8 @@ import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 import 'package:daenglog_fe/shared/widgets/login_modal.dart';
 import 'package:daenglog_fe/features/family_share/screens/family_share_share.dart';
 import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
-import 'package:daenglog_fe/features/photo/services/photo_service.dart';
 
+// 포토카드 앱바
 class PhotoAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool isDecorateMode;
   final VoidCallback onSave;

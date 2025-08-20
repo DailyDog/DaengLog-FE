@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
-import 'package:daenglog_fe/features/photo/widgets/painters/hand_drawn_wave_painter.dart';
-import 'package:daenglog_fe/features/photo/widgets/customs/image_custom.dart';
-import 'package:daenglog_fe/features/photo/widgets/customs/draw_custom.dart';
-import 'package:daenglog_fe/features/photo/widgets/photo_app_bar.dart';
-import 'package:daenglog_fe/features/photo/widgets/photo_bottom_buttons.dart';
-import 'package:daenglog_fe/features/photo/providers/photo_screen_provider.dart';
-import 'package:daenglog_fe/features/photo/services/photo_service.dart';
-import 'package:daenglog_fe/features/photo/widgets/painters/drawing_painter.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/painters/hand_drawn_wave_painter.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/customs/image_custom.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/customs/draw_custom.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/photo_app_bar.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/photo_bottom_buttons.dart';
+import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
+import 'package:daenglog_fe/features/chat_photo/services/photo_service.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/painters/drawing_painter.dart';
 import 'package:provider/provider.dart';
 
-class PhotoScreen extends StatefulWidget {
-  const PhotoScreen({super.key});
+// 포토카드 화면
+class ChatPhotoScreen extends StatefulWidget {
+  const ChatPhotoScreen({super.key});
 
   @override
-  State<PhotoScreen> createState() => _PhotoScreenState();
+  State<ChatPhotoScreen> createState() => _ChatPhotoScreenState();
 }
 
-class _PhotoScreenState extends State<PhotoScreen> {
+class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   final GlobalKey contentKey = GlobalKey();
   final GlobalKey imageKey = GlobalKey();
 
@@ -147,7 +148,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
               ],
             ),
           ),
-                     // 그림 그리기 오버레이
+          // 그림 그리기 오버레이
            DrawCustomWidget(
              isDrawingMode: provider.isDrawingMode,
              imageKey: imageKey,

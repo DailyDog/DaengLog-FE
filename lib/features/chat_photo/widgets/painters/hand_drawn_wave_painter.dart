@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
+// 그림 그리기 오버레이
 class HandDrawnWave extends StatelessWidget {
   const HandDrawnWave({
     super.key,

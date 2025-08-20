@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:daenglog_fe/features/chat_photo/models/photo_sticker_model.dart';
 
-// --- 스티커 모델 ---
-class Sticker {
-  final String id;
-  final IconData icon;
-  final String name;
-  final String category;
-
-  const Sticker({
-    required this.id,
-    required this.icon,
-    required this.name,
-    required this.category,
-  });
-}
 
 // --- 스티커 선택 위젯 ---
 class StickerPickerWidget extends StatefulWidget {
