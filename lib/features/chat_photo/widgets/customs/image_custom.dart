@@ -1,31 +1,32 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/features/photo/widgets/customs/draw_custom.dart';
-import 'package:daenglog_fe/features/photo/widgets/customs/frame_custom.dart';
-import 'package:daenglog_fe/features/photo/widgets/customs/sticker_custom.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/customs/draw_custom.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/customs/frame_custom.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/customs/sticker_custom.dart';
+import 'package:daenglog_fe/features/chat_photo/models/photo_sticker_model.dart';
 
 // --- 꾸미기 모드 위젯 ---
 class ImageCustomWidget extends StatefulWidget {
-  final VoidCallback onComplete;
-  final VoidCallback onDrawingMode;
-  final Color selectedColor;
-  final bool isEraser;
-  final Function(Color) onColorChanged;
-  final VoidCallback onEraserToggle;
-  final Color selectedFrameColor;
-  final Function(Color) onFrameColorChanged;
-  final Function(Sticker) onStickerSelected;
+  final VoidCallback onComplete; // 완료 버튼 클릭 시 호출
+  final VoidCallback onDrawingMode; // 그리기 모드 활성화 시 호출
+  final Color selectedColor; // 선택된 색상
+  final bool isEraser; // 지우개 모드 활성화 여부
+  final Function(Color) onColorChanged; // 색상 변경 시 호출
+  final VoidCallback onEraserToggle; // 지우개 모드 토글 시 호출
+  final Color selectedFrameColor; // 선택된 프레임 색상
+  final Function(Color) onFrameColorChanged; // 프레임 색상 변경 시 호출
+  final Function(Sticker) onStickerSelected; // 스티커 선택 시 호출
 
   const ImageCustomWidget({
     super.key,
-    required this.onComplete,
-    required this.onDrawingMode,
-    required this.selectedColor,
-    required this.isEraser,
-    required this.onColorChanged,
-    required this.onEraserToggle,
-    required this.selectedFrameColor,
-    required this.onFrameColorChanged,
-    required this.onStickerSelected,
+    required this.onComplete, // 완료 버튼 클릭 시 호출
+    required this.onDrawingMode, // 그리기 모드 활성화 시 호출
+    required this.selectedColor, // 선택된 색상
+    required this.isEraser, // 지우개 모드 활성화 여부
+    required this.onColorChanged, // 색상 변경 시 호출
+    required this.onEraserToggle, // 지우개 모드 토글 시 호출
+    required this.selectedFrameColor, // 선택된 프레임 색상
+    required this.onFrameColorChanged, // 프레임 색상 변경 시 호출
+    required this.onStickerSelected, // 스티커 선택 시 호출
   });
 
   @override

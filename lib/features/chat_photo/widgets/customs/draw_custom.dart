@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/features/photo/widgets/painters/drawing_painter.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/painters/drawing_painter.dart';
 import 'dart:math' as math;
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 

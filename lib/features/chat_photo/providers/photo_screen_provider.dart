@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import 'package:daenglog_fe/features/photo/widgets/customs/sticker_custom.dart';
-import 'package:daenglog_fe/features/photo/widgets/painters/drawing_painter.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/painters/drawing_painter.dart';
+import 'package:daenglog_fe/features/chat_photo/models/photo_sticker_model.dart';
 
 class PhotoScreenProvider extends ChangeNotifier {
   // --- 상태 변수 ---
@@ -22,8 +22,8 @@ class PhotoScreenProvider extends ChangeNotifier {
 
   // --- 스티커 관련 상태 ---
   Sticker? _selectedSticker;
-  List<PhotoPlacedSticker> _placedStickers = [];
-  PhotoPlacedSticker? _selectedPlacedSticker;
+  List<PhotoStickerModel> _placedStickers = [];
+  PhotoStickerModel? _selectedPlacedSticker;
 
   // --- Getters ---
   bool get isConfirmed => _isConfirmed;
@@ -37,8 +37,8 @@ class PhotoScreenProvider extends ChangeNotifier {
   double get strokeWidth => _strokeWidth;
   Color get selectedFrameColor => _selectedFrameColor;
   Sticker? get selectedSticker => _selectedSticker;
-  List<PhotoPlacedSticker> get placedStickers => _placedStickers;
-  PhotoPlacedSticker? get selectedPlacedSticker => _selectedPlacedSticker;
+  List<PhotoStickerModel> get placedStickers => _placedStickers;
+  PhotoStickerModel? get selectedPlacedSticker => _selectedPlacedSticker;
 
   // --- Setters ---
   void setImageLoaded(bool loaded) {
@@ -86,7 +86,7 @@ class PhotoScreenProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSelectedPlacedSticker(PhotoPlacedSticker? sticker) {
+  void setSelectedPlacedSticker(PhotoStickerModel? sticker) {
     _selectedPlacedSticker = sticker;
     notifyListeners();
   }
@@ -130,13 +130,13 @@ class PhotoScreenProvider extends ChangeNotifier {
   }
 
   // --- 스티커 관리 메서드 ---
-  void addPlacedSticker(PhotoPlacedSticker sticker) {
+  void addPlacedSticker(PhotoStickerModel sticker) {
     _placedStickers.add(sticker);
     _selectedSticker = null;
     notifyListeners();
   }
 
-  void removePlacedSticker(PhotoPlacedSticker sticker) {
+  void removePlacedSticker(PhotoStickerModel sticker) {
     _placedStickers.remove(sticker);
     if (_selectedPlacedSticker == sticker) {
       _selectedPlacedSticker = null;
@@ -144,7 +144,7 @@ class PhotoScreenProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updatePlacedStickerPosition(PhotoPlacedSticker sticker, Offset newPosition) {
+  void updatePlacedStickerPosition(PhotoStickerModel sticker, Offset newPosition) {
     final index = _placedStickers.indexOf(sticker);
     if (index != -1) {
       _placedStickers[index] = sticker.copyWith(position: newPosition);
@@ -165,34 +165,3 @@ class PhotoScreenProvider extends ChangeNotifier {
     notifyListeners();
   }
 }
-
-
-
-// PhotoPlacedSticker 클래스 (필요한 경우 별도 파일로 분리 가능)
-class PhotoPlacedSticker {
-  final Sticker sticker;
-  final Offset position;
-  final double scale;
-  final double rotation;
-
-  PhotoPlacedSticker({
-    required this.sticker,
-    required this.position,
-    this.scale = 1.0,
-    this.rotation = 0.0,
-  });
-
-  PhotoPlacedSticker copyWith({
-    Sticker? sticker,
-    Offset? position,
-    double? scale,
-    double? rotation,
-  }) {
-    return PhotoPlacedSticker(
-      sticker: sticker ?? this.sticker,
-      position: position ?? this.position,
-      scale: scale ?? this.scale,
-      rotation: rotation ?? this.rotation,
-    );
-  }
-} 

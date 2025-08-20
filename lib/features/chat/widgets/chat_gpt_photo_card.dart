@@ -115,7 +115,7 @@ class ChatGptPhotoCard extends StatelessWidget {
                   width: buttonWidth,
                   child: OutlinedButton(
                     onPressed: () async {
-                      Navigator.pushNamed(context, '/photo', arguments: gptResponse);
+                      Navigator.pushNamed(context, '/chat_photo', arguments: gptResponse);
                     },
                     style: OutlinedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFEEE8),

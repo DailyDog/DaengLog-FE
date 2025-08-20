@@ -32,7 +32,7 @@ import 'features/pet_info/screens/pet_info_loading_screen.dart';
 // 채팅 화면
 import 'features/chat/screens/chat_main_prompt_screen.dart';
 import 'features/chat/screens/chat_communication_screen.dart';
-import 'features/photo/screens/photo_screen.dart';
+import 'features/chat_photo/screens/chat_photo_screen.dart';
 import 'features/chat/screens/chat_history_screen.dart';
 
 // 가족 공유 화면
@@ -143,7 +143,7 @@ class MyApp extends StatelessWidget {
         '/chat_history': (context) => ChatHistoryScreen(), // 채팅 기록 화면
 
         // 포토카드 화면
-        '/photo': (context) => const PhotoScreen(), // 채팅 포토카드 화면
+        '/chat_photo': (context) => const ChatPhotoScreen(), // 채팅 포토카드 화면
 
         // 가족 공유 화면
         '/family_share': (context) {

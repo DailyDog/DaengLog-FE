@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 import 'package:daenglog_fe/shared/widgets/login_modal.dart';
 
+// 포토카드 하단 버튼
 class PhotoBottomButtons extends StatelessWidget {
   final bool isConfirmed;
   final bool imageLoaded;
