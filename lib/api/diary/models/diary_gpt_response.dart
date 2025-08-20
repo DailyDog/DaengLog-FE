@@ -4,7 +4,7 @@ class DiaryGptResponse {
   final String title;
   final String content;
   final String keyword;
-  final int recordNumber;
+  final int? recordNumber;
   final String imageUrl;
   final String date;
 
@@ -28,5 +28,18 @@ class DiaryGptResponse {
       imageUrl: json['imageUrl'],
       date: json['date'],
     );
+  }
+  
+  /// JSON으로 변환하는 메서드
+  Map<String, dynamic> toJson() {
+    return {
+      'diaryId': diaryId,
+      'title': title,
+      'content': content,
+      'keyword': keyword,
+      'recordNumber': recordNumber,
+      'imageUrl': imageUrl,
+      'date': date,
+    };
   }
 }

@@ -8,15 +8,27 @@ class ChatGptLoadingBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final defaultProfile = Provider.of<DefaultProfileProvider>(context, listen: false);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    
+    // 반응형 값 계산
+    final avatarSize = screenWidth * 0.1; // 화면 너비의 10%
+    final avatarMargin = screenHeight * 0.015; // 화면 높이의 1.5%
+    final avatarIconSize = avatarSize * 0.6; // 아바타 크기의 60%
+    final spacing = screenWidth * 0.04; // 화면 너비의 4%
+    final cardMargin = screenHeight * 0.04; // 화면 높이의 4%
+    final cardPadding = screenWidth * 0.05; // 화면 너비의 5%
+    final borderRadius = screenWidth * 0.04; // 화면 너비의 4%
+    final fontSize = screenWidth * 0.035; // 화면 너비의 3.5%
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // 왼쪽 동그란 아이콘
         Container(
-          margin: const EdgeInsets.only(top: 12),
-          width: 40,
-          height: 40,
+          margin: EdgeInsets.only(top: avatarMargin),
+          width: avatarSize,
+          height: avatarSize,
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
@@ -25,33 +37,36 @@ class ChatGptLoadingBox extends StatelessWidget {
           child: Center(
             child: Image.asset(
               'assets/images/home/daeng.png',
-              width: 24,
-              height: 24,
+              width: avatarIconSize,
+              height: avatarIconSize,
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        SizedBox(width: spacing),
         // 텍스트 길이에 맞는 카드
         IntrinsicWidth(
           child: Container(
-            margin: const EdgeInsets.only(top: 30),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            margin: EdgeInsets.only(top: cardMargin),
+            padding: EdgeInsets.symmetric(
+              horizontal: cardPadding, 
+              vertical: cardPadding
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(color: const Color(0xFFFF5F01), width: 1),
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(0),
-                topRight: Radius.circular(15),
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.zero,
+                topRight: Radius.circular(borderRadius),
+                bottomLeft: Radius.circular(borderRadius),
+                bottomRight: Radius.circular(borderRadius),
               ),
             ),
             child: WaveTextReveal(
               text: "${defaultProfile.petName}가 일기를 열심히 쓰고 있어요!",
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Suite-SemiBold',
                 fontWeight: FontWeight.w600,
-                fontSize: 14,
+                fontSize: fontSize,
               ),
               duration: const Duration(seconds: 2),
             ),

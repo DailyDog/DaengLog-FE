@@ -13,6 +13,8 @@ import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
 import 'package:daenglog_fe/features/chat/widgets/chat_gpt_photo_card.dart';
 import 'package:daenglog_fe/features/chat/widgets/chat_gpt_loading_box.dart';
 import 'package:daenglog_fe/shared/widgets/chat_bottom_widget.dart';
+import 'package:daenglog_fe/shared/services/chat_history_storage.dart';
+import 'package:daenglog_fe/features/chat/models/chat_message_model.dart';
 
 /// 사용자로부터 텍스트와 이미지를 입력받아 GPT API에 요청하고,
 /// 결과(썸네일, 키워드, 일기)를 표시하는 화면
@@ -29,18 +31,20 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
   XFile? _selectedImageXFile; // 사용자가 선택한 이미지
   bool _loading = false; // 요청 진행 중 여부
   String? _error; // 에러 메시지
-  final List<ChatMessage> _messages = []; // 채팅 메시지 리스트
+  final List<ChatMessageModel> _messages = []; // 채팅 메시지 리스트
   final Map<int, bool> _textVisible = {}; // 각 메시지의 텍스트 표시 여부
   final Map<int, bool> _gptMessageLoaded = {}; // GPT 메시지 로딩 완료 여부
   final DiaryCreatePromptApi _diaryCreatePromptApi = DiaryCreatePromptApi(); // API 인스턴스
 
+
+  // 초기 화면 설정
   @override
-  void didChangeDependencies() {
+  void didChangeDependencies() { // 화면 전환 시 호출되는 메서드
     super.didChangeDependencies();
     final args = ModalRoute.of(context)?.settings.arguments as Map?;
     if (args != null && _messages.isEmpty) {
-      final prompt = args['prompt'] as String?;
-      final image = args['image'] as XFile?;
+      final prompt = args['prompt'] as String?; // 텍스트 입력
+      final image = args['image'] as XFile?; // 이미지 선택
       if (prompt != null && image != null) {
         _selectedImageXFile = image;
         _textController.text = prompt;
@@ -81,7 +85,7 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
 
   // 사용자 메시지 추가
   setState(() {
-    _messages.add(ChatMessage.user(
+    _messages.add(ChatMessageModel.user(
       text: _textController.text,
       image: _selectedImageXFile,
     ));
@@ -114,8 +118,16 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
       if (response != null) {
         final gptIndex = _messages.length;
         setState(() {
-          _messages.add(ChatMessage.gpt(gptResponse: response));
+          _messages.add(ChatMessageModel.gpt(gptResponse: response));
         });
+        
+        // 일기 히스토리에 저장
+        try {
+          await ChatHistoryStorage.addDiary(response);
+        } catch (e) {
+          print('히스토리 저장 실패: $e');
+        }
+        
         Future.delayed(const Duration(milliseconds: 1000), () {
           if (!mounted) return;
 
@@ -157,58 +169,81 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFFFF6600),
         elevation: 1,
-        toolbarHeight: 60,
+        toolbarHeight: MediaQuery.of(context).size.height * 0.075, // 화면 높이의 7.5%
         centerTitle: true,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const SizedBox(width: 0), // leading 공간 확보용
-            Expanded(
-              child: Center(
-                child: Text(
-                  '${defaultProfile.petName}의 생각은..',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            const SizedBox(width: 40), // actions 공간 확보용
-          ],
+        title: Text(
+          '${defaultProfile.petName}의 생각은..',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: MediaQuery.of(context).size.width * 0.05, // 화면 너비의 5%
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          icon: Icon(
+            Icons.arrow_back, 
+            color: Colors.white,
+            size: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        actions: const [SizedBox(width: 8)],
+        actions: [
+          IconButton(
+            icon: Icon(
+              Icons.access_time, 
+              color: Colors.white,
+              size: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
+            ),
+            onPressed: () {
+              Navigator.pushNamed(context, '/chat_history');
+            },
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.cloud_upload, 
+              color: Colors.white,
+              size: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
+            ),
+            onPressed: () {
+              // 클라우드 아이콘 클릭 시 동작
+            },
+          ),
+          SizedBox(width: MediaQuery.of(context).size.width * 0.02), // 화면 너비의 2%
+        ],
       ),
 
       // 본문 영역: 채팅 메시지 리스트
       body: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 20, bottom: 120),
+        padding: EdgeInsets.only(
+          left: MediaQuery.of(context).size.width * 0.05, // 화면 너비의 5%
+          right: MediaQuery.of(context).size.width * 0.05, // 화면 너비의 5%
+          top: MediaQuery.of(context).size.height * 0.025, // 화면 높이의 2.5%
+          bottom: MediaQuery.of(context).size.height * 0.15, // 화면 높이의 15%
+        ),
         itemCount: _messages.length + 1 + (_loading ? 1 : 0), // 날짜 + 메시지 개수 + 로딩 박스
         itemBuilder: (context, idx) {
           if (idx == 0) {
             // 날짜를 맨 위에 한 번만 표시
             return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.02), // 화면 높이의 2%
               child: Center(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.05, // 화면 너비의 5%
+                    vertical: MediaQuery.of(context).size.height * 0.01, // 화면 높이의 1%
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFEEDB),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(MediaQuery.of(context).size.width * 0.05), // 화면 너비의 5%
                   ),
                   child: Text(
                     formattedDate,
-                    style: const TextStyle(
-                      color: Color(0xFFFF5F01),
+                    style: TextStyle(
+                      color: const Color(0xFFFF5F01),
                       fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                      fontSize: MediaQuery.of(context).size.width * 0.04, // 화면 너비의 4%
                     ),
                   ),
                 ),
@@ -232,13 +267,16 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
                 children: [
                   if (msg.image != null)
                     Container(
-                      margin: const EdgeInsets.only(top: 8, bottom: 4),
+                      margin: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height * 0.01, // 화면 높이의 1%
+                        bottom: MediaQuery.of(context).size.height * 0.005, // 화면 높이의 0.5%
+                      ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(MediaQuery.of(context).size.width * 0.03), // 화면 너비의 3%
                         child: Image.file(
                           File(msg.image!.path),
-                          width: 100,
-                          height: 100,
+                          width: MediaQuery.of(context).size.width * 0.25, // 화면 너비의 25%
+                          height: MediaQuery.of(context).size.width * 0.25, // 화면 너비의 25%
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -248,13 +286,16 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
                       opacity: _textVisible[msgIdx] == true ? 1.0 : 0.0,
                       duration: const Duration(milliseconds: 100),
                       child: Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
+                        margin: EdgeInsets.only(bottom: MediaQuery.of(context).size.height * 0.01), // 화면 높이의 1%
+                        padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.03), // 화면 너비의 3%
                         decoration: BoxDecoration(
                           color: const Color(0xFFFFE5CC),
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(MediaQuery.of(context).size.width * 0.04), // 화면 너비의 4%
                         ),
-                        child: Text(msg.text!, style: const TextStyle(fontSize: 15)),
+                        child: Text(
+                          msg.text!, 
+                          style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.04) // 화면 너비의 4%
+                        ),
                       ),
                     ),
                 ],
@@ -265,7 +306,9 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
                 opacity: _gptMessageLoaded[msgIdx] == true ? 1.0 : 0.0,
                 duration: const Duration(milliseconds: 300),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                    vertical: MediaQuery.of(context).size.height * 0.01, // 화면 높이의 1%
+                  ),
                   child: ChatGptPhotoCard(
                     formattedDate: formattedDate,
                     gptResponse: msg.gptResponse,
@@ -296,19 +339,4 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
       ),
     );
   }
-}
-
-/// 채팅 메시지 모델
-class ChatMessage {
-  final bool isUser; // true: 사용자, false: GPT
-  final String? text;
-  final XFile? image;
-  final DiaryGptResponse? gptResponse;
-
-  /// 사용자 메시지
-  ChatMessage.user({required this.text, required this.image})
-      : isUser = true, gptResponse = null;
-  /// GPT 메시지
-  ChatMessage.gpt({required this.gptResponse})
-      : isUser = false, text = null, image = null;
 }

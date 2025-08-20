@@ -63,8 +63,8 @@ Future<void> main() async {
   runApp(
     // ChangeNotifierProvider( // 기본 프로필 정보 제공
     //   create: (_) => DefaultProfileProvider(),
-    MultiProvider( // 여러 provider 제공
-      providers: [
+    MultiProvider( // 여러 provider 제공 -> 전역 프로바이더 사용
+      providers: [ 
         ChangeNotifierProvider(create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
         ChangeNotifierProvider(create: (_) => RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
         ChangeNotifierProvider(create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
@@ -82,7 +82,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp( // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/my_page', // 초기 화면 설정
+      initialRoute: '/chat_main_prompt', // 초기 화면 설정
       // routes 추가
       routes: {
         // 초기 화면
