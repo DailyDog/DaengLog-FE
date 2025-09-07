@@ -53,6 +53,9 @@ import 'features/purchase/close.dart';
 // 클라우드 화면
 import 'features/cloud/screens/cloud_main_screen.dart';
 import 'features/cloud/providers/cloud_screen_provider.dart';
+import 'features/pet_detail/screens/pet_detail_screen.dart';
+import 'features/pet_detail/screens/pet_basic_edit_screen.dart';
+import 'features/pet_detail/screens/pet_personality_edit_screen.dart';
 
 
 // 메인 함수
@@ -132,8 +135,13 @@ class MyApp extends StatelessWidget {
 
         // 마이페이지 화면
         '/my_page': (context) => const MyPageMainScreen(), // 마이페이지 화면
-        '/my_info_page': (context) => const MyInfoPage(), // 마이페이지 화면
+        '/my_info_page': (context) => MyInfoPage(), // 마이페이지 화면 (유저 상세)
         '/alarm_page': (context) => const AlarmPage(), // 알림 화면
+
+        // 반려동물 상세
+        '/pet_detail': (context) => const PetDetailScreen(),
+        '/pet_basic_edit': (context) => const PetBasicEditScreen(),
+        '/pet_personality_edit': (context) => const PetPersonalityEditScreen(),
 
         // 기록 화면
         '/record_main': (context) => const RecordMainScreen(), // 기록 화면
