@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/features/pet_info/widgets/pet_info_appbar_navbar.dart';
+import 'package:daenglog_fe/features/pet_info/providers/pet_info_provider.dart';
+import 'package:provider/provider.dart';
 
 class PetInformationNameScreen extends StatefulWidget {
-  final void Function(String name, DateTime? birthday, String gender) onNext;
   
-  const PetInformationNameScreen({super.key, required this.onNext});
+  const PetInformationNameScreen({super.key});
 
   @override
     State<PetInformationNameScreen> createState() => _PetInformationNameScreenState();
@@ -59,9 +60,13 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
         Navigator.pushNamed(context, '/pet_information_kind');
       },
       onNext: _nameController.text.trim().isNotEmpty
-          ? () {
+          ? () async {
               final name = _nameController.text.trim();
-              widget.onNext(name, selectedBirthday, selectedGender! );
+              final petInfo = context.read<PetInfoProvider>();
+              petInfo.setPetName(name);
+              petInfo.setPetBirthday(selectedBirthday!);
+              petInfo.setPetGender(selectedGender!);
+              Navigator.pushNamed(context, '/pet_information_character');
             }
           : null,
       child: Padding(

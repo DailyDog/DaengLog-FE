@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/features/pet_info/widgets/pet_info_appbar_navbar.dart';
 import 'package:daenglog_fe/features/pet_info/widgets/pet_info_character_select.dart';
+import 'package:daenglog_fe/features/pet_info/providers/pet_info_provider.dart';
+import 'package:provider/provider.dart';
 
 class PetInformationCharacterScreen extends StatefulWidget {
-  final void Function(List<String> characters) onNext;
-  final VoidCallback? onPrevious;
-  final String? petName;
-  final TextEditingController _controller = TextEditingController();
-  PetInformationCharacterScreen({super.key, required this.onNext, this.onPrevious, this.petName});
+  PetInformationCharacterScreen({super.key});
 
   @override
   State<PetInformationCharacterScreen> createState() => _PetInformationCharacterScreenState();
@@ -58,22 +56,20 @@ class _PetInformationCharacterScreenState extends State<PetInformationCharacterS
     return buildPetInfoScreen(
       context: context,
       currentStep: 2,
-      subject: widget.petName != null ? '${widget.petName}의 ' : '반려동물의 ',
+      subject: PetInfoProvider().getPetName() != null ? '${PetInfoProvider().getPetName()}의 ' : '반려동물의 ',
       title: '성격',
       titleSub: '를 선택해 주세요!',
       subtitle: '최대 5개까지 선택 가능해요.',
-      onPrevious: widget.onPrevious ?? () {
-        Navigator.pop(context);
+      onPrevious: () {
+        Navigator.pushNamed(context, '/pet_information_name');
       },
+      isFirst: 1,
       onNext: selectedTags.isNotEmpty
-          ? () {
+          ? () async {
               final characters = selectedTags.toList();
-              if (characters.isNotEmpty) {
-                widget.onNext(characters);
-                // 부모에게 값 전달
-              } else {
-                // 예: 스낵바 등으로 안내
-              }
+              final petInfo = context.read<PetInfoProvider>();
+              petInfo.setPetCharacters(characters);
+              Navigator.pushNamed(context, '/pet_information_profile');
             }
           : null,
       child: Padding(

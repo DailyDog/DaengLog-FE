@@ -3,103 +3,66 @@ import 'package:daenglog_fe/features/pet_info/screens/pet_info_kind_screen.dart'
 import 'package:daenglog_fe/features/pet_info/screens/pet_info_name_screen.dart';
 import 'package:daenglog_fe/features/pet_info/screens/pet_info_character_screen.dart';
 import 'package:daenglog_fe/features/pet_info/screens/pet_info_profile_screen.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:daenglog_fe/features/pet_info/providers/pet_info_provider.dart';
+import 'package:daenglog_fe/api/pets/post/pet_personal_info_post_api.dart';
+import 'package:daenglog_fe/api/pets/models/pets_personal_info_post_model.dart';
 
+// 반려동물 정보 입력 화면 모음(종류, 이름, 성격, 프로필)
 class PetInfoScreen extends StatefulWidget {
   @override
   State<PetInfoScreen> createState() => _PetInfoScreenState();
 }
 
 class _PetInfoScreenState extends State<PetInfoScreen> {
-  int currentStep = 0;
-
-  // 각 단계별 데이터 저장 변수 선언 (예시)
-  String? petKind;
-  String? petName;
-  DateTime? petBirthday;
-  List<String>? petCharacters;
-  XFile? petProfileImage;
-  String? petGender;
-  void goToNext() {
-    setState(() {
-      currentStep++;
-    });
-  }
-
-  void goToPrevious() {
-    setState(() {
-      if (currentStep > 0) currentStep--;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    // 디버그: 현재 저장된 모든 데이터 출력
-    print('=== PetInfoFlow Debug ===');
-    print('currentStep: $currentStep');
-    print('petKind: $petKind');
-    print('petName: $petName');
-    print('petBirthday: $petBirthday');
-    print('petCharacters: $petCharacters');
-    print('petProfileImage: $petProfileImage');
-    print('petGender: $petGender');
-    print('=======================');
     
-    Widget stepWidget;
-    switch (currentStep) {
+    Widget stepWidget = const SizedBox.shrink();
+    switch (PetInfoProvider().currentStep) {
       case 0:
-        stepWidget = PetInformationKindScreen(
-          onNext: (kind) {
-            petKind = kind;
-            goToNext();
-          },
-        );
-        print('petKind: $petKind');
+        stepWidget = PetInformationKindScreen();
+        final petKind = PetInfoProvider().getPetKind();
+        if (petKind != null) {
+          PetInfoProvider().goToNext();
+        }
         break;
       case 1:
-        stepWidget = PetInformationNameScreen(
-          onNext: (name, birthday, gender) {
-            petName = name;
-            petBirthday = birthday;
-            petGender = gender;
-            goToNext();
-          },
-        );
-        print('petName: $petName, petBirthday: $petBirthday');
+        stepWidget = PetInformationNameScreen();
+        final petName = PetInfoProvider().getPetName();
+        final petBirthday = PetInfoProvider().getPetBirthday();
+        final petGender = PetInfoProvider().getPetGender();
+        if (petName != null && petBirthday != null && petGender != null) {
+          PetInfoProvider().goToNext();
+        }
         break;
       case 2:
-        stepWidget = PetInformationCharacterScreen(
-          petName: petName,
-          onNext: (characters) {
-            petCharacters = characters;
-            goToNext();
-          },
-          onPrevious: goToPrevious,
-        );
-        print('petCharacters: $petCharacters');
+        stepWidget = PetInformationCharacterScreen();
+        final petCharacters = PetInfoProvider().getPetCharacters();
+        if (petCharacters != null) {
+          PetInfoProvider().goToNext();
+        }
         break;
       case 3:
-        stepWidget = PetInformationProfileScreen(
-          petName: petName,
-          onNext: (profileImage) {
-            petProfileImage = profileImage;
-            // 모든 정보가 모였으니, LoadingScreen으로 이동
-            Navigator.pushReplacementNamed(
-              context, 
-              '/loading_screen',
-              arguments: {
-                'petKind': petKind,
-                'petName': petName,
-                'petBirthday': petBirthday,
-                'petCharacters': petCharacters,
-                'petProfileImage': petProfileImage,
-                'petGender': petGender,
-              },
-            );
-          },
-          onPrevious: goToPrevious,
-        );
+        stepWidget = PetInformationProfileScreen();
+        final petProfileImage = PetInfoProvider().getPetProfileImage();
+        if (petProfileImage != null) {
+          PetInfoProvider().goToNext();
+        }
         break;
+      case 4:
+        PetPersonalInfoPostApi().postPetPersonalInfo(PetsPersonalInfoPostModel(
+          petKind: PetInfoProvider().getPetKind(),
+          name: PetInfoProvider().getPetName(),
+          birthday: PetInfoProvider().getPetBirthday()?.toIso8601String().split('T')[0],
+          gender: PetInfoProvider().getPetGender(),
+          characters: PetInfoProvider().getPetCharacters(),
+          profileImage: PetInfoProvider().getPetProfileImage(),
+        ));
+        // 홈화면으로 이동
+        Navigator.pushNamed(context, '/home_main');
+        break;
+
       default:
         stepWidget = Center(child: Text('완료!'));
     }

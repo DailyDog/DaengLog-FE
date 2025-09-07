@@ -13,32 +13,44 @@ class DefaultProfileProvider extends ChangeNotifier {
   }
 
   // 디폴트 프로필 가져오기
-  DefaultProfile get profile => _profile!;
-
-  // 디폴트 프로필 가져오기
   Future<void> fetchProfile() async { // async란 비동기 처리를 위한 키워드
     try {
-      _profile = await DefaultProfileApi().getDefaultProfile();
-      notifyListeners();
+      _profile = await DefaultProfileApi().getDefaultProfile(); // API에서 프로필 가져오기
+      notifyListeners(); // 프로필 변경 시 리스너 알림
     } catch (e) {
       print('디폴트 프로필 가져오기 실패: $e');
+      
+      // 인증 오류인 경우 특별 처리
+      if (e.toString().contains('401') || e.toString().contains('Unauthorized')) {
+        print('인증이 필요합니다. 로그인을 다시 시도해주세요.');
+        // 여기서 로그인 화면으로 이동하거나 토큰 갱신을 시도할 수 있습니다
+      }
+      
+      // 프로필을 null로 설정하여 UI에서 적절히 처리할 수 있도록 함
+      _profile = null;
+      notifyListeners();
     }
   }
 
   // 디폴트 프로필 정보 가져오기 -> fetchProfile() 호출 시 자동으로 가져옴
+  // API에서 프로필이 없거나, 특정 필드 값이 null일 경우에도 기본값을 반환하여 안전하게 접근할 수 있도록 처리
   int? get petId => _profile?.id;
-  String get petName => _profile?.petName ?? '반려동물';
-  String get birthDate => _profile?.birthDate ?? '2025.01.01';
-  String get petGender => _profile?.petGender ?? '남';
-  String get petSpecies => _profile?.petSpecies ?? '강아지';
-  String get imagePath => _profile?.imagePath ?? ''; 
-  String get petFirstDiaryDate => _profile?.petFirstDiaryDate ?? '2025.01.01';
-  List<String> get petPersonality => _profile?.petPersonality ?? ['활동적', '귀여운', '행복한', '착한','좋은'];
-  int get petDaysSinceFirstDiary => _profile?.petDaysSinceFirstDiary ?? 0;
-  int get petAge => _profile?.petAge ?? 0;
-  int get ownerId => _profile?.ownerId ?? 0;
-  String get ownerName => _profile?.ownerName ?? '';
-  bool get isMyPet => _profile?.isMyPet ?? false;
-  bool get isFamilyPet => _profile?.isFamilyPet ?? false;
-  bool? get familyId => _profile?.familyId;
+  String? get petName => _profile?.petName;
+  String? get birthDate => _profile?.birthDate;
+  String? get petGender => _profile?.petGender;
+  String? get petSpecies => _profile?.petSpecies;
+  String? get imagePath => _profile?.imagePath;
+  String? get petFirstDiaryDate => _profile?.petFirstDiaryDate;
+  List<String>? get petPersonality => _profile?.petPersonality;
+  int? get petDaysSinceFirstDiary => _profile?.petDaysSinceFirstDiary;
+  int? get petAge => _profile?.petAge;
+  int? get ownerId => _profile?.ownerId;
+  String? get ownerName => _profile?.ownerName;
+  bool? get isMyPet => _profile?.isMyPet;
+  bool? get isFamilyPet => _profile?.isFamilyPet;
+  int? get familyId => _profile?.familyId;
+
+  // 디폴트 프로필 가져오기
+  DefaultProfile? get profile => _profile;
+
 }

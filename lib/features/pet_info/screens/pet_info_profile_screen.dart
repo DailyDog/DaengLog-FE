@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:daenglog_fe/features/pet_info/widgets/pet_info_appbar_navbar.dart';
 import 'package:daenglog_fe/shared/utils/selectable_image.dart';
+import 'package:daenglog_fe/features/pet_info/providers/pet_info_provider.dart';
+import 'package:daenglog_fe/api/pets/post/pet_personal_info_post_api.dart';
+import 'package:daenglog_fe/api/pets/models/pets_personal_info_post_model.dart';
+import 'package:provider/provider.dart';
 
 class PetInformationProfileScreen extends StatefulWidget {
-  final void Function(XFile profileImage) onNext;
-  final VoidCallback? onPrevious;
-  final String? petName;
-  final TextEditingController _controller = TextEditingController();
-  PetInformationProfileScreen({super.key, required this.onNext, this.onPrevious, this.petName});
+  PetInformationProfileScreen({super.key});
 
   @override
   State<PetInformationProfileScreen> createState() => _PetInformationProfileScreenState();
@@ -23,18 +23,40 @@ class _PetInformationProfileScreenState extends State<PetInformationProfileScree
     return buildPetInfoScreen(
       context: context,
       currentStep: 3,
-      subject: widget.petName != null ? '${widget.petName}의 ' : '반려동물의 ',
+      subject: PetInfoProvider().getPetName() != null ? '${PetInfoProvider().getPetName()}의 ' : '반려동물의 ',
       title: '프로필',
       titleSub: '을 올려주세요',
       subtitle: '선택사항이지만 첨부해주시면 좋아요',
-      onPrevious: widget.onPrevious ?? () {
-        Navigator.pop(context);
+      onPrevious: () {
+        Navigator.pushNamed(context, '/pet_information_character');
       },
-      onNext: _selectedImage != null
-          ? () {
-              widget.onNext(_selectedImage!);
-            }
-          : null,
+      onNext: () async {
+              final petInfo = context.read<PetInfoProvider>();
+
+              // 선택사항이면 이 줄도 null 허용
+              if (_selectedImage != null) {
+                petInfo.setPetProfileImage(_selectedImage!);
+              }
+
+              try {
+                await PetPersonalInfoPostApi().postPetPersonalInfo(
+                  PetsPersonalInfoPostModel(
+                    petKind: petInfo.getPetKind(),
+                    name: petInfo.getPetName(),
+                    birthday: petInfo.getPetBirthday()?.toIso8601String().split('T')[0],
+                    gender: petInfo.getPetGender(),
+                    characters: petInfo.getPetCharacters(),
+                    // provider 대신 선택한 이미지를 직접 전달해도 OK
+                    profileImage: _selectedImage,
+                  ),
+                );
+                Navigator.pushNamed(context, '/home_main');
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('업로드 실패: $e')),
+                );
+              }
+          },
       // 이미지 선택 컴포넌트
       child: Column(
         children: [
