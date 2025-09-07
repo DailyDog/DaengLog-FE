@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/api/mypage/get/pet_detail_api.dart';
+import 'package:provider/provider.dart';
+import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
 
 class PetDetailScreen extends StatefulWidget {
   const PetDetailScreen({super.key});
@@ -117,12 +119,29 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
                         width: screenWidth * 0.36,
                         height: screenWidth * 0.36,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'assets/images/home/default_profile.png',
-                          width: screenWidth * 0.36,
-                          height: screenWidth * 0.36,
-                          fit: BoxFit.cover,
-                        ),
+                        errorBuilder: (_, __, ___) {
+                          final providerImg = _providerImagePath(context);
+                          if (providerImg != null && providerImg.isNotEmpty) {
+                            return Image.network(
+                              providerImg,
+                              width: screenWidth * 0.36,
+                              height: screenWidth * 0.36,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                'assets/images/home/default_profile.png',
+                                width: screenWidth * 0.36,
+                                height: screenWidth * 0.36,
+                                fit: BoxFit.cover,
+                              ),
+                            );
+                          }
+                          return Image.asset(
+                            'assets/images/home/default_profile.png',
+                            width: screenWidth * 0.36,
+                            height: screenWidth * 0.36,
+                            fit: BoxFit.cover,
+                          );
+                        },
                       )
                     : Image.asset(
                         'assets/images/home/default_profile.png',
@@ -371,6 +390,14 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     // TODO: integrate with your existing image picker flow if available
     // For now, just navigate to an image picker route or trigger a provider method
     // Navigator.pushNamed(context, '/image_picker', arguments: {...});
+  }
+
+  String? _providerImagePath(BuildContext context) {
+    try {
+      return context.read<DefaultProfileProvider>().imagePath;
+    } catch (_) {
+      return null;
+    }
   }
 
   // 하단 삭제 버튼

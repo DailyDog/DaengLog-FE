@@ -247,23 +247,24 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
                     width: 1,
                   ),
                 ),
-                child: CircleAvatar(
-                  backgroundColor: Colors.white,
-                  child: ClipOval(
-                    child: (imageUrl != null && imageUrl.isNotEmpty)
-                        ? Image.network(
+                child: ClipOval(
+                  child: (imageUrl != null && imageUrl.isNotEmpty)
+                      ? SizedBox.expand(
+                          child: Image.network(
                             imageUrl,
                             fit: BoxFit.cover,
                             errorBuilder: (_, __, ___) => Image.asset(
                               'assets/images/home/default_profile.png',
                               fit: BoxFit.cover,
                             ),
-                          )
-                        : Image.asset(
+                          ),
+                        )
+                      : SizedBox.expand(
+                          child: Image.asset(
                             'assets/images/home/default_profile.png',
                             fit: BoxFit.cover,
                           ),
-                  ),
+                        ),
                 ),
               ),
               if (isFamilyShared)

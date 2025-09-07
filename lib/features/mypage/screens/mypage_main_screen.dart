@@ -173,7 +173,15 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
           Column(
             children: [ 
               // 프로필 섹션 (분리 위젯)
-              MyPageTopSection(summary: _summary, loading: _loadingSummary),
+              MyPageTopSection(
+                summary: _summary,
+                loading: _loadingSummary,
+                imageUrl: _imageForPetId(
+                  context,
+                  _summary?.defaultPet.id ?? (Provider.of<DefaultProfileProvider>(context, listen: false).petId ?? -1),
+                  _summary?.defaultPet.profileImageUrl,
+                ),
+              ),
               SizedBox(height: screenHeight * 0.025),
               
               // 하단 화이트 섹션
