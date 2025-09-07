@@ -6,12 +6,16 @@ import '../widgets/memory_widget.dart';
 import '../providers/record_provider.dart';
 import 'package:daenglog_fe/shared/widgets/bottom_nav_bar.dart';
 import '../widgets/media_selection_modal.dart';
+import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
 
 class RecordMainScreen extends StatelessWidget {
   const RecordMainScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+
+    final profile = context.read<DefaultProfileProvider>().profile;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
       bottomNavigationBar: commonBottomNavBar(context: context),
@@ -109,7 +113,7 @@ class RecordMainScreen extends StatelessWidget {
                             child: Row(
                               children: [
                                 Text(
-                                  '망고',
+                                  '${profile?.petName}',
                                   style: TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 18,
@@ -129,7 +133,7 @@ class RecordMainScreen extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  '121일',
+                                  '${profile?.petDaysSinceFirstDiary}일',
                                   style: TextStyle(
                                     fontFamily: 'Pretendard',
                                     fontSize: 18,

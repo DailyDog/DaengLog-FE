@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:daenglog_fe/api/diary/get/diary_monthly_calendar_api.dart';
+import 'package:daenglog_fe/api/diary/models/diary_monthly_calendar_model.dart';
+import 'package:daenglog_fe/api/diary/get/diary_by_pet_api.dart';
+import 'package:daenglog_fe/features/record/screens/diary_photo_cards_screen.dart';
+import 'package:flutter/cupertino.dart';
 
 class CalendarWidget extends StatefulWidget {
   const CalendarWidget({super.key});
@@ -8,11 +15,49 @@ class CalendarWidget extends StatefulWidget {
 }
 
 class _CalendarWidgetState extends State<CalendarWidget> {
+
   DateTime _selectedDate = DateTime.now();
   DateTime _focusedDate = DateTime.now();
+  Future<DiaryMonthlyCalendarModel>? _monthlyFuture;
+  final Map<String, DiaryMonthlyCalendarModel> _monthlyCache = {};
+  int? _petId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_petId == null) {
+      final profile = context.read<DefaultProfileProvider>().profile;
+      _petId = profile?.id;
+      _loadMonthly();
+    }
+  }
+
+  String _ymKey(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}';
+
+  void _loadMonthly() {
+    if (_petId == null) return;
+    final key = _ymKey(_focusedDate);
+    if (_monthlyCache.containsKey(key)) {
+      setState(() {
+        _monthlyFuture = Future.value(_monthlyCache[key]);
+      });
+      return;
+    }
+    setState(() {
+      _monthlyFuture = DiaryMonthlyCalendarApi().getDiaryMonthlyCalendar(
+        petId: _petId,
+        year: _focusedDate.year,
+        month: _focusedDate.month,
+      ).then((model) {
+        _monthlyCache[key] = model;
+        return model;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       height: 334,
       decoration: BoxDecoration(
@@ -29,24 +74,35 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // Month and Year
-                Row(
-                  children: [
-                    Text(
-                      '${_focusedDate.year}.${_focusedDate.month.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF272727),
+                GestureDetector(
+                  onTap: () async {
+                    final picked = await _showYearMonthPicker(context, _focusedDate);
+                    if (picked != null && (picked.year != _focusedDate.year || picked.month != _focusedDate.month)) {
+                      setState(() {
+                        _focusedDate = DateTime(picked.year, picked.month);
+                      });
+                      _loadMonthly();
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      Text(
+                        '${_focusedDate.year}.${_focusedDate.month.toString().padLeft(2, '0')}',
+                        style: const TextStyle(
+                          fontFamily: 'Pretendard',
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF272727),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(
-                      Icons.keyboard_arrow_down,
-                      color: Color(0xFF95C6FF),
-                      size: 20,
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Color(0xFF95C6FF),
+                        size: 20,
+                      ),
+                    ],
+                  ),
                 ),
                 // Navigation arrows
                 Row(
@@ -59,6 +115,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                             _focusedDate.month - 1,
                           );
                         });
+                        _loadMonthly();
                       },
                       icon: const Icon(
                         Icons.chevron_left,
@@ -74,6 +131,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                             _focusedDate.month + 1,
                           );
                         });
+                        _loadMonthly();
                       },
                       icon: const Icon(
                         Icons.chevron_right,
@@ -109,7 +167,31 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildCalendarGrid(),
+              child: FutureBuilder<DiaryMonthlyCalendarModel>(
+                future: _monthlyFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (snapshot.hasError) {
+                    return const Center(child: Text('달력 데이터를 불러오지 못했습니다.'));
+                  }
+                  final model = snapshot.data;
+                  final dayMap = <int, DiaryMonthlyCalendarDay>{};
+                  if (model != null) {
+                    for (final d in model.calendarDays) {
+                      final parts = d.date.split('-');
+                      if (parts.length == 3) {
+                        final day = int.tryParse(parts[2]);
+                        if (day != null) {
+                          dayMap[day] = d;
+                        }
+                      }
+                    }
+                  }
+                  return _buildCalendarGrid(dayMap);
+                },
+              ),
             ),
           ),
         ],
@@ -117,7 +199,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     );
   }
 
-  Widget _buildCalendarGrid() {
+  Widget _buildCalendarGrid(Map<int, DiaryMonthlyCalendarDay> dayMap) {
     final firstDayOfMonth = DateTime(_focusedDate.year, _focusedDate.month, 1);
     final lastDayOfMonth = DateTime(_focusedDate.year, _focusedDate.month + 1, 0);
     final firstWeekday = firstDayOfMonth.weekday;
@@ -139,15 +221,16 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       final isToday = date.year == DateTime.now().year &&
           date.month == DateTime.now().month &&
           date.day == DateTime.now().day;
+      final dayData = dayMap[day];
+      final thumbUrl = dayData?.thumbnailImageUrl;
       
       calendarDays.add(_CalendarDay(
         day: day.toString(),
         isSelected: isSelected,
         isToday: isToday,
+        thumbnailUrl: thumbUrl,
         onTap: () {
-          setState(() {
-            _selectedDate = date;
-          });
+          _onDayTapped(date, dayData);
         },
       ));
     }
@@ -171,6 +254,98 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     
     return Column(
       children: weeks,
+    );
+  }
+
+  Future<void> _onDayTapped(DateTime date, DiaryMonthlyCalendarDay? dayData) async {
+    setState(() {
+      _selectedDate = date;
+    });
+    if (dayData == null || _petId == null) return;
+    try {
+      final diaries = await DiaryByPetApi().getDiaryByPet(petId: _petId!);
+      final String y = date.year.toString().padLeft(4, '0');
+      final String m = date.month.toString().padLeft(2, '0');
+      final String d = date.day.toString().padLeft(2, '0');
+      final String target = '$y-$m-$d';
+      final filtered = diaries.where((e) => e.date == target).toList();
+      if (!mounted) return;
+      if (filtered.isNotEmpty) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => DiaryPhotoCardsScreen(diaries: filtered),
+          ),
+        );
+      }
+    } catch (e) {
+      // ignore for now or show snackbar
+    }
+  }
+
+  Future<DateTime?> _showYearMonthPicker(BuildContext context, DateTime initial) async {
+    final int initialYear = initial.year;
+    final int initialMonth = initial.month;
+    final int startYear = initialYear - 50;
+    final int endYear = initialYear + 50;
+
+    int selectedYear = initialYear;
+    int selectedMonth = initialMonth;
+
+    return showModalBottomSheet<DateTime>(
+      context: context,
+      builder: (ctx) {
+        return SizedBox(
+          height: 260,
+          child: Column(
+            children: [
+              Container(
+                height: 44,
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop(DateTime(selectedYear, selectedMonth));
+                  },
+                  child: const Text('완료'),
+                ),
+              ),
+              Expanded(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: FixedExtentScrollController(initialItem: initialYear - startYear),
+                        itemExtent: 36,
+                        onSelectedItemChanged: (index) {
+                          selectedYear = startYear + index;
+                        },
+                        children: [
+                          for (int y = startYear; y <= endYear; y++)
+                            Center(child: Text('$y년')),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: CupertinoPicker(
+                        scrollController: FixedExtentScrollController(initialItem: initialMonth - 1),
+                        itemExtent: 36,
+                        onSelectedItemChanged: (index) {
+                          selectedMonth = index + 1;
+                        },
+                        children: [
+                          for (int m = 1; m <= 12; m++)
+                            Center(child: Text('${m.toString().padLeft(2, '0')}월')),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -208,6 +383,7 @@ class _CalendarDay extends StatelessWidget {
   final bool isToday;
   final bool isEmpty;
   final VoidCallback? onTap;
+  final String? thumbnailUrl;
   
   const _CalendarDay({
     required this.day,
@@ -215,6 +391,7 @@ class _CalendarDay extends StatelessWidget {
     this.isToday = false,
     this.isEmpty = false,
     this.onTap,
+    this.thumbnailUrl,
   });
 
   @override
@@ -237,19 +414,40 @@ class _CalendarDay extends StatelessWidget {
     
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: SizedBox(
         width: 44,
         height: 44,
-        child: Center(
-          child: Text(
-            day,
-            style: TextStyle(
-              fontFamily: 'SF Pro',
-              fontSize: fontSize,
-              fontWeight: fontWeight,
-              color: textColor,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (thumbnailUrl != null && thumbnailUrl!.isNotEmpty)
+              ClipOval(
+                child: Image.network(
+                  thumbnailUrl!,
+                  width: 38,
+                  height: 38,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            if (thumbnailUrl != null && thumbnailUrl!.isNotEmpty)
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0x73FF6205),
+                  shape: BoxShape.circle,
+                ),
+              ),
+            Text(
+              day,
+              style: TextStyle(
+                fontFamily: 'SF Pro',
+                fontSize: thumbnailUrl != null && thumbnailUrl!.isNotEmpty ? 16 : fontSize,
+                fontWeight: fontWeight,
+                color: thumbnailUrl != null && thumbnailUrl!.isNotEmpty ? Colors.white : textColor,
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
