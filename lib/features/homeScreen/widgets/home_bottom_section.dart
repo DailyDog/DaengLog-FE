@@ -3,12 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/features/homeScreen/models/home_widget_item.dart';
 import 'package:daenglog_fe/features/homeScreen/widgets/components/home_bottom_section_modal.dart';
-import 'package:daenglog_fe/shared/models/default_profile.dart';
-import 'package:flutter/material.dart';
+import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:provider/provider.dart';
 
 class HomeBottomSection extends StatefulWidget {
-  const HomeBottomSection({super.key, required this.profile});
-  final DefaultProfile? profile;
+  const HomeBottomSection({super.key});
 
   @override
   State<HomeBottomSection> createState() => _HomeBottomSectionState();
@@ -20,10 +19,10 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
   
   // 사용 가능한 모든 위젯들
   final List<HomeWidgetItem> availableWidgets = [
-    HomeWidgetItem(id: '일기', title: '일기', description: '망고의 기분은 어떨까?', icon: Icons.library_books, color: Colors.indigo),
-    HomeWidgetItem(id: '산책', title: '산책', description: '이번주 망고는\n 얼마나 산책을 했나?', icon: Icons.restaurant, color: Colors.red),
-    HomeWidgetItem(id: '오늘의 미션', title: '오늘의 미션', description: '망고와 신나는 미션', icon: Icons.directions_bus, color: Colors.teal),
-    HomeWidgetItem(id: '날씨', title: '날씨', description: '성북구 정릉동', icon: Icons.wb_sunny, color: Colors.amber),
+    HomeWidgetItem(id: '일기', title: '일기', description: '망고의 기분은 어떨까?', iconPath: 'assets/images/home/widget/Journal_icon.png'),
+    HomeWidgetItem(id: '산책', title: '산책', description: '이번주 망고는\n얼마나 산책을 했나?', iconPath: 'assets/images/home/widget/dog_icon.png'),
+    HomeWidgetItem(id: '오늘의 미션', title: '오늘의 미션', description: '망고와 신나는 미션', iconPath: 'assets/images/home/widget/Goal_icon.png'),
+    HomeWidgetItem(id: '날씨', title: '날씨', description: '성북구 정릉동', iconPath: 'assets/images/home/widget/Sun_icon.png'),
   ];
 
   // 위젯 선택 모달 표시
@@ -44,6 +43,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
 
   @override
   Widget build(BuildContext context) {
+    final profile = context.read<DefaultProfileProvider>().profile;
     return Container(
       color: const Color(0XFFF9F9F9),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -69,8 +69,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                     id: 'add_widget',
                     title: '',
                     description: '',
-                    icon: Icons.add,
-                    color: Colors.orange,
+                    iconPath: 'assets/images/home/widget/plus_icon.png',
                   ),
                   isSelectionCard: true,
                 );
@@ -129,10 +128,11 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                 const SizedBox(height: 8), // 위젯 간격
                 Align(
                   alignment: Alignment.bottomRight, // 아이콘 위치
-                  child: Icon(
-                    widget.icon,
-                    color: widget.color,
-                    size: 24,
+                  child: Image.asset(
+                    widget.iconPath!,
+                    width: 44,
+                    height: 44,
+                   
                   ),
                 ),
               ],
@@ -146,18 +146,18 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: Colors.grey, style: BorderStyle.solid),
         ),
-        child: const Center(
+        child: Center(
           child: Icon(
-            Icons.drag_handle,
+            Icons.drag_indicator,
             color: Colors.grey,
             size: 32,
           ),
         ),
       ),
       child: DragTarget<String>(
-        onWillAccept: (data) => data != widget.id,
-        onAccept: (data) {
-          final draggedIndex = selectedWidgets.indexOf(data);
+        onWillAcceptWithDetails: (details) => details.data != widget.id,
+        onAcceptWithDetails: (details) {
+          final draggedIndex = selectedWidgets.indexOf(details.data);
           if (draggedIndex != -1) {
             setState(() {
               final draggedItem = selectedWidgets.removeAt(draggedIndex);
@@ -192,10 +192,10 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
             ],
           ),
           child: Center(
-            child: Icon(
-              widget.icon,
-              color: widget.color,
-              size: 32,
+            child: Image.asset(
+              widget.iconPath!,
+              width: 40,
+              height: 40,
             ),
           ),
         ),
@@ -234,7 +234,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.arrow_forward_ios,
                   size: 12,
                   color: Colors.grey,
@@ -259,10 +259,10 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
             // 아이콘
             Align(
               alignment: Alignment.bottomRight,
-              child: Icon(
-                  widget.icon,
-                  color: widget.color,
-                  size: 24,
+              child: Image.asset(
+                widget.iconPath!,
+                width: 50,
+                height: 50,
               ),
             ),
           ],

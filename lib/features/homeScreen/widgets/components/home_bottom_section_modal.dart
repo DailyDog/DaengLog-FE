@@ -116,10 +116,12 @@ class _HomeBottomSectionModalState extends State<HomeBottomSectionModal> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                widgetItem.icon,
+                              Image.asset(
+                                widgetItem.iconPath!,
+                                width: 20,
+                                height: 20,
                                 color: isSelected ? Colors.blue : Colors.grey,
-                                size: 32,
+                               
                               ),
                               const SizedBox(height: 8),
                               Text(

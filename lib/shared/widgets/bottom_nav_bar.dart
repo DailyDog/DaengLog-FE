@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:daenglog_fe/features/record/providers/record_provider.dart';
 
 /// 공용 하단 네비게이션 바
 Widget commonBottomNavBar({
@@ -16,6 +18,9 @@ Widget commonBottomNavBar({
     ),
     _NavBarItem(
       iconPath: 'assets/images/home/record_icon.png'
+    ),
+    _NavBarItem(
+      iconPath: 'assets/images/home/camera_icon.png'
     ),
     _NavBarItem(
       iconPath: 'assets/images/home/market_icon.png'
@@ -39,9 +44,12 @@ Widget commonBottomNavBar({
         Navigator.pushReplacementNamed(context, '/record_main');
         break;
       case 2:
-        Navigator.pushReplacementNamed(context, '/close');
+        Provider.of<RecordProvider>(context, listen: false).takePhotoWithCamera(context);
         break;
       case 3:
+        Navigator.pushReplacementNamed(context, '/close');
+        break;
+      case 4:
         Navigator.pushReplacementNamed(context, '/my_page');
         break;
     }

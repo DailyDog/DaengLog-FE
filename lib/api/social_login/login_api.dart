@@ -49,11 +49,8 @@ Future<Map<String, dynamic>> performGoogleLogin() async {
     final refreshToken = data['refreshToken'];
 
     // 4. 토큰 저장
-    await SecureTokenStorage.clear();
     await SecureTokenStorage.saveToken(accessToken); // 액세스 토큰 저장
-    if(await SecureTokenStorage.getRefreshToken() == null) {
-      await SecureTokenStorage.saveRefreshToken(refreshToken); // 리프레시 토큰 저장
-    }
+    await SecureTokenStorage.saveRefreshToken(refreshToken); // 리프레시 토큰 저장
     
     // 5. 사용자 프로필 정보 확인 (기존 사용자인지 새로운 사용자인지 판단)
     bool isNewUser = true;

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/features/pet_info/widgets/pet_info_appbar_navbar.dart';
+import 'package:daenglog_fe/features/pet_info/providers/pet_info_provider.dart';
+import 'package:provider/provider.dart';
 
 class PetInformationKindScreen extends StatefulWidget {
-  final void Function(String kind) onNext;
   
-  const PetInformationKindScreen({super.key, required this.onNext});
+  const PetInformationKindScreen({super.key});
 
   @override
   State<PetInformationKindScreen> createState() => _PetInformationKindScreenState();
 }
 
 class _PetInformationKindScreenState extends State<PetInformationKindScreen> {
-  String? selectedKind;
 
   final List<String> petKinds = ['강아지', '고양이'];
 
@@ -28,9 +28,11 @@ class _PetInformationKindScreenState extends State<PetInformationKindScreen> {
         Navigator.pop(context,'/home_main');
       },
       isFirst: 1,
-      onNext: selectedKind != null
-          ? () {
-              widget.onNext(selectedKind!);
+      onNext: context.read<PetInfoProvider>().getPetKind() != null
+          ? () async {
+              final petInfo = context.read<PetInfoProvider>();
+              petInfo.setPetKind(petInfo.getPetKind()!);
+              Navigator.pushNamed(context, '/pet_information_name');
             }
           : null,
       child: Padding(
@@ -41,19 +43,21 @@ class _PetInformationKindScreenState extends State<PetInformationKindScreen> {
               padding: const EdgeInsets.symmetric(vertical: 8),
               child: GestureDetector(
                 onTap: () {
-                  setState(() {
-                    selectedKind = kind;
+                  final petInfo = context.read<PetInfoProvider>();
+                  petInfo.setState(() {
+                    petInfo.currentStep = 0;
+                    petInfo.setPetKind(kind);
                   });
                 },
                 child: Container(
                   height: 56,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: selectedKind == kind 
+                    color: context.watch<PetInfoProvider>().getPetKind() == kind 
                         ? const Color(0xFFFFEADE) 
                         : const Color(0xFFEAEAEA),
                     borderRadius: BorderRadius.circular(40),
-                    border: selectedKind == kind
+                    border: context.watch<PetInfoProvider>().getPetKind() == kind
                         ? Border.all(color: const Color(0xFFFF5F01), width: 2)
                         : null,
                   ),
@@ -61,12 +65,12 @@ class _PetInformationKindScreenState extends State<PetInformationKindScreen> {
                     child: Text(
                       kind,
                       style: TextStyle(
-                        color: selectedKind == kind 
+                        color: context.watch<PetInfoProvider>().getPetKind() == kind 
                             ? const Color(0xFFFF5F01)
                             : const Color(0xFF333333),
                         fontSize: 20,
                         fontFamily: 'Pretendard',
-                        fontWeight: selectedKind == kind 
+                        fontWeight: context.watch<PetInfoProvider>().getPetKind() == kind 
                             ? FontWeight.w700
                             : FontWeight.w400,
                       ),

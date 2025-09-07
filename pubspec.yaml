@@ -65,10 +65,20 @@ flutter:
     - assets/images/home/market_icon.png
     - assets/images/home/mypage_icon.png
     - assets/images/home/record_icon.png
+    - assets/images/home/camera_icon.png
     - assets/images/home/mango_image.png
     - assets/images/home/rain.png
     - assets/images/home/sun.png
     - assets/images/home/snow.png
+    - assets/images/home/default_profile.png
+
+
+    # 메인 위젯 사진
+    - assets/images/home/widget/dog_icon.png
+    - assets/images/home/widget/plus_icon.png
+    - assets/images/home/widget/Goal_icon.png
+    - assets/images/home/widget/Sun_icon.png
+    - assets/images/home/widget/Journal_icon.png
     
     # 스플래쉬
     - assets/images/splash/entire.png 

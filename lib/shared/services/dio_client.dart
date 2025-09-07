@@ -35,7 +35,6 @@ Future<String?> refreshAccessToken(String refreshToken) async {
 /// 인증 토큰 자동 부착 + 401 시 1회 재시도
 Dio getDioWithAuth(String uri) {
   // 기본 요청 토큰 자동 부착 -> 특정 uri마다 붙이는 것은 따로 처리해야하는거 아닌가?
-  // 이건 https://api.daenglog.com/에만 토큰이 붙는거 아님?
   final dio = Dio(BaseOptions(baseUrl: '${dotenv.env['API_URL']!}/$uri'));
 
   // 동시 401 처리 방지용 (null이면 현재 갱신 중 아님)
@@ -46,6 +45,7 @@ Dio getDioWithAuth(String uri) {
     onRequest: (options, handler) async {
       final token = await SecureTokenStorage.getToken();
       print('[onRequest] 현재 accessToken: $token');
+      print('[onRequest] 현재 refreshToken: ${await SecureTokenStorage.getRefreshToken()}');
 
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';

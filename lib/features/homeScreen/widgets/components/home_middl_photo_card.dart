@@ -5,11 +5,13 @@ class HomeMiddlePhotoCard extends StatelessWidget {
   final String imagePath;
   final String title;
   final String date;
+  final String keyword;
 
   const HomeMiddlePhotoCard({
     required this.imagePath,
     required this.title,
     required this.date,
+    required this.keyword,
     Key? key,
   }) : super(key: key);
 
@@ -60,6 +62,13 @@ class HomeMiddlePhotoCard extends StatelessWidget {
                 fontSize: 16,
                 shadows: [Shadow(blurRadius: 2, color: Colors.black)],
               ),
+            ),
+          ),
+          Positioned(
+            left: 12,
+            bottom: 16,
+            child: Text(
+              keyword,
             ),
           ),
         ],

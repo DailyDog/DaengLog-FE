@@ -19,8 +19,6 @@ import 'package:daenglog_fe/shared/models/weather.dart';
 // 토큰 저장소 패키지
 
 // 프로필 패키지
-import 'package:daenglog_fe/shared/apis/default_profile_api.dart';
-import 'package:daenglog_fe/shared/models/default_profile.dart';
 
 // 날씨 패키지
 
@@ -34,28 +32,16 @@ class HomeMainScreen extends StatefulWidget {
 
 class _HomeMainScreenState extends State<HomeMainScreen> {
   String selectedKeyword = "전체"; // 기본값
-  DefaultProfile? _profile; // 프로필 정보 변수
   late ScrollController _scrollController; // 스크롤 컨트롤러 추가
   double _lastScrollPosition = 0.0; // 마지막 스크롤 위치
 
   // 날씨 상태에 따른 설명 반환
-
-
-  // 디폴트 프로필 정보 가져오기
-  Future<DefaultProfile> _getProfile() async {
-    final profile = await DefaultProfileApi().getDefaultProfile(); // json 파싱
-    setState(() {
-      _profile = profile;
-    });
-    return profile;
-  }
 
   @override
   void initState() {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-    _getProfile(); // Load profile data when screen initializes
   }
 
   @override
@@ -80,7 +66,6 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     // 날씨 상태에 따른 배경 이미지 설정
     String backgroundImage = 'assets/images/home/sun.png';
     final weather = WeatherApi().getWeather();
@@ -152,15 +137,15 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      HomeTopSection(profile: _profile),
+                      HomeTopSection(),
                       // 회색 박스 추가
                       Container(
                         width: double.infinity,
                         height: 8,
                         color: Colors.grey[200],
                       ),
-                      HomeMiddleSection(profile: _profile),
-                      HomeBottomSection(profile: _profile)
+                      HomeMiddleSection(),
+                      HomeBottomSection()
                     ]
                   ),
                 ),
