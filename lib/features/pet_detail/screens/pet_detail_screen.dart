@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:daenglog_fe/api/mypage/get/pet_detail_api.dart';
 import 'package:provider/provider.dart';
-import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:daenglog_fe/shared/services/pet_profile_provider.dart';
+import 'package:daenglog_fe/shared/widgets/pet_avatar.dart';
 
 class PetDetailScreen extends StatefulWidget {
   const PetDetailScreen({super.key});
@@ -13,83 +14,64 @@ class PetDetailScreen extends StatefulWidget {
 class _PetDetailScreenState extends State<PetDetailScreen> {
   Map<String, dynamic>? _detail;
   bool _loading = true;
-  String? _error;
-  dynamic _pickedImage; // XFile or similar
+  int? _petId;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    final petId = args?['id'] as int?;
-    _fetchDetail(petId, fallbackArgs: args);
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
   }
 
-  Future<void> _fetchDetail(int? petId, {Map<String, dynamic>? fallbackArgs}) async {
-    setState(() { _loading = true; _error = null; });
-    try {
-      if (petId != null) {
-        _detail = await PetDetailApi().getPetDetail(petId);
-      } else {
-        _detail = fallbackArgs; // 최소한 전달된 args로 표시
-      }
-    } catch (e) {
-      _error = '$e';
-    } finally {
-      if (mounted) setState(() { _loading = false; });
+  Future<void> _loadData() async {
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    _petId = args?['id'] as int?;
+    
+    if (_petId == null) {
+      setState(() {
+        _detail = args;
+        _loading = false;
+      });
+      return;
+    }
+
+    final provider = context.read<PetProfileProvider>();
+    final detail = await provider.loadPetDetail(_petId!);
+    
+    if (mounted) {
+      setState(() {
+        _detail = detail ?? args;
+        _loading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(),
       body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(child: Text('불러오기 실패'))
-              : SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: screenHeight * 0.03),
-                        _buildProfileSection(context),
-                        SizedBox(height: screenHeight * 0.03),
-                        _buildPetInfoSection(context),
-                        SizedBox(height: screenHeight * 0.03),
-                        _buildPersonalitySection(context),
-                        SizedBox(height: screenHeight * 0.05),
-                        Container(width: double.infinity, height: 1, color: const Color(0xFFEFEFEF)),
-                        SizedBox(height: screenHeight * 0.03),
-                        _buildDeleteButton(context),
-                        SizedBox(height: screenHeight * 0.05),
-                      ],
-                    ),
-                  ),
-                ),
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFFF5F01)))
+          : _detail == null
+              ? _buildErrorView()
+              : _buildContent(),
     );
   }
 
-  // AppBar
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    
+  PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: const Color(0xFFFF5F01),
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
-        onPressed: () => Navigator.of(context).pop(),
+        onPressed: () => Navigator.pop(context),
       ),
       title: Text(
-        _detail?['name'] != null ? (_detail!['name'] as String) : '반려동물 상세',
-        style: TextStyle(
-          fontSize: screenWidth * 0.055,
+        _detail?['name'] ?? '반려동물 상세',
+        style: const TextStyle(
+          fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.white,
         ),
@@ -98,131 +80,470 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
     );
   }
 
-  // 프로필 섹션
-  Widget _buildProfileSection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final String name = (_detail?['name'] as String?) ?? '';
-    final String? image = _sanitizeImageUrl(_detail?['profileImageUrl'] as String?);
+  Widget _buildErrorView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+          const SizedBox(height: 16),
+          const Text('데이터를 불러올 수 없습니다'),
+          TextButton(
+            onPressed: _loadData,
+            child: const Text('다시 시도', style: TextStyle(color: Color(0xFFFF5F01))),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    final size = MediaQuery.of(context).size;
+    final padding = size.width * 0.08;
+    
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: padding),
+      child: Column(
+        children: [
+          const SizedBox(height: 30),
+          _ProfileSection(detail: _detail!),
+          const SizedBox(height: 30),
+          _InfoSection(
+            detail: _detail!,
+            onEdit: () => _navigateToEdit('/pet_basic_edit'),
+          ),
+          const SizedBox(height: 30),
+          _PersonalitySection(
+            detail: _detail!,
+            onEdit: () => _navigateToEdit('/pet_personality_edit'),
+          ),
+          const SizedBox(height: 50),
+          const Divider(color: Color(0xFFEFEFEF)),
+          const SizedBox(height: 30),
+          _DeleteButton(onDelete: () => _handleDelete(context, _petId)),
+          const SizedBox(height: 50),
+        ],
+      ),
+    );
+  }
+
+  void _navigateToEdit(String route) {
+    Navigator.pushNamed(
+      context,
+      route,
+      arguments: _detail,
+    ).then((changed) {
+      if (changed == true && _petId != null) {
+        _loadData();
+      }
+    });
+  }
+}
+
+// _ProfileSection 위젯 (카메라 버튼 추가)
+class _ProfileSection extends StatelessWidget {
+  final Map<String, dynamic> detail;
+  
+  const _ProfileSection({required this.detail});
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final provider = context.watch<PetProfileProvider>();
+    final petId = detail['id'] as int?;
+    final imageUrl = petId != null 
+        ? provider.getPetImage(petId) 
+        : detail['profileImageUrl'] as String?;
+    
     return Column(
       children: [
         Stack(
           clipBehavior: Clip.none,
           children: [
-            CircleAvatar(
-              radius: screenWidth * 0.18,
-              backgroundColor: Colors.white,
-              child: ClipOval(
-                child: (image != null && image.isNotEmpty)
-                    ? Image.network(
-                        image,
-                        width: screenWidth * 0.36,
-                        height: screenWidth * 0.36,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) {
-                          final providerImg = _providerImagePath(context);
-                          if (providerImg != null && providerImg.isNotEmpty) {
-                            return Image.network(
-                              providerImg,
-                              width: screenWidth * 0.36,
-                              height: screenWidth * 0.36,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => Image.asset(
-                                'assets/images/home/default_profile.png',
-                                width: screenWidth * 0.36,
-                                height: screenWidth * 0.36,
-                                fit: BoxFit.cover,
-                              ),
-                            );
-                          }
-                          return Image.asset(
-                            'assets/images/home/default_profile.png',
-                            width: screenWidth * 0.36,
-                            height: screenWidth * 0.36,
-                            fit: BoxFit.cover,
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        'assets/images/home/default_profile.png',
-                        width: screenWidth * 0.36,
-                        height: screenWidth * 0.36,
-                        fit: BoxFit.cover,
-                      ),
-              ),
+            // 기존의 PetAvatar
+            PetAvatar(
+              imageUrl: imageUrl,
+              size: size.width * 0.36,
+              petId: petId,
             ),
+            // 카메라 버튼
             Positioned(
-              bottom: -screenWidth * 0.02,
-              right: -screenWidth * 0.02,
+              bottom: -8,
+              right: -8,
               child: GestureDetector(
-                onTap: _onChangeProfileImage,
+                onTap: () => _showImagePicker(context, petId),
                 child: Container(
-                  padding: EdgeInsets.all(screenWidth * 0.022),
+                  padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(
                     color: Color(0xFFFF5F01),
                     shape: BoxShape.circle,
                     boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0,2)),
+                      BoxShadow(
+                        color: Colors.black12, 
+                        blurRadius: 6, 
+                        offset: Offset(0, 2)
+                      ),
                     ],
                   ),
-                  child: Icon(Icons.photo_camera, color: Colors.white, size: screenWidth * 0.055),
+                  child: const Icon(
+                    Icons.photo_camera, 
+                    color: Colors.white, 
+                    size: 20
+                  ),
                 ),
               ),
             ),
           ],
         ),
-        SizedBox(height: screenHeight * 0.015),
+        const SizedBox(height: 15),
         Text(
-          name,
-          style: TextStyle(
-            fontSize: screenWidth * 0.06,
+          detail['name'] ?? '',
+          style: const TextStyle(
+            fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: const Color(0xFF484848),
+            color: Color(0xFF484848),
           ),
         ),
       ],
     );
   }
 
-  // 회원정보 섹션
-  Widget _buildMemberInfoSection(BuildContext context) {
-    // deprecated in new layout
-    return const SizedBox.shrink();
+  void _showImagePicker(BuildContext context, int? petId) {
+    if (petId == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('갤러리에서 선택'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(context, ImageSource.gallery, petId);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera),
+              title: const Text('카메라로 촬영'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(context, ImageSource.camera, petId);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  // 회원정보 항목
-  Widget _buildInfoItem(BuildContext context, String label, String value) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+  Future<void> _pickImage(BuildContext context, ImageSource source, int petId) async {
+    try {
+      final picker = ImagePicker();
+      final image = await picker.pickImage(source: source);
+      
+      if (image != null) {
+        // 로딩 표시
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(color: Color(0xFFFF5F01)),
+          ),
+        );
+
+        final provider = context.read<PetProfileProvider>();
+        final success = await provider.updatePetImage(petId, image);
+        
+        Navigator.pop(context); // 로딩 다이얼로그 닫기
+        
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('프로필 이미지가 업데이트되었습니다.')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('이미지 업데이트에 실패했습니다.')),
+          );
+        }
+      }
+    } catch (e) {
+      Navigator.pop(context); // 로딩 다이얼로그 닫기
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('이미지 선택 중 오류가 발생했습니다.')),
+      );
+    }
+  }
+}
+
+// 정보 섹션 위젯
+class _InfoSection extends StatelessWidget {
+  final Map<String, dynamic> detail;
+  final VoidCallback onEdit;
+  
+  const _InfoSection({required this.detail, required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    final name = detail['name'] ?? '';
+    final birthday = detail['birthday'] ?? '';
+    final gender = _formatGender(detail['gender']);
+    final species = _formatSpecies(detail['species']);
     
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '반려동물 정보',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF5C5C5C),
+              ),
+            ),
+            _EditButton(onTap: onEdit),
+          ],
+        ),
+        const SizedBox(height: 15),
+        const Divider(color: Color(0xFFF0F0F0)),
+        const SizedBox(height: 20),
+        _InfoItem(label: '이름', value: name),
+        if (birthday.isNotEmpty) _InfoItem(label: '생년월일', value: birthday),
+        if (gender.isNotEmpty) _InfoItem(label: '성별', value: gender),
+        if (species.isNotEmpty) _InfoItem(label: '종', value: species),
+      ],
+    );
+  }
+
+  String _formatGender(dynamic gender) {
+    if (gender == 'M') return '수컷';
+    if (gender == 'F') return '암컷';
+    return '';
+  }
+
+  String _formatSpecies(dynamic species) {
+    if (species == 'DOG') return '개';
+    if (species == 'CAT') return '고양이';
+    return species?.toString() ?? '';
+  }
+}
+
+// 성격 섹션 위젯
+class _PersonalitySection extends StatelessWidget {
+  final Map<String, dynamic> detail;
+  final VoidCallback onEdit;
+  
+  const _PersonalitySection({required this.detail, required this.onEdit});
+
+  @override
+  Widget build(BuildContext context) {
+    final personalities = List<String>.from(detail['personalities'] ?? []);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              '성격',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF5C5C5C),
+              ),
+            ),
+            _EditButton(onTap: onEdit),
+          ],
+        ),
+        const SizedBox(height: 15),
+        if (personalities.isEmpty)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              '아직 등록된 성격이 없습니다',
+              style: TextStyle(fontSize: 14, color: Color(0xFF9A9A9A)),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8,
+            runSpacing: 10,
+            children: personalities.map((p) => _PersonalityChip(label: p)).toList(),
+          ),
+      ],
+    );
+  }
+}
+
+// 개선된 삭제 다이얼로그
+class _DeleteConfirmDialog extends StatelessWidget {
+  final VoidCallback onConfirm;
+
+  const _DeleteConfirmDialog({required this.onConfirm});
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              '반려동물 삭제',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF484848),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              '반려동물을 정말 삭제하시겠습니까?',
+              style: TextStyle(
+                fontSize: 16,
+                color: Color(0xFF9A9A9A),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 32),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE7E7E7),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        '취소',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF5C5C5C),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      onConfirm();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF5F01),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        '삭제',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// 수정된 _handleDelete 메서드
+void _handleDelete(BuildContext context, int? petId) {
+  if (petId == null) return;
+
+  showDialog(
+    context: context,
+    builder: (ctx) => _DeleteConfirmDialog(
+      onConfirm: () async {
+        // 로딩 표시
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(color: Color(0xFFFF5F01)),
+          ),
+        );
+
+        final provider = context.read<PetProfileProvider>();
+        final success = await provider.deletePet(petId);
+        
+        Navigator.pop(context); // 로딩 다이얼로그 닫기
+        
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('반려동물이 삭제되었습니다.')),
+          );
+          Navigator.pop(context, true); // 이전 화면으로 돌아가기
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('삭제에 실패했습니다.')),
+          );
+        }
+      },
+    ),
+  );
+}
+
+// 공통 컴포넌트들
+class _InfoItem extends StatelessWidget {
+  final String label;
+  final String value;
+  
+  const _InfoItem({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: screenHeight * 0.025),
+      padding: const EdgeInsets.only(bottom: 20),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 라벨
           SizedBox(
-            width: screenWidth * 0.2,
+            width: 80,
             child: Text(
               label,
-              style: TextStyle(
-                fontSize: screenWidth * 0.04,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF7B7B7B),
+                color: Color(0xFF7B7B7B),
               ),
             ),
           ),
-          
-          SizedBox(width: screenWidth * 0.02),
-          
-          // 값
+          const SizedBox(width: 8),
           Expanded(
             child: Text(
               value,
-              style: TextStyle(
-                fontSize: screenWidth * 0.035,
+              style: const TextStyle(
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFF9A9A9A),
+                color: Color(0xFF9A9A9A),
               ),
             ),
           ),
@@ -230,258 +551,84 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
       ),
     );
   }
+}
 
-  // 반려동물 정보 섹션
-  Widget _buildPetInfoSection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final name = (_detail?['name'] as String?) ?? '';
-    final birthday = (_detail?['birthday'] as String?) ?? '';
-    final genderRaw = (_detail?['gender'] as String?) ?? '';
-    final gender = genderRaw == 'M' ? '수컷' : genderRaw == 'F' ? '암컷' : '';
-    final speciesRaw = (_detail?['species'] as String?) ?? '';
-    final species = speciesRaw == 'DOG' ? '개' : speciesRaw == 'CAT' ? '고양이' : speciesRaw;
+class _EditButton extends StatelessWidget {
+  final VoidCallback onTap;
+  
+  const _EditButton({required this.onTap});
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '반려동물 정보',
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF5C5C5C),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/pet_basic_edit',
-                  arguments: {
-                    'id': _detail?['id'],
-                    'name': _detail?['name'],
-                    'birthday': _detail?['birthday'],
-                    'gender': _detail?['gender'],
-                    'species': _detail?['species'],
-                    'personalities': _detail?['personalities'] ?? [],
-                  },
-                ).then((changed) {
-                  if (changed == true) {
-                    final id = _detail?['id'] as int?;
-                    _fetchDetail(id);
-                  }
-                });
-              },
-              child: _buildSmallEditPill(context),
-            ),
-          ],
-        ),
-        SizedBox(height: screenHeight * 0.015),
-        Container(height: 1, color: const Color(0xFFF0F0F0)),
-        SizedBox(height: screenHeight * 0.02),
-        _buildInfoItem(context, '이름', name),
-        if (birthday.isNotEmpty) _buildInfoItem(context, '생년월일', birthday),
-        if (gender.isNotEmpty) _buildInfoItem(context, '성별', gender),
-        if (species.isNotEmpty) _buildInfoItem(context, '종', species),
-      ],
-    );
-  }
-
-  // 성격 섹션
-  Widget _buildPersonalitySection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final personalities = ((_detail?['personalities'] as List?)?.cast<String>()) ?? const <String>[];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              '성격',
-              style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.w700,
-                color: const Color(0xFF5C5C5C),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(
-                  context,
-                  '/pet_personality_edit',
-                  arguments: {
-                    'id': _detail?['id'],
-                    'name': _detail?['name'],
-                    'birthday': _detail?['birthday'],
-                    'gender': _detail?['gender'],
-                    'species': _detail?['species'],
-                    'personalities': _detail?['personalities'] ?? [],
-                  },
-                ).then((changed) {
-                  if (changed == true) {
-                    final id = _detail?['id'] as int?;
-                    _fetchDetail(id);
-                  }
-                });
-              },
-              child: _buildSmallEditPill(context),
-            ),
-          ],
-        ),
-        SizedBox(height: screenHeight * 0.015),
-        Wrap(
-          spacing: screenWidth * 0.02,
-          runSpacing: screenHeight * 0.012,
-          children: personalities
-              .map((p) => Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.04,
-                      vertical: screenHeight * 0.008,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF5F5F5),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      p,
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.035,
-                        color: const Color(0xFF7C7C7C),
-                      ),
-                    ),
-                  ))
-              .toList(),
-        ),
-      ],
-    );
-  }
-
-  // 작은 수정 Pill
-  Widget _buildSmallEditPill(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.03,
-        vertical: screenHeight * 0.006,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFCDCDCD),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Text(
-        '수정',
-        style: TextStyle(
-          fontSize: screenWidth * 0.035,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  Future<void> _onChangeProfileImage() async {
-    // TODO: integrate with your existing image picker flow if available
-    // For now, just navigate to an image picker route or trigger a provider method
-    // Navigator.pushNamed(context, '/image_picker', arguments: {...});
-  }
-
-  String? _providerImagePath(BuildContext context) {
-    try {
-      return context.read<DefaultProfileProvider>().imagePath;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  // 하단 삭제 버튼
-  Widget _buildDeleteButton(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: screenWidth * 0.04,
-        vertical: screenHeight * 0.01,
-      ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEDEDED),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Text(
-        '프로필 삭제',
-        style: TextStyle(
-          fontSize: screenWidth * 0.035,
-          fontWeight: FontWeight.w700,
-          color: const Color(0xFF9A9A9A),
-        ),
-      ),
-    );
-  }
-
-  String? _sanitizeImageUrl(String? url) {
-    if (url == null || url.isEmpty) return url;
-    try {
-      final encodedMarker = '%3F';
-      final idxEncoded = url.indexOf(encodedMarker);
-      final idxQuery = url.lastIndexOf('?');
-      if (idxEncoded != -1 && idxQuery != -1 && idxQuery > idxEncoded) {
-        final base = url.substring(0, idxEncoded);
-        final query = url.substring(idxQuery);
-        return base + query;
-      }
-      return url;
-    } catch (_) {
-      return url;
-    }
-  }
-
-  Widget _buildSettingsSection(BuildContext context) {
-    // deprecated in new layout
-    return const SizedBox.shrink();
-  }
-
-  // 설정 항목
-  Widget _buildSettingItem(BuildContext context, String title, VoidCallback onTap) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: screenWidth * 0.04,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF7B7B7B),
-              ),
-            ),
-            Transform.rotate(
-              angle: 270 * 3.14159 / 180,
-              child: Icon(
-                Icons.arrow_forward_ios,
-                size: screenWidth * 0.04,
-                color: const Color(0xFF9A9A9A),
-              ),
-            ),
-          ],
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFCDCDCD),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: const Text(
+          '수정',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildBottomButtons(BuildContext context) {
-    // deprecated in new layout
-    return const SizedBox.shrink();
+class _PersonalityChip extends StatelessWidget {
+  final String label;
+  
+  const _PersonalityChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          color: Color(0xFF7C7C7C),
+        ),
+      ),
+    );
+  }
+}
+
+class _DeleteButton extends StatelessWidget {
+  final VoidCallback onDelete;
+  
+  const _DeleteButton({required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onDelete,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFEDEDED),
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: const Text(
+          '프로필 삭제',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF9A9A9A),
+          ),
+        ),
+      ),
+    );
   }
 }

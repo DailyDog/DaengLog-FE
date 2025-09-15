@@ -57,6 +57,8 @@ import 'features/pet_detail/screens/pet_detail_screen.dart';
 import 'features/pet_detail/screens/pet_basic_edit_screen.dart';
 import 'features/pet_detail/screens/pet_personality_edit_screen.dart';
 
+// 반려동물 프로필 화면
+import 'package:daenglog_fe/shared/services/pet_profile_provider.dart';
 
 // 메인 함수
 Future<void> main() async {
@@ -71,6 +73,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
         ChangeNotifierProvider(create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
         ChangeNotifierProvider(create: (_) => PetInfoProvider()), // 반려동물 정보 입력 상태 관리
+        ChangeNotifierProvider(create: (_) => PetProfileProvider()), // 반려동물 프로필 정보 제공
       ],
       child: const MyApp(), // 앱 실행
     ),

@@ -1,24 +1,23 @@
-import 'package:daenglog_fe/api/pets/models/pets_info.dart';
 import 'package:flutter/material.dart';
+import 'package:daenglog_fe/api/pets/models/pets_info.dart';
+import 'package:daenglog_fe/shared/widgets/pet_avatar.dart';
 
 class PetEditModal extends StatefulWidget {
   final VoidCallback onClose;
   final List<PetInfo> pets;
   final VoidCallback? onAddPet;
-  final VoidCallback? onAddFamilyPet;
-  final Function(PetInfo, int index)? onSelectPet;
+  final Function(PetInfo, int)? onSelectPet;
   final Function(PetInfo)? onEditPet;
   final bool Function(PetInfo)? isFamilyShared;
   final bool showAddFamilyPet;
-  final int Function(int index)? resolvePetId;
-  final Future<void> Function(int index, PetInfo pet)? onSetDefault;
+  final int Function(int)? resolvePetId;
+  final Future<void> Function(int, PetInfo)? onSetDefault;
 
   const PetEditModal({
     super.key,
     required this.onClose,
     required this.pets,
     this.onAddPet,
-    this.onAddFamilyPet,
     this.onSelectPet,
     this.onEditPet,
     this.isFamilyShared,
@@ -32,16 +31,16 @@ class PetEditModal extends StatefulWidget {
 }
 
 class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
   int? selectedIndex;
-  late final AnimationController _controller;
-  late final Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    final initialIndex =
-        widget.pets.indexWhere((p) => p.isRepresentative);
-    selectedIndex = initialIndex >= 0 ? initialIndex : null;
+    selectedIndex = widget.pets.indexWhere((p) => p.isRepresentative);
+    if (selectedIndex == -1) selectedIndex = null;
+    
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 250),
@@ -49,11 +48,8 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    
     _controller.forward();
   }
 
@@ -63,143 +59,74 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
     super.dispose();
   }
 
-  Future<void> _closeWithAnimation() async {
-    try {
-      await _controller.reverse();
-    } catch (_) {}
-    if (mounted) {
-      widget.onClose();
-    }
+  Future<void> _close() async {
+    await _controller.reverse();
+    if (mounted) widget.onClose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final size = MediaQuery.of(context).size;
     
     return GestureDetector(
-      onTap: _closeWithAnimation,
+      onTap: _close,
       child: Container(
-        color: Colors.black.withOpacity(0.77),
+        color: Colors.black54,
         child: Column(
           children: [
-            // 상단 여백
-            SizedBox(height: screenHeight * 0.35),
-            
-            // 모달 컨텐츠
+            SizedBox(height: size.height * 0.35),
             SlideTransition(
               position: _slideAnimation,
               child: GestureDetector(
-                onTap: () {}, // 모달 내부 탭 시 닫히지 않도록
+                onTap: () {}, // 모달 내부 클릭 방지
                 child: Container(
-                  height: screenHeight * 0.65,
+                  height: size.height * 0.65,
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      topRight: Radius.circular(10),
-                    ),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   child: Column(
                     children: [
-                      // 드래그 핸들
-                      GestureDetector(
-                        onTap: _closeWithAnimation,
-                        child: Container(
-                          margin: EdgeInsets.only(top: screenHeight * 0.02),
-                          width: screenWidth * 0.1,
-                          height: 3,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD9D9D9),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                      ),
-                      
-                      SizedBox(height: screenHeight * 0.03),
-                      
-                      // 반려동물 목록 (스크롤 가능)
+                      _buildHandle(),
                       Expanded(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+                          padding: const EdgeInsets.symmetric(horizontal: 32),
                           child: Column(
                             children: [
-                              // 스크롤 가능한 반려동물 목록
                               Expanded(
-                                child: SingleChildScrollView(
-                                  child: Column(
-                                    children: [
-                                      ...widget.pets.asMap().entries.map((entry) {
-                                        final index = entry.key;
-                                        final pet = entry.value;
-                                        return Column(
-                                          children: [
-                                            _buildPetEditItem(
-                                              context,
-                                              pet.name,
-                                              pet.age,
-                                              pet.imageUrl,
-                                              index,
-                                              selectedIndex == index,
-                                              () {
-                                                setState(() {
-                                                  selectedIndex = index;
-                                                });
-                                                widget.onSelectPet?.call(pet, index);
-                                              },
-                                              onEdit: () => widget.onEditPet?.call(pet),
-                                              isFamilyShared: widget.isFamilyShared?.call(pet) ?? false,
-                                              onTapRepresentative: () async {
-                                                final shouldSet = await showDialog<bool>(
-                                                  context: context,
-                                                  barrierDismissible: true,
-                                                  builder: (ctx) {
-                                                    return AlertDialog(
-                                                      title: const Text('대표 반려동물 설정'),
-                                                      content: Text('${pet.name}을 대표 반려동물로 설정할까요?'),
-                                                      actions: [
-                                                        TextButton(
-                                                          onPressed: () => Navigator.of(ctx).pop(false),
-                                                          child: const Text('취소'),
-                                                        ),
-                                                        TextButton(
-                                                          onPressed: () => Navigator.of(ctx).pop(true),
-                                                          child: const Text('설정'),
-                                                        ),
-                                                      ],
-                                                    );
-                                                  },
-                                                );
-                                                if (shouldSet == true) {
-                                                  setState(() { selectedIndex = index; });
-                                                  await widget.onSetDefault?.call(index, pet);
-                                                }
-                                              },
-                                            ),
-                                            if (index < widget.pets.length - 1) ...[
-                                              SizedBox(height: screenHeight * 0.02),
-                                              Container(
-                                                height: 1,
-                                                color: const Color(0xFFE7E7E7),
-                                              ),
-                                              SizedBox(height: screenHeight * 0.02),
-                                            ],
-                                          ],
-                                        );
-                                      }).toList(),
-                                    ],
+                                child: ListView.separated(
+                                  itemCount: widget.pets.length,
+                                  separatorBuilder: (_, __) => const Divider(height: 32),
+                                  itemBuilder: (context, index) => _PetItem(
+                                    pet: widget.pets[index],
+                                    isSelected: selectedIndex == index,
+                                    isFamilyShared: widget.isFamilyShared?.call(widget.pets[index]) ?? false,
+                                    onTap: () {
+                                      setState(() => selectedIndex = index);
+                                      widget.onSelectPet?.call(widget.pets[index], index);
+                                    },
+                                    onEdit: () {
+                                      final petId = widget.resolvePetId?.call(index);
+                                      Navigator.pushNamed(
+                                        context,
+                                        '/pet_detail',
+                                        arguments: {'id': petId},
+                                      );
+                                    },
+                                    onSetDefault: () => _handleSetDefault(index),
                                   ),
                                 ),
                               ),
-                              
-                              SizedBox(height: screenHeight * 0.03),
-                              // 반려동물 추가 버튼 (고정)
-                              _buildAddPetButton(context),
+                              const SizedBox(height: 24),
+                              _AddPetButton(onTap: widget.onAddPet),
                               if (widget.showAddFamilyPet) ...[
-                                SizedBox(height: screenHeight * 0.012),
-                                _buildAddFamilyPetButton(context),
+                                const SizedBox(height: 12),
+                                _AddPetButton(
+                                  label: '가족 반려동물 추가',
+                                  onTap: () => Navigator.pushNamed(context, '/pet_family_add'),
+                                ),
                               ],
-                              SizedBox(height: screenHeight * 0.05),
+                              const SizedBox(height: 40),
                             ],
                           ),
                         ),
@@ -215,167 +142,128 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
     );
   }
 
-  // 반려동물 수정 아이템
-  Widget _buildPetEditItem(
-    BuildContext context, 
-    String name, 
-    String age, 
-    String? imageUrl,
-    int index,
-    bool isRepresentative,
-    VoidCallback? onTap,
-    {VoidCallback? onEdit, bool isFamilyShared = false, VoidCallback? onTapRepresentative}
-  ) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+  Widget _buildHandle() {
+    return GestureDetector(
+      onTap: _close,
+      child: Container(
+        margin: const EdgeInsets.only(top: 16),
+        width: 40,
+        height: 4,
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(2),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleSetDefault(int index) async {
+    final shouldSet = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => _ConfirmDialog(
+        title: '대표 반려동물 설정',
+        content: '대표 반려동물을 변경할까요?',
+        confirmText: '설정',
+      ),
+    );
     
+    if (shouldSet == true) {
+      setState(() => selectedIndex = index);
+      await widget.onSetDefault?.call(index, widget.pets[index]);
+    }
+  }
+}
+
+// 반려동물 아이템 위젯
+class _PetItem extends StatelessWidget {
+  final PetInfo pet;
+  final bool isSelected;
+  final bool isFamilyShared;
+  final VoidCallback onTap;
+  final VoidCallback onEdit;
+  final VoidCallback onSetDefault;
+
+  const _PetItem({
+    required this.pet,
+    required this.isSelected,
+    required this.isFamilyShared,
+    required this.onTap,
+    required this.onEdit,
+    required this.onSetDefault,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Row(
         children: [
-          // 반려동물 이미지
+          // 프로필 이미지 - PetAvatar 사용
           Stack(
             clipBehavior: Clip.none,
             children: [
-              Container(
-                width: screenWidth * 0.17,
-                height: screenWidth * 0.17,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: const Color(0xFFADADAD),
-                    width: 1,
-                  ),
-                ),
-                child: ClipOval(
-                  child: (imageUrl != null && imageUrl.isNotEmpty)
-                      ? SizedBox.expand(
-                          child: Image.network(
-                            imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Image.asset(
-                              'assets/images/home/default_profile.png',
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        )
-                      : SizedBox.expand(
-                          child: Image.asset(
-                            'assets/images/home/default_profile.png',
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                ),
+              PetAvatar(
+                imageUrl: pet.imageUrl,
+                size: 68,
+                petId: pet.id, // petId 전달로 403 에러 시 자동 갱신
               ),
               if (isFamilyShared)
                 Positioned(
-                  right: -screenWidth * 0.01,
-                  top: -screenWidth * 0.01,
+                  right: -4,
+                  top: -4,
                   child: Container(
-                    padding: EdgeInsets.all(screenWidth * 0.008),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 2,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
+                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)],
                     ),
-                    child: Icon(
-                      Icons.group,
-                      size: screenWidth * 0.045,
-                      color: const Color(0xFF5C5C5C),
-                    ),
+                    child: const Icon(Icons.group, size: 18, color: Colors.grey),
                   ),
                 ),
             ],
           ),
+          const SizedBox(width: 16),
           
-          SizedBox(width: screenWidth * 0.04),
-          
-          // 반려동물 정보 + 나이 옆 수정 아이콘
+          // 정보
           Expanded(
             child: Row(
               children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          name,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: screenWidth * 0.04,
-                            fontWeight: FontWeight.w700,
-                            color: const Color(0xFF5C5C5C),
-                          ),
-                        ),
-                      ),
-                      Text(
-                        ' | $age',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.04,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF5C5C5C),
-                        ),
-                      ),
-                      SizedBox(width: screenWidth * 0.008),
-                      GestureDetector(
-                        onTap: () {
-                          onEdit?.call();
-                          final petId = widget.resolvePetId?.call(index);
-                          Navigator.pushNamed(
-                            context,
-                            '/pet_detail',
-                            arguments: {
-                              if (petId != null) 'id': petId,
-                              'name': name,
-                              'imageUrl': imageUrl,
-                              'age': int.tryParse(age.replaceAll(RegExp(r'[^0-9]'), '')),
-                            },
-                          );
-                        },
-                        behavior: HitTestBehavior.opaque,
-                        child: Icon(
-                          Icons.edit,
-                          size: screenWidth * 0.045,
-                          color: const Color(0x66666666),
-                        ),
-                      ),
-                    ],
+                Text(
+                  '${pet.name} | ${pet.age}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF5C5C5C),
                   ),
+                ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: onEdit,
+                  child: const Icon(Icons.edit, size: 20, color: Colors.grey),
                 ),
               ],
             ),
           ),
           
-          // 대표 표시
+          // 대표 설정
           GestureDetector(
-            onTap: onTapRepresentative,
+            onTap: onSetDefault,
             child: Row(
               children: [
                 Container(
-                  width: screenWidth * 0.028,
-                  height: screenWidth * 0.028,
+                  width: 16,
+                  height: 16,
                   decoration: BoxDecoration(
-                    color: isRepresentative ? const Color(0xFFFF5F01) : null,
+                    color: isSelected ? const Color(0xFFFF5F01) : null,
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFFC4C4C4),
-                      width: 0.5,
-                    ),
+                    border: Border.all(color: Colors.grey[400]!),
                   ),
                 ),
-                SizedBox(width: screenWidth * 0.01),
-                Text(
+                const SizedBox(width: 6),
+                const Text(
                   '대표',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.034,
-                    color: const Color(0xFF5C5C5C),
-                  ),
+                  style: TextStyle(fontSize: 14, color: Color(0xFF5C5C5C)),
                 ),
               ],
             ),
@@ -384,83 +272,98 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
       ),
     );
   }
+}
 
-  // 반려동물 추가 버튼
-  Widget _buildAddPetButton(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
+// 추가 버튼 위젯
+class _AddPetButton extends StatelessWidget {
+  final String label;
+  final VoidCallback? onTap;
+
+  const _AddPetButton({
+    this.label = '반려동물 추가',
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, '/pet_info');
-        widget.onAddPet?.call();
-      },
+      onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.05,
-          vertical: screenHeight * 0.015,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           color: const Color(0xFFE7E7E7),
-          borderRadius: BorderRadius.circular(11),
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              Icons.add,
-              color: const Color(0xFF5C5C5C),
-              size: screenWidth * 0.075,
-            ),
-            SizedBox(width: screenWidth * 0.02),
+            const Icon(Icons.add, color: Color(0xFF5C5C5C), size: 24),
+            const SizedBox(width: 8),
             Text(
-              '반려동물 추가',
-              style: TextStyle(
-                fontSize: screenWidth * 0.034,
-                color: const Color(0xFF5C5C5C),
-              ),
+              label,
+              style: const TextStyle(fontSize: 14, color: Color(0xFF5C5C5C)),
             ),
           ],
         ),
       ),
     );
   }
+}
 
-  // 가족 반려동물 추가 버튼
-  Widget _buildAddFamilyPetButton(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
-    return GestureDetector(
-      onTap: widget.onAddFamilyPet,
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.05,
-          vertical: screenHeight * 0.015,
-        ),
-        decoration: BoxDecoration(
-          color: const Color(0xFFE7E7E7),
-          borderRadius: BorderRadius.circular(11),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
+// 확인 다이얼로그
+class _ConfirmDialog extends StatelessWidget {
+  final String title;
+  final String content;
+  final String confirmText;
+
+  const _ConfirmDialog({
+    required this.title,
+    required this.content,
+    required this.confirmText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.add,
-              color: const Color(0xFF5C5C5C),
-              size: screenWidth * 0.075,
-            ),
-            SizedBox(width: screenWidth * 0.02),
             Text(
-              '가족 반려동물 추가',
-              style: TextStyle(
-                fontSize: screenWidth * 0.034,
-                color: const Color(0xFF5C5C5C),
-              ),
+              title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              content,
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context, false),
+                    child: const Text('취소', style: TextStyle(color: Colors.grey)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context, true),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF6B35),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(confirmText, style: const TextStyle(color: Colors.white)),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

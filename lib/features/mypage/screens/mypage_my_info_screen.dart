@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/api/mypage/get/my_info_api.dart';
 import 'package:daenglog_fe/api/mypage/models/my_info.dart';
+import 'package:daenglog_fe/shared/services/logout_service.dart';
 
 class MyInfoPage extends StatefulWidget {
   const MyInfoPage({super.key});
@@ -170,21 +171,24 @@ class _MyInfoPageState extends State<MyInfoPage> {
             SizedBox(height: screenHeight * 0.02),
 
             Center(
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.08,
-                  vertical: screenHeight * 0.012,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD4B0),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Text(
-                  '로그아웃',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.04,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+              child: GestureDetector( // 이 부분 추가
+                onTap: () => LogoutService.showLogoutDialog(context),
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.08,
+                    vertical: screenHeight * 0.012,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD4B0),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text(
+                    '로그아웃',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.04,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),

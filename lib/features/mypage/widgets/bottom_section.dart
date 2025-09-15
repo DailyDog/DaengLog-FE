@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:daenglog_fe/features/mypage/widgets/pet_horizontal_list.dart';
 import 'package:daenglog_fe/features/mypage/widgets/section_divider.dart';
 import 'package:daenglog_fe/features/mypage/widgets/menu_item.dart';
+import 'package:daenglog_fe/shared/services/logout_service.dart';
 
 class MyPageBottomSection extends StatelessWidget {
   final List<PetListItem> pets;
@@ -48,21 +49,24 @@ class MyPageBottomSection extends StatelessWidget {
           SizedBox(height: screenHeight * 0.02),
 
           Center(
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.04,
-                vertical: screenHeight * 0.01,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFD4B0),
-                borderRadius: BorderRadius.circular(screenWidth * 0.15),
-              ),
-              child: Text(
-                '로그아웃',
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+            child: GestureDetector( // 이 부분 추가
+              onTap: () => LogoutService.showLogoutDialog(context),
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.04,
+                  vertical: screenHeight * 0.01,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD4B0),
+                  borderRadius: BorderRadius.circular(screenWidth * 0.15),
+                ),
+                child: Text(
+                  '로그아웃',
+                  style: TextStyle(
+                    fontSize: screenWidth * 0.035,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
