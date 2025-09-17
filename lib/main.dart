@@ -13,6 +13,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:provider/provider.dart';
 import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
 import 'features/pet_info/providers/pet_info_provider.dart';
+import 'package:daenglog_fe/features/pet_detail/screens/pet_detail_screen.dart';
 
 // 로그인 화면
 import 'features/login/login.dart';
@@ -54,6 +55,9 @@ import 'features/purchase/close.dart';
 import 'features/cloud/screens/cloud_main_screen.dart';
 import 'features/cloud/providers/cloud_screen_provider.dart';
 
+import 'features/pet_detail/screens/pet_basic_edit_screen.dart';
+import 'features/pet_detail/screens/pet_personality_edit_screen.dart';
+import 'shared/services/pet_profile_provider.dart';
 
 // 메인 함수
 Future<void> main() async {
@@ -62,12 +66,20 @@ Future<void> main() async {
   runApp(
     // ChangeNotifierProvider( // 기본 프로필 정보 제공
     //   create: (_) => DefaultProfileProvider(),
-    MultiProvider( // 여러 provider 제공 -> 전역 프로바이더 사용
-      providers: [ 
-        ChangeNotifierProvider(create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
-        ChangeNotifierProvider(create: (_) => RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
-        ChangeNotifierProvider(create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
-        ChangeNotifierProvider(create: (_) => PetInfoProvider()), // 반려동물 정보 입력 상태 관리
+    MultiProvider(
+      // 여러 provider 제공 -> 전역 프로바이더 사용
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
+        ChangeNotifierProvider(
+            create: (_) =>
+                RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
+        ChangeNotifierProvider(
+            create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
+        ChangeNotifierProvider(
+            create: (_) => PetInfoProvider()), // 반려동물 정보 입력 상태 관리
+        ChangeNotifierProvider(
+            create: (_) => PetProfileProvider()), // 반려동물 프로필 정보 제공
       ],
       child: const MyApp(), // 앱 실행
     ),
@@ -79,7 +91,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp( // 메타데이터 제공
+    return MaterialApp(
+      // 메타데이터 제공
       debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
       // 초기 라우트 설정 = 초기 화면
       initialRoute: '/login', // 초기 화면 설정
@@ -99,18 +112,24 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const SocialLoginScreen(), // 로그인 화면
 
         // 정보 입력 화면
-        '/pet_information_kind': (context) => PetInformationKindScreen(), // 반려동물 종류 화면
-        '/pet_information_name': (context) => PetInformationNameScreen(), // 반려동물 이름 화면
-        '/pet_information_character': (context) => PetInformationCharacterScreen(), // 반려동물 캐릭터 화면
-        '/pet_information_profile': (context) => PetInformationProfileScreen(), // 반려동물 프로필 화면
+        '/pet_information_kind': (context) =>
+            PetInformationKindScreen(), // 반려동물 종류 화면
+        '/pet_information_name': (context) =>
+            PetInformationNameScreen(), // 반려동물 이름 화면
+        '/pet_information_character': (context) =>
+            PetInformationCharacterScreen(), // 반려동물 캐릭터 화면
+        '/pet_information_profile': (context) =>
+            PetInformationProfileScreen(), // 반려동물 프로필 화면
         '/pet_info': (context) => PetInfoScreen(), // 반려동물 정보 화면
 
         // 홈 화면
         '/home_main': (context) => const HomeMainScreen(), // 홈 화면
-        
+
         // 채팅 화면
-        '/chat_main_prompt': (context) => const ChatMainPromptScreen(), // 홈 프롬프트 화면
-        '/chat_communication': (context) => ChatCommunicationScreen(), // 채팅 서비스 화면
+        '/chat_main_prompt': (context) =>
+            const ChatMainPromptScreen(), // 홈 프롬프트 화면
+        '/chat_communication': (context) =>
+            ChatCommunicationScreen(), // 채팅 서비스 화면
         '/chat_history': (context) => ChatHistoryScreen(), // 채팅 기록 화면
 
         // 포토카드 화면
@@ -118,23 +137,42 @@ class MyApp extends StatelessWidget {
 
         // 가족 공유 화면
         '/family_share': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
           return FamilyShareScreen(
             sharedContent: args?['content'] ?? '공유할 내용이 없습니다.',
             sharedImagePath: args?['imagePath'],
           );
         },
         '/family_send': (context) => const FamilySendScreen(), // 가족 공유 화면
-        '/envelope_receive': (context) => const EnvelopeReceiveScreen(), // 가족 공유 화면
+        '/envelope_receive': (context) =>
+            const EnvelopeReceiveScreen(), // 가족 공유 화면
 
         // 마켓 화면
-        '/close': (context) => const Close(),  // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
+        '/close': (context) =>
+            const Close(), // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
 
         // 마이페이지 화면
         '/my_page': (context) => const MyPageMainScreen(), // 마이페이지 화면
-        '/my_info_page': (context) => const MyInfoPage(), // 마이페이지 화면
+        '/my_info_page': (context) => MyInfoPage(), // 마이페이지 화면 (유저 상세)
         '/alarm_page': (context) => const AlarmPage(), // 알림 화면
 
+        // 반려동물 상세
+        '/pet_detail': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          return PetDetailScreen();
+        },
+        '/pet_basic_edit': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          return PetBasicEditScreen();
+        },
+        '/pet_personality_edit': (context) {
+          final args = ModalRoute.of(context)?.settings.arguments
+              as Map<String, dynamic>?;
+          return PetPersonalityEditScreen();
+        },
         // 기록 화면
         '/record_main': (context) => const RecordMainScreen(), // 기록 화면
         '/image_upload': (context) => const ImageUploadScreen(), // 이미지 업로드 화면
