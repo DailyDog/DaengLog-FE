@@ -5,35 +5,51 @@ class PetEditModal extends StatelessWidget {
   final VoidCallback onClose;
   final List<PetInfo> pets;
   final VoidCallback? onAddPet;
+  final VoidCallback? onAddFamilyPet;
   final Function(PetInfo)? onSelectPet;
+  final int representativeIndex;
+  final PetInfo? representativePet;
+  final bool hasFamilyService;
 
   const PetEditModal({
     super.key,
     required this.onClose,
     required this.pets,
     this.onAddPet,
+    this.onAddFamilyPet,
     this.onSelectPet,
+    required this.representativeIndex,
+    this.representativePet,
+    required this.hasFamilyService,
   });
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
-    return GestureDetector(
-      onTap: onClose,
-      child: Container(
-        color: Colors.black.withOpacity(0.77),
-        child: Column(
-          children: [
-            // 상단 여백
-            SizedBox(height: screenHeight * 0.6),
-            
-            // 모달 컨텐츠
-            GestureDetector(
-              onTap: () {}, // 모달 내부 탭 시 닫히지 않도록
+
+    return Material(
+      color: Colors.black.withOpacity(0.77), // dimmed barrier
+      child: Stack(
+        children: [
+          // 배리어 탭 → 닫기
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onClose,
+            ),
+          ),
+
+          // 하단 시트
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              top: false,
               child: Container(
-                height: screenHeight * 0.4,
+                constraints: BoxConstraints(
+                  // 기기별 안정적 비율 (최대 60% 높이)
+                  maxHeight: screenHeight * 0.6,
+                ),
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -42,106 +58,140 @@ class PetEditModal extends StatelessWidget {
                   ),
                 ),
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // 드래그 핸들
                     GestureDetector(
                       onTap: onClose,
                       child: Container(
-                        margin: EdgeInsets.only(top: screenHeight * 0.02),
-                        width: screenWidth * 0.1,
-                        height: 3,
+                        margin: const EdgeInsets.only(top: 10),
+                        width: screenWidth * 0.12,
+                        height: 4,
                         decoration: BoxDecoration(
                           color: const Color(0xFFD9D9D9),
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
                     ),
-                    
-                    SizedBox(height: screenHeight * 0.03),
-                    
-                    // 반려동물 목록 (스크롤 가능)
+
+                    const SizedBox(height: 12),
+
+                    // 스크롤 영역
                     Expanded(
                       child: Padding(
                         padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
-                        child: Column(
-                          children: [
-                            // 스크롤 가능한 반려동물 목록
-                            Expanded(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  children: [
-                                    ...pets.asMap().entries.map((entry) {
-                                      final index = entry.key;
-                                      final pet = entry.value;
-                                      return Column(
-                                        children: [
-                                          _buildPetEditItem(
-                                            context, 
-                                            pet.name, 
-                                            pet.age, 
-                                            pet.isRepresentative,
-                                            () => onSelectPet?.call(pet),
-                                          ),
-                                          if (index < pets.length - 1) ...[
-                                            SizedBox(height: screenHeight * 0.02),
-                                            Container(
-                                              height: 1,
-                                              color: const Color(0xFFE7E7E7),
-                                            ),
-                                            SizedBox(height: screenHeight * 0.02),
-                                          ],
-                                        ],
-                                      );
-                                    }).toList(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            
-                            SizedBox(height: screenHeight * 0.03),
-                            // 반려동물 추가 버튼 (고정)
-                            _buildAddPetButton(context),
-                            SizedBox(height: screenHeight * 0.05),
-                          ],
+                        child: ListView.separated(
+                          itemCount: pets.length,
+                          separatorBuilder: (_, __) => Column(
+                            children: [
+                              SizedBox(height: screenHeight * 0.015),
+                              Container(height: 1, color: const Color(0xFFE7E7E7)),
+                              SizedBox(height: screenHeight * 0.015),
+                            ],
+                          ),
+                          itemBuilder: (context, index) {
+                            final pet = pets[index];
+
+                            // 대표 표시 기준: 상위에서 내려준 representativeIndex 사용
+                            final isRep = index == representativeIndex;
+
+                            return _buildPetEditItem(
+                              context: context,
+                              pet: pet,
+                              isRepresentative: isRep,
+                              onTap: () => onSelectPet?.call(pet),
+                            );
+                          },
                         ),
                       ),
                     ),
+
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // 하단 버튼들
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.08),
+                      child: Column(
+                        children: [
+                          // 기본 반려동물 추가 버튼 (항상)
+                          _buildAddPetButton(
+                            context,
+                            label: '반려동물 추가',
+                            onTap: onAddPet,
+                          ),
+
+                          SizedBox(height: screenHeight * 0.015),
+
+                          // 가족 반려동물 추가 버튼 (조건부)
+                          if (hasFamilyService)
+                            _buildAddPetButton(
+                              context,
+                              label: '가족 반려동물 추가',
+                              onTap: onAddFamilyPet ??
+                                  () {
+                                    // 필요 시 기본 동작
+                                    debugPrint('가족 반려동물 추가');
+                                  },
+                            ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: screenHeight * 0.02),
                   ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
+  // 두 Pet이 동일한지 비교 (id가 있으면 id로, 없으면 name+age로 비교)
+  bool _isSamePet(PetInfo a, PetInfo? b) {
+    if (b == null) return false;
+    try {
+      // id 필드가 있는 경우 대비 (dynamic 접근)
+      final dynamic da = a;
+      final dynamic db = b;
+      if ((da as dynamic).id != null && (db as dynamic).id != null) {
+        return da.id == db.id;
+      }
+    } catch (_) {
+      // id가 없으면 아래로 폴백
+    }
+    // 폴백: name + age 비교
+    try {
+      return a.name == b.name && a.age == b.age;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // 반려동물 수정 아이템
-  Widget _buildPetEditItem(
-    BuildContext context, 
-    String name, 
-    String age, 
-    bool isRepresentative,
+  Widget _buildPetEditItem({
+    required BuildContext context,
+    required PetInfo pet,
+    required bool isRepresentative,
     VoidCallback? onTap,
-  ) {
+  }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return GestureDetector(
       onTap: onTap,
+      behavior: HitTestBehavior.opaque,
       child: Row(
         children: [
-          // 반려동물 이미지
+          // 아바타
           Container(
             width: screenWidth * 0.17,
             height: screenWidth * 0.17,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.grey[300],
-              border: Border.all(
-                color: const Color(0xFFADADAD),
-                width: 1,
-              ),
+              border: Border.all(color: const Color(0xFFADADAD), width: 1),
             ),
             child: Icon(
               Icons.pets,
@@ -149,13 +199,12 @@ class PetEditModal extends StatelessWidget {
               size: screenWidth * 0.08,
             ),
           ),
-          
           SizedBox(width: screenWidth * 0.04),
-          
-          // 반려동물 정보
+
+          // 이름 | 나이
           Expanded(
             child: Text(
-              '$name | $age',
+              '${pet.name} | ${pet.age}',
               style: TextStyle(
                 fontSize: screenWidth * 0.04,
                 fontWeight: FontWeight.w700,
@@ -163,67 +212,46 @@ class PetEditModal extends StatelessWidget {
               ),
             ),
           ),
-          
-          // 대표 표시
-          if (isRepresentative) ...[
-            Container(
-              width: screenWidth * 0.028,
-              height: screenWidth * 0.028,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF5F01),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFC4C4C4),
-                  width: 0.5,
-                ),
-              ),
+
+          // 대표 표시 (라디오 느낌)
+          Container(
+            width: screenWidth * 0.028,
+            height: screenWidth * 0.028,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isRepresentative ? const Color(0xFFFF5F01) : null,
+              border: Border.all(color: const Color(0xFFC4C4C4), width: 0.5),
             ),
-            SizedBox(width: screenWidth * 0.01),
-            Text(
-              '대표',
-              style: TextStyle(
-                fontSize: screenWidth * 0.034,
-                color: const Color(0xFF5C5C5C),
-              ),
+          ),
+          SizedBox(width: screenWidth * 0.01),
+          Text(
+            '대표',
+            style: TextStyle(
+              fontSize: screenWidth * 0.034,
+              color: const Color(0xFF5C5C5C),
             ),
-          ] else ...[
-            Container(
-              width: screenWidth * 0.028,
-              height: screenWidth * 0.028,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: const Color(0xFFC4C4C4),
-                  width: 0.5,
-                ),
-              ),
-            ),
-            SizedBox(width: screenWidth * 0.01),
-            Text(
-              '대표',
-              style: TextStyle(
-                fontSize: screenWidth * 0.034,
-                color: const Color(0xFF5C5C5C),
-              ),
-            ),
-          ],
+          ),
         ],
       ),
     );
   }
 
-  // 반려동물 추가 버튼
-  Widget _buildAddPetButton(BuildContext context) {
+  // 공용 추가 버튼
+  Widget _buildAddPetButton(
+    BuildContext context, {
+    required String label,
+    VoidCallback? onTap,
+  }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return GestureDetector(
-      onTap: onAddPet,
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(
           horizontal: screenWidth * 0.05,
-          vertical: screenHeight * 0.015,
+          vertical: screenHeight * 0.012,
         ),
         decoration: BoxDecoration(
           color: const Color(0xFFE7E7E7),
@@ -231,16 +259,11 @@ class PetEditModal extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(
-              Icons.add,
-              color: const Color(0xFF5C5C5C),
-              size: screenWidth * 0.075,
-            ),
+            Icon(Icons.add, color: const Color(0xFF5C5C5C), size: screenWidth * 0.075),
             SizedBox(width: screenWidth * 0.02),
             Text(
-              '반려동물 추가',
+              label,
               style: TextStyle(
                 fontSize: screenWidth * 0.034,
                 color: const Color(0xFF5C5C5C),
