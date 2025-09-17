@@ -7,7 +7,7 @@ import 'package:daenglog_fe/api/mypage/models/my_page_summary.dart';
 class MyPageTopSection extends StatelessWidget {
   final MyPageSummary? summary;
   final bool loading;
-  final String? imageUrl; // pre-resolved image url from screen
+  final String? imageUrl;
 
   const MyPageTopSection({
     super.key, 
@@ -42,7 +42,7 @@ class MyPageTopSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  loading ? '...' : '${summary?.defaultPet.name ?? ''} 집사님,\n안녕하세요!',
+                  loading ? '...' : _getGreetingText(provider),
                   style: TextStyle(
                     fontSize: screenWidth * 0.06,
                     fontWeight: FontWeight.w700,
@@ -61,7 +61,7 @@ class MyPageTopSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(screenWidth * 0.018),
                   ),
                   child: Text(
-                    '${summary?.planName ?? ''} 플랜',
+                    _getPlanText(),
                     style: TextStyle(
                       fontSize: screenWidth * 0.029,
                       fontWeight: FontWeight.w700,
@@ -75,5 +75,23 @@ class MyPageTopSection extends StatelessWidget {
         ],
       ),
     );
+  }
+  
+  String _getGreetingText(PetProfileProvider provider) {
+    if (provider.allPets.isEmpty) {
+      // 반려동물이 없으면 유저 이름 사용
+      return '${summary?.userName ?? ''}님,\n안녕하세요!';
+    } else {
+      // 반려동물이 있으면 기존 로직 (집사님)
+      return '${summary?.defaultPet.name ?? ''} 집사님,\n안녕하세요!';
+    }
+  }
+
+  String _getPlanText() {
+    // planName이 비어있으면 기본값 "개인 플랜" 사용
+    if (summary?.planName == null || summary!.planName.isEmpty) {
+      return '개인 플랜';
+    }
+    return '${summary!.planName} 플랜';
   }
 }

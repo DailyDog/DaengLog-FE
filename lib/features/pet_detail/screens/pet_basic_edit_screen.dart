@@ -29,19 +29,21 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // 한 번만 초기화
     if (!_isInitialized) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null) {
         _petId = args['id'] as int?;
         _nameController.text = (args['name'] as String?) ?? '';
         _birthdayController.text = (args['birthday'] as String?) ?? '';
         _gender = (args['gender'] as String?) ?? '';
         _species = (args['species'] as String?) ?? '';
-        _personalities = List<String>.from((args['personalities'] as List?) ?? []);
+        _personalities =
+            List<String>.from((args['personalities'] as List?) ?? []);
         _isInitialized = true;
-        
+
         // 상태 업데이트
         setState(() {});
       }
@@ -57,7 +59,7 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate() || _petId == null) return;
-    
+
     try {
       await PetUpdateApi().updatePet(
         petId: _petId!,
@@ -79,8 +81,8 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
-    final initial = DateTime.tryParse(_birthdayController.text) ?? 
-                   DateTime(now.year - 3, now.month, now.day);
+    final initial = DateTime.tryParse(_birthdayController.text) ??
+        DateTime(now.year - 3, now.month, now.day);
     final picked = await showDatePicker(
       context: context,
       initialDate: initial,
@@ -89,10 +91,10 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
     );
     if (picked != null) {
       final s = '${picked.year.toString().padLeft(4, '0')}-'
-                '${picked.month.toString().padLeft(2, '0')}-'
-                '${picked.day.toString().padLeft(2, '0')}';
-      setState(() { 
-        _birthdayController.text = s; 
+          '${picked.month.toString().padLeft(2, '0')}-'
+          '${picked.day.toString().padLeft(2, '0')}';
+      setState(() {
+        _birthdayController.text = s;
       });
     }
   }
@@ -108,10 +110,9 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // 나머지 UI 코드는 동일하되, 초기화 버튼의 onPressed를 _reset()으로 변경
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -133,9 +134,7 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.08, 
-          vertical: screenHeight * 0.02
-        ),
+            horizontal: screenWidth * 0.08, vertical: screenHeight * 0.02),
         child: Form(
           key: _formKey,
           child: Column(
@@ -170,7 +169,7 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
                 ),
               ),
               SizedBox(height: screenHeight * 0.04),
-              
+
               // 이름 입력
               Container(
                 height: 56,
@@ -201,14 +200,14 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
                       fontFamily: 'Pretendard-Medium',
                       fontWeight: FontWeight.w500,
                     ),
-                    validator: (v) => (v == null || v.trim().isEmpty) 
-                        ? '이름을 입력해 주세요' : null,
+                    validator: (v) =>
+                        (v == null || v.trim().isEmpty) ? '이름을 입력해 주세요' : null,
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // 생일 선택
               GestureDetector(
                 onTap: _pickDate,
@@ -232,11 +231,11 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          _birthdayController.text.isNotEmpty 
+                          _birthdayController.text.isNotEmpty
                               ? _birthdayController.text
                               : '생일 선택하기',
                           style: TextStyle(
-                            color: _birthdayController.text.isNotEmpty 
+                            color: _birthdayController.text.isNotEmpty
                                 ? const Color(0xFF333333)
                                 : const Color(0xFF8C8B8B),
                             fontSize: 16,
@@ -250,7 +249,7 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-              
+
               // 성별 선택
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -330,9 +329,9 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
                   ),
                 ],
               ),
-              
+
               SizedBox(height: screenHeight * 0.06),
-              
+
               // 버튼들
               Row(
                 children: [

@@ -5,17 +5,26 @@ class PetPersonalityEditScreen extends StatefulWidget {
   const PetPersonalityEditScreen({super.key});
 
   @override
-  State<PetPersonalityEditScreen> createState() => _PetPersonalityEditScreenState();
+  State<PetPersonalityEditScreen> createState() =>
+      _PetPersonalityEditScreenState();
 }
 
 class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
   final List<String> allTags = const [
-    '활동적', '유쾌함', '조용함',
-    '애교쟁이', '겁쟁이', '호기심왕',
-    '느긋함', '의젓함', '예민함',
-    '사람좋아', '독립적', '다정다감',
+    '활동적',
+    '유쾌함',
+    '조용함',
+    '애교쟁이',
+    '겁쟁이',
+    '호기심왕',
+    '느긋함',
+    '의젓함',
+    '예민함',
+    '사람좋아',
+    '독립적',
+    '다정다감',
   ];
-  
+
   Set<String> selectedTags = {};
   int? _petId;
   String _name = '';
@@ -28,19 +37,20 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     if (!_isInitialized) {
-      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+      final args =
+          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
       if (args != null) {
         _petId = args['id'] as int?;
         _name = (args['name'] as String?) ?? '';
         _birthday = (args['birthday'] as String?) ?? '';
         _gender = (args['gender'] as String?) ?? '';
         _species = (args['species'] as String?) ?? '';
-        
+
         final personalities = (args['personalities'] as List?) ?? [];
         selectedTags = Set<String>.from(personalities.cast<String>());
-        
+
         _isInitialized = true;
         setState(() {});
       }
@@ -49,11 +59,11 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
 
   Future<void> _save() async {
     if (_petId == null || _isSaving) return;
-    
+
     setState(() {
       _isSaving = true;
     });
-    
+
     try {
       await PetUpdateApi().updatePet(
         petId: _petId!,
@@ -63,7 +73,7 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
         species: _species.isEmpty ? 'DOG' : _species,
         personalities: selectedTags.toList(),
       );
-      
+
       if (mounted) {
         Navigator.pop(context, true);
       }
@@ -109,7 +119,7 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -131,9 +141,7 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
       ),
       body: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: screenWidth * 0.08, 
-          vertical: screenHeight * 0.02
-        ),
+            horizontal: screenWidth * 0.08, vertical: screenHeight * 0.02),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -174,8 +182,8 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
-                    color: selectedTags.length >= 5 
-                        ? Colors.red[100] 
+                    color: selectedTags.length >= 5
+                        ? Colors.red[100]
                         : Colors.grey[200],
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -183,8 +191,8 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
                     '${selectedTags.length}/5',
                     style: TextStyle(
                       fontSize: screenWidth * 0.03,
-                      color: selectedTags.length >= 5 
-                          ? Colors.red 
+                      color: selectedTags.length >= 5
+                          ? Colors.red
                           : Colors.grey[600],
                       fontWeight: FontWeight.bold,
                     ),
@@ -193,7 +201,7 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
               ],
             ),
             SizedBox(height: screenHeight * 0.03),
-            
+
             // 성격 태그 그리드
             Expanded(
               child: Column(
@@ -201,12 +209,12 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
                   final startIndex = rowIndex * 3;
                   final endIndex = (startIndex + 3).clamp(0, allTags.length);
                   final rowTags = allTags.sublist(startIndex, endIndex);
-                  
+
                   // 각 줄마다 패딩값을 번갈아가며 적용
                   final EdgeInsets rowPadding = rowIndex % 2 == 0
                       ? const EdgeInsets.only(left: 37, right: 56)
                       : const EdgeInsets.only(left: 56, right: 37);
-                  
+
                   return Padding(
                     padding: rowPadding.copyWith(top: 6, bottom: 6),
                     child: Row(
@@ -222,20 +230,21 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
                                 duration: Duration(milliseconds: 200),
                                 height: 40,
                                 decoration: BoxDecoration(
-                                  color: selected 
-                                      ? const Color(0xFFFF5F01) 
+                                  color: selected
+                                      ? const Color(0xFFFF5F01)
                                       : Colors.white,
                                   borderRadius: BorderRadius.circular(20),
                                   border: Border.all(
-                                    color: selected 
-                                        ? const Color(0xFFFF5F01) 
+                                    color: selected
+                                        ? const Color(0xFFFF5F01)
                                         : const Color(0xFFEAEAEA),
                                     width: selected ? 2 : 1,
                                   ),
-                                  boxShadow: selected 
+                                  boxShadow: selected
                                       ? [
                                           BoxShadow(
-                                            color: Color(0xFFFF5F01).withOpacity(0.3),
+                                            color: Color(0xFFFF5F01)
+                                                .withOpacity(0.3),
                                             blurRadius: 8,
                                             offset: Offset(0, 2),
                                           )
@@ -246,8 +255,8 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
                                   child: Text(
                                     tag,
                                     style: TextStyle(
-                                      color: selected 
-                                          ? Colors.white 
+                                      color: selected
+                                          ? Colors.white
                                           : const Color(0xFF333333),
                                       fontSize: 14,
                                       fontFamily: 'Pretendard-Medium',
@@ -265,7 +274,7 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
                 }),
               ),
             ),
-            
+
             // 버튼들
             Row(
               children: [
@@ -277,11 +286,11 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: TextButton(
-                      onPressed: _isSaving 
-                          ? null 
+                      onPressed: _isSaving
+                          ? null
                           : () {
-                              setState(() { 
-                                selectedTags.clear(); 
+                              setState(() {
+                                selectedTags.clear();
                               });
                             },
                       style: TextButton.styleFrom(
