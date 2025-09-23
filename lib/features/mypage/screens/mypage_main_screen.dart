@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:daenglog_fe/shared/widgets/bottom_nav_bar.dart';
 import 'package:daenglog_fe/features/mypage/widgets/pet_edit_modal.dart';
+import 'package:daenglog_fe/api/mypage/get/my_page_summary_api.dart';
+import 'package:daenglog_fe/api/mypage/models/my_page_summary.dart';
+import 'package:daenglog_fe/api/mypage/post/pet_set_default_api.dart';
+import 'package:daenglog_fe/shared/services/pet_profile_provider.dart';
+import 'package:daenglog_fe/features/mypage/widgets/top_section.dart';
+import 'package:daenglog_fe/features/mypage/widgets/bottom_section.dart';
+import 'package:daenglog_fe/features/mypage/widgets/pet_horizontal_list.dart';
 import 'package:daenglog_fe/api/pets/models/pets_info.dart';
 
 class MyPageMainScreen extends StatefulWidget {
@@ -11,422 +19,313 @@ class MyPageMainScreen extends StatefulWidget {
 }
 
 class _MyPageMainScreenState extends State<MyPageMainScreen> {
-  bool _showPetEditModal = false;
-  
-  // 반려동물 데이터
-  final List<PetInfo> _pets = [
-    PetInfo(name: '망고', age: '10살', isRepresentative: true),
-    PetInfo(name: '나비', age: '7살', isRepresentative: false),
-    PetInfo(name: '미등록', age: '0살', isRepresentative: false),
-  ];
+  MyPageSummary? _summary;
+  bool _loading = true;
+  bool _showModal = false;
+  late final DraggableScrollableController _sheetController;
+
+  double _minExtent = 0.70;
+  double _initialExtent = 0.72;
+  double _maxExtent = 0.90;
+  double _overlayOpacity = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _sheetController = DraggableScrollableController();
+    _sheetController.addListener(_onSheetChanged);
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    if (!mounted) return;
+
+    try {
+      final provider = context.read<PetProfileProvider>();
+
+      await Future.wait([
+        _loadSummary(),
+        provider.loadPets(),
+      ]);
+
+      if (mounted) _debugData();
+    } catch (e) {
+      debugPrint('Failed to initialize: $e');
+    }
+  }
+
+  void _debugData() {
+    if (!mounted) return;
+
+    try {
+      final provider = context.read<PetProfileProvider>();
+
+      print("=== 디버깅 정보 ===");
+      print(
+          "Summary defaultPet imageUrl: ${_summary?.defaultPet.profileImageUrl}");
+      print(
+          "Provider defaultPet imageUrl: ${provider.defaultPet?.profileImageUrl}");
+      print("Provider allPets count: ${provider.allPets.length}");
+
+      for (var pet in provider.allPets) {
+        print("Pet ${pet.name} (${pet.id}): ${pet.profileImageUrl}");
+      }
+      print("==================");
+    } catch (e) {
+      debugPrint('Failed to debug data: $e');
+    }
+  }
+
+  Future<void> _loadSummary() async {
+    if (!mounted) return;
+    setState(() => _loading = true);
+    try {
+      _summary = await MyPageSummaryApi().getSummary();
+    } catch (e) {
+      debugPrint('Failed to load summary: $e');
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _onSheetChanged() {
+    if (!mounted) return;
+    final extent = _sheetController.size;
+    final progress =
+        ((extent - _minExtent) / (_maxExtent - _minExtent)).clamp(0.0, 1.0);
+    final opacity = 0.25 * progress;
+    if (opacity != _overlayOpacity && mounted) {
+      setState(() => _overlayOpacity = opacity);
+    }
+  }
+
+  @override
+  void dispose() {
+    _sheetController.removeListener(_onSheetChanged);
+    _sheetController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final screenHeight = screenSize.height;
-    final screenWidth = screenSize.width;
-    
+    final provider = context.watch<PetProfileProvider>();
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // 이미지 URL 우선순위 결정
+    String? imageUrl;
+    if (provider.defaultPet?.profileImageUrl != null &&
+        provider.defaultPet!.profileImageUrl!.isNotEmpty) {
+      imageUrl = provider.defaultPet!.profileImageUrl;
+      print("🟢 Using provider image: $imageUrl");
+    } else if (_summary?.defaultPet.profileImageUrl != null &&
+        _summary!.defaultPet.profileImageUrl!.isNotEmpty) {
+      imageUrl = _summary!.defaultPet.profileImageUrl;
+      print("🟡 Using summary image: $imageUrl");
+    } else {
+      print("🔴 No image URL available");
+    }
+
+    // PetListItem 리스트 생성
+    final petListItems = provider.allPets
+        .map((p) => PetListItem(
+              id: p.id,
+              name: p.name,
+              imageUrl: p.profileImageUrl,
+            ))
+        .toList();
+
+    // 대표 반려동물을 맨 앞으로 정렬
+    petListItems.sort((a, b) {
+      if (a.id == provider.defaultPet?.id) return -1;
+      if (b.id == provider.defaultPet?.id) return 1;
+      return 0;
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFFF5F01),
       body: Stack(
         children: [
-          // 배경 그라데이션
-          Container(
-            width: double.infinity,
-            height: screenHeight * 0.20, // 화면 높이의 35%
-            decoration: const BoxDecoration(
-              color: Color(0xFFFF5F01),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
-            ),
-          ),
-          
-          // 메인 컨텐츠
-          Column(
-            children: [ 
-              // 프로필 섹션
-              _buildTopSection(context),
-              SizedBox(height: screenHeight * 0.025),
-              
-              // 하단 화이트 섹션
-              Expanded(
-                child: Container(
+          // 전체 배경을 SafeArea로 감싸기
+          SafeArea(
+            child: Column(
+              children: [
+                // 주황색 헤더 영역 (고정 높이)
+                Container(
+                  height: screenHeight * 0.25,
+                  width: double.infinity,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Color(0xFFFF5F01),
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20), 
-                      topRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(40),
+                      bottomRight: Radius.circular(40),
                     ),
                   ),
-                  child: _buildBottomSection(context),
+                  child: MyPageTopSection(
+                    summary: _summary,
+                    loading: _loading,
+                    imageUrl: imageUrl,
+                    provider: provider,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          
-          // 하단 네비게이션
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: commonBottomNavBar(
-              context: context,
-              currentIndex: 3,
+
+                // 나머지 공간은 DraggableScrollableSheet가 채움
+                Expanded(child: Container()),
+              ],
             ),
           ),
 
-          // 반려동물 수정 모달
-          if (_showPetEditModal) 
-            PetEditModal(
-              onClose: () {
-                setState(() {
-                  _showPetEditModal = false;
-                });
-              },
-              pets: _pets,
-              onAddPet: () {
-                // 반려동물 추가 로직
-                print('반려동물 추가');
-              },
-              onSelectPet: (pets) {
-                // 반려동물 선택 로직
-                print('선택된 반려동물: ${(pets as PetInfo).name}');
-              },
+          // 헤더를 덮는 딤 오버레이
+          IgnorePointer(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              color: Colors.black.withOpacity(_overlayOpacity),
             ),
-        ],
-      ),
-    );
-  }
+          ),
 
-//------------------------------------------------------------------------------------------------
-
-  // 프로필 섹션
-  Widget _buildTopSection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
-    // 반응형 패딩 계산
-    final horizontalPadding = screenWidth * 0.1; // 화면 너비의 10%
-    final topPadding = screenHeight * 0.08; // 화면 높이의 8%
-    
-    return Padding(
-      padding: EdgeInsets.fromLTRB(horizontalPadding, topPadding, horizontalPadding, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [          
-          
-          // 프로필 이미지와 텍스트를 Row로 배치
-          Row(
-            children: [
-              // 프로필 이미지 및 카메라 아이콘
-              Stack(
-                children: [
-                  Container(
-                    width: screenWidth * 0.32, // 화면 너비의 32%
-                    height: screenWidth * 0.32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.white,
-                      border: Border.all(
-                        color: Colors.white,
-                        width: screenWidth * 0.01, // 화면 너비의 1%
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.person,
-                      size: screenWidth * 0.15, // 화면 너비의 15%
-                      color: const Color(0xFF666666),
-                    ),
+          // DraggableScrollableSheet - SafeArea 밖에 위치
+          DraggableScrollableSheet(
+            controller: _sheetController,
+            minChildSize: _minExtent,
+            initialChildSize: _initialExtent,
+            maxChildSize: _maxExtent,
+            snap: true,
+            snapSizes: const [0.74, 0.85],
+            builder: (context, scrollController) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
                   ),
-                  Positioned(
-                    bottom: screenWidth * 0.025,
-                    right: screenWidth * 0.025,
-                    child: Container(
-                      width: screenWidth * 0.08, // 화면 너비의 8%
-                      height: screenWidth * 0.08,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFFF5F01),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: screenWidth * 0.04, // 화면 너비의 4%
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 12,
+                      offset: Offset(0, -4),
                     ),
-                  ),
-                ],
-              ),
-              
-              SizedBox(width: screenWidth * 0.05), // 간격
-              
-              // 텍스트 부분을 Column으로 배치
-              Expanded(
+                  ],
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '망고 집사님,\n안녕하세요!',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.06, // 화면 너비의 6%
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        height: 1.2,
+                    const SizedBox(height: 9),
+                    Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE6E6E6),
+                        borderRadius: BorderRadius.circular(100),
                       ),
                     ),
-                    
-                    SizedBox(height: screenHeight * 0.02),
-                    
-                    // 프리미엄 배지
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.03,
-                        vertical: screenHeight * 0.007,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(screenWidth * 0.018),
-                      ),
-                      child: Text(
-                        '댕가족 플랜',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.029, // 화면 너비의 2.9%
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFFF5F01),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        physics: const ClampingScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 88),
+                          child: MyPageBottomSection(
+                            pets: petListItems,
+                            selectedPetId: provider.defaultPet?.id,
+                            onEditPets: () => setState(() => _showModal = true),
+                          ),
                         ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
+
+          // 하단 네비게이션
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: commonBottomNavBar(context: context, currentIndex: 3),
+          ),
+
+          // 반려동물 편집 모달
+          if (_showModal)
+            _PetEditModalWrapper(
+              provider: provider,
+              summary: _summary,
+              onClose: () => setState(() => _showModal = false),
+              onUpdate: () async {
+                await _initialize();
+                if (mounted) setState(() => _showModal = false);
+              },
+            ),
         ],
       ),
     );
   }
+}
 
-  // 흰색 배경 섹션
-  Widget _buildBottomSection(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
-    // 반응형 패딩 계산
-    final horizontalPadding = screenWidth * 0.1;
-    final bottomPadding = screenHeight * 0.12; // 하단 네비게이션 고려
-    
-    return Padding(
-      padding: EdgeInsets.fromLTRB(horizontalPadding, screenHeight * 0.05, horizontalPadding, bottomPadding),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 내 반려동물 섹션
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: Text(
-                  '내 반려동물',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.05, // 화면 너비의 5%
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF484848),
-                  ),
-                ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _showPetEditModal = true;
-                  });
-                },
-                child: Row(
-                  children: [
-                    Text(
-                      '수정',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.035, // 화면 너비의 3.5%
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF9A9A9A),
-                      ),
-                    ),
-                    SizedBox(width: screenWidth * 0.01),
-                    Transform.rotate(
-                      angle: 270 * 3.14159 / 180,
-                      child: Icon(
-                        Icons.chevron_right,
-                        size: screenWidth * 0.04,
-                        color: const Color(0xFF9A9A9A),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          
-          Text(
-            '반려동물 선택 시 대표 반려동물로 설정됩니다.',
-            style: TextStyle(
-              fontSize: screenWidth * 0.035,
-              color: const Color(0xFF9A9A9A),
-            ),
-          ),
-          SizedBox(height: screenHeight * 0.025),
-          
-          // 반려동물 선택 -> api 연동 후 수정 필요 (선택시 대표 반려동물로 설정)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _buildPetCard(context, '망고', true),
-                SizedBox(width: screenWidth * 0.05),
-                _buildPetCard(context, '나비', false),
-                SizedBox(width: screenWidth * 0.05),
-                _buildPetCard(context, '미등록', false),
-                SizedBox(width: screenWidth * 0.05),
-                _buildPetCard(context, '미등록', false),
-                SizedBox(width: screenWidth * 0.05),
-                _buildPetCard(context, '미등록', false),
-                SizedBox(width: screenWidth * 0.05),
-                _buildPetCard(context, '미등록', false),
-                SizedBox(width: screenWidth * 0.05),
-                _buildPetCard(context, '미등록', false),
-                SizedBox(width: screenWidth * 0.05),
-                _buildPetCard(context, '미등록', false),
-              ],
-            ),
-          ),
-          
-          SizedBox(height: screenHeight * 0.025),
-          
-          
-          SizedBox(height: screenHeight * 0.05),
-          
-          // 메뉴 아이템
-          _buildMenuItem(context, '내정보 관리', Icons.person_outline, '/my_info_page'),
-          _buildMenuItem(context, '이벤트/혜택', Icons.card_giftcard, '/event'),
-          _buildMenuItem(context, '요금제 관리', Icons.payment, '/cloud_main'),
-          _buildMenuItem(context, '공지사항', Icons.announcement, '/notice'),
-          _buildMenuItem(context, '고객센터', Icons.help_outline, '/customer_center'),
-          
-          // 로그아웃 버튼
-          Center(
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.04,
-                vertical: screenHeight * 0.015,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFD4B0),
-                borderRadius: BorderRadius.circular(screenWidth * 0.15),
-              ),
-              child: Text(
-                '로그아웃',
-                style: TextStyle(
-                  fontSize: screenWidth * 0.035,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          
-          // 버전
-          Center(
-            child: Text(
-              'Ver 1.01',
-              style: TextStyle(
-                fontSize: screenWidth * 0.025,
-                color: const Color(0xFF9A9A9A),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+// 모달 래퍼 위젯
+class _PetEditModalWrapper extends StatelessWidget {
+  final PetProfileProvider provider;
+  final MyPageSummary? summary;
+  final VoidCallback onClose;
+  final VoidCallback onUpdate;
 
-//------------------------------------------------------------------------------------------------
+  const _PetEditModalWrapper({
+    required this.provider,
+    required this.summary,
+    required this.onClose,
+    required this.onUpdate,
+  });
 
-  // 내 반려동물 카드
-  Widget _buildPetCard(BuildContext context, String name, bool isSelected) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
-    return Column(
-      children: [
-        Container(
-          width: screenWidth * 0.15, 
-          height: screenWidth * 0.15,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isSelected ? const Color(0xFFFF5F01) : Colors.grey[300],
-            border: Border.all(
-              color: isSelected ? const Color(0xFFFF5F01) : Colors.grey[400]!,
-              width: screenWidth * 0.005,
-            ),
-          ),
-          child: Icon(
-            Icons.pets,
-            color: isSelected ? Colors.white : Colors.grey[600],
-            size: screenWidth * 0.075,
-          ),
-        ),
-        SizedBox(height: screenHeight * 0.01),
-        Text(
-          name,
-          style: TextStyle(
-            fontSize: screenWidth * 0.023,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: const Color(0xFF5C5C5C),
-          ),
-        ),
-      ],
-    );
-  }
+  @override
+  Widget build(BuildContext context) {
+    final pets = provider.allPets;
 
-  // 메뉴 아이템 (내정보 관리, 이벤트/혜택, 요금제 관리, 공지사항, 고객센터)
-  Widget _buildMenuItem(BuildContext context, String title, IconData icon, String route) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    
-    return GestureDetector(
-      onTap: () {
-        Navigator.pushNamed(context, route);
+    return PetEditModal(
+      onClose: onClose,
+      pets: pets
+          .map((p) => PetInfo(
+                id: p.id,
+                name: p.name,
+                age: '${p.age}살',
+                isRepresentative: p.isDefault,
+                imageUrl: p.profileImageUrl,
+              ))
+          .toList(),
+      showAddFamilyPet: summary?.planCode == 'FAMILY',
+      resolvePetId: (i) => pets[i].id,
+      onSetDefault: (i, pet) async {
+        final petId = pets[i].id;
+        await PetSetDefaultApi().setDefault(petId);
+        provider.setDefaultPet(petId);
+        onUpdate();
       },
-      child: Container(
-      margin: EdgeInsets.only(bottom: screenHeight * 0.02),
-      child: Row(
-        children: [
-          Icon(
-            icon,
-            color: const Color(0xFF484848),
-            size: screenWidth * 0.05,
-          ),
-          SizedBox(width: screenWidth * 0.03),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: screenWidth * 0.04,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF484848),
-              ),
-            ),
-          ),
-          Icon(
-            Icons.arrow_forward_ios,
-            size: screenWidth * 0.03,
-            color: const Color(0xFF9A9A9A),
-          ),
-          ],
-        ),
-      ),
+      onAddPet: () {
+        Navigator.pushNamed(context, '/pet_info');
+      },
+      onSelectPet: (pet, index) async {
+        final petId = pets[index].id;
+        await PetSetDefaultApi().setDefault(petId);
+        provider.setDefaultPet(petId);
+      },
+      isFamilyShared: (pet) {
+        final match = pets.firstWhere(
+          (p) => p.name == pet.name,
+          orElse: () => pets.first,
+        );
+        return match.isFamilyPet;
+      },
+      onEditPet: (pet) {
+        final match = pets.firstWhere(
+          (p) => p.name == pet.name,
+          orElse: () => pets.first,
+        );
+        Navigator.pushNamed(
+          context,
+          '/pet_detail',
+          arguments: {'id': match.id},
+        );
+      },
     );
   }
-
-
 }
