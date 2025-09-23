@@ -21,8 +21,10 @@ class MyPageBottomSection extends StatelessWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    // 상단 여백을 줄여 전체 섹션을 위로 올림
     return Padding(
-      padding: EdgeInsets.fromLTRB(screenWidth * 0.1, screenHeight * 0.05, screenWidth * 0.1, screenHeight * 0.12),
+      padding: EdgeInsets.fromLTRB(screenWidth * 0.1, screenHeight * 0.025,
+          screenWidth * 0.1, screenHeight * 0.12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -38,34 +40,57 @@ class MyPageBottomSection extends StatelessWidget {
 
           SizedBox(height: screenHeight * 0.01),
 
-          MyPageMenuItem(title: '내정보 관리', icon: Icons.person_outline, onTap: () => Navigator.pushNamed(context, '/my_info_page')),
-          MyPageMenuItem(title: '이벤트/혜택', icon: Icons.card_giftcard, onTap: () => Navigator.pushNamed(context, '/event')),
-          MyPageMenuItem(title: '요금제 관리', icon: Icons.payment, onTap: () => Navigator.pushNamed(context, '/cloud_main')),
-          MyPageMenuItem(title: '공지사항', icon: Icons.announcement, onTap: () => Navigator.pushNamed(context, '/notice')),
-          MyPageMenuItem(title: '고객센터', icon: Icons.help_outline, onTap: () => Navigator.pushNamed(context, '/customer_center')),
+          MyPageMenuItem(
+              title: '내정보 관리',
+              icon: Icons.person_outline,
+              onTap: () => Navigator.pushNamed(context, '/my_info_page')),
+          MyPageMenuItem(
+              title: '이벤트/혜택',
+              icon: Icons.card_giftcard,
+              onTap: () => Navigator.pushNamed(context, '/event')),
+          MyPageMenuItem(
+              title: '요금제 관리',
+              icon: Icons.payment,
+              onTap: () => Navigator.pushNamed(context, '/cloud_main')),
+          MyPageMenuItem(
+              title: '공지사항',
+              icon: Icons.announcement,
+              onTap: () => Navigator.pushNamed(context, '/notice')),
+          MyPageMenuItem(
+              title: '고객센터',
+              icon: Icons.help_outline,
+              onTap: () => Navigator.pushNamed(context, '/customer_center')),
 
           SizedBox(height: screenHeight * 0.02),
           const SectionDivider(),
           SizedBox(height: screenHeight * 0.02),
 
-          Center(
-            child: GestureDetector( // 이 부분 추가
-              onTap: () => LogoutService.showLogoutDialog(context),
-              child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.04,
-                  vertical: screenHeight * 0.01,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD4B0),
-                  borderRadius: BorderRadius.circular(screenWidth * 0.15),
-                ),
+          // 로그아웃 버튼 (모달의 스타일을 이곳으로 적용 + 얇은 주황 스트로크)
+          GestureDetector(
+            onTap: () => LogoutService.showLogoutDialog(context),
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.018,
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFE4D6),
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0x14FF5F01),
+                      blurRadius: 18,
+                      offset: Offset(0, 6)),
+                ],
+                border: Border.all(color: const Color(0xFFFFB98A), width: 1),
+              ),
+              child: Center(
                 child: Text(
                   '로그아웃',
                   style: TextStyle(
-                    fontSize: screenWidth * 0.035,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    fontSize: screenWidth * 0.038,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFFFF5F01),
                   ),
                 ),
               ),
@@ -87,5 +112,3 @@ class MyPageBottomSection extends StatelessWidget {
     );
   }
 }
-
-

@@ -5,7 +5,11 @@ class MyPageMenuItem extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
 
-  const MyPageMenuItem({super.key, required this.title, required this.icon, required this.onTap});
+  const MyPageMenuItem(
+      {super.key,
+      required this.title,
+      required this.icon,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -14,28 +18,53 @@ class MyPageMenuItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: EdgeInsets.only(bottom: screenHeight * 0.02),
+        margin: EdgeInsets.only(bottom: screenHeight * 0.018),
+        // 높이와 간격을 살짝 줄임
+        padding: EdgeInsets.symmetric(
+          horizontal: screenWidth * 0.04,
+          vertical: screenHeight * 0.014,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 16,
+              offset: Offset(0, 6),
+            ),
+          ],
+          border: Border.all(color: Color(0xFFF2F2F2)),
+        ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF484848),
-              size: screenWidth * 0.05,
+            Container(
+              width: screenWidth * 0.09,
+              height: screenWidth * 0.09,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFDF2EA),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFFFF5F01),
+                size: screenWidth * 0.048,
+              ),
             ),
-            SizedBox(width: screenWidth * 0.03),
+            SizedBox(width: screenWidth * 0.035),
             Expanded(
               child: Text(
                 title,
                 style: TextStyle(
-                  fontSize: screenWidth * 0.04,
-                  fontWeight: FontWeight.w500,
+                  fontSize: screenWidth * 0.040,
+                  fontWeight: FontWeight.w700,
                   color: const Color(0xFF484848),
                 ),
               ),
             ),
             Icon(
-              Icons.arrow_forward_ios,
-              size: screenWidth * 0.03,
+              Icons.chevron_right,
+              size: screenWidth * 0.052,
               color: const Color(0xFF9A9A9A),
             ),
           ],
@@ -44,5 +73,3 @@ class MyPageMenuItem extends StatelessWidget {
     );
   }
 }
-
-

@@ -22,41 +22,62 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
   MyPageSummary? _summary;
   bool _loading = true;
   bool _showModal = false;
+  late final DraggableScrollableController _sheetController;
+
+  double _minExtent = 0.70;
+  double _initialExtent = 0.72;
+  double _maxExtent = 0.90;
+  double _overlayOpacity = 0.0;
 
   @override
   void initState() {
     super.initState();
+    _sheetController = DraggableScrollableController();
+    _sheetController.addListener(_onSheetChanged);
     _initialize();
   }
 
   Future<void> _initialize() async {
-    final provider = context.read<PetProfileProvider>();
-    
-    // 병렬로 데이터 로드
-    await Future.wait([
-      _loadSummary(),
-      provider.loadPets(),
-    ]);
-    
-    // 🔍 디버깅: 데이터 확인
-    _debugData();
+    if (!mounted) return;
+
+    try {
+      final provider = context.read<PetProfileProvider>();
+
+      await Future.wait([
+        _loadSummary(),
+        provider.loadPets(),
+      ]);
+
+      if (mounted) _debugData();
+    } catch (e) {
+      debugPrint('Failed to initialize: $e');
+    }
   }
 
   void _debugData() {
-    final provider = context.read<PetProfileProvider>();
-    
-    print("=== 디버깅 정보 ===");
-    print("Summary defaultPet imageUrl: ${_summary?.defaultPet.profileImageUrl}");
-    print("Provider defaultPet imageUrl: ${provider.defaultPet?.profileImageUrl}");
-    print("Provider allPets count: ${provider.allPets.length}");
-    
-    for (var pet in provider.allPets) {
-      print("Pet ${pet.name} (${pet.id}): ${pet.profileImageUrl}");
+    if (!mounted) return;
+
+    try {
+      final provider = context.read<PetProfileProvider>();
+
+      print("=== 디버깅 정보 ===");
+      print(
+          "Summary defaultPet imageUrl: ${_summary?.defaultPet.profileImageUrl}");
+      print(
+          "Provider defaultPet imageUrl: ${provider.defaultPet?.profileImageUrl}");
+      print("Provider allPets count: ${provider.allPets.length}");
+
+      for (var pet in provider.allPets) {
+        print("Pet ${pet.name} (${pet.id}): ${pet.profileImageUrl}");
+      }
+      print("==================");
+    } catch (e) {
+      debugPrint('Failed to debug data: $e');
     }
-    print("==================");
   }
 
   Future<void> _loadSummary() async {
+    if (!mounted) return;
     setState(() => _loading = true);
     try {
       _summary = await MyPageSummaryApi().getSummary();
@@ -67,25 +88,43 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
     }
   }
 
+  void _onSheetChanged() {
+    if (!mounted) return;
+    final extent = _sheetController.size;
+    final progress =
+        ((extent - _minExtent) / (_maxExtent - _minExtent)).clamp(0.0, 1.0);
+    final opacity = 0.25 * progress;
+    if (opacity != _overlayOpacity && mounted) {
+      setState(() => _overlayOpacity = opacity);
+    }
+  }
+
+  @override
+  void dispose() {
+    _sheetController.removeListener(_onSheetChanged);
+    _sheetController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PetProfileProvider>();
     final screenHeight = MediaQuery.of(context).size.height;
-    
-    // 🔍 이미지 URL 우선순위 결정
+
+    // 이미지 URL 우선순위 결정
     String? imageUrl;
-    if (provider.defaultPet?.profileImageUrl != null && 
+    if (provider.defaultPet?.profileImageUrl != null &&
         provider.defaultPet!.profileImageUrl!.isNotEmpty) {
       imageUrl = provider.defaultPet!.profileImageUrl;
       print("🟢 Using provider image: $imageUrl");
-    } else if (_summary?.defaultPet.profileImageUrl != null && 
-               _summary!.defaultPet.profileImageUrl!.isNotEmpty) {
+    } else if (_summary?.defaultPet.profileImageUrl != null &&
+        _summary!.defaultPet.profileImageUrl!.isNotEmpty) {
       imageUrl = _summary!.defaultPet.profileImageUrl;
       print("🟡 Using summary image: $imageUrl");
     } else {
       print("🔴 No image URL available");
     }
-    
+
     // PetListItem 리스트 생성
     final petListItems = provider.allPets
         .map((p) => PetListItem(
@@ -94,62 +133,111 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
               imageUrl: p.profileImageUrl,
             ))
         .toList();
-    
+
     // 대표 반려동물을 맨 앞으로 정렬
     petListItems.sort((a, b) {
       if (a.id == provider.defaultPet?.id) return -1;
       if (b.id == provider.defaultPet?.id) return 1;
       return 0;
     });
-    
+
     return Scaffold(
       backgroundColor: const Color(0xFFFF5F01),
       body: Stack(
         children: [
-          // 배경 그라데이션
-          Container(
-            height: screenHeight * 0.20,
-            decoration: const BoxDecoration(
-              color: Color(0xFFFF5F01),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
-            ),
-          ),
-          
-          // 메인 컨텐츠
-          Column(
-            children: [
-              // 상단 프로필 섹션
-              MyPageTopSection(
-                summary: _summary,
-                loading: _loading,
-                imageUrl: provider.defaultPet?.profileImageUrl ?? _summary?.defaultPet.profileImageUrl,
-              ),
-              
-              SizedBox(height: screenHeight * 0.025),
-              
-              // 하단 화이트 섹션
-              Expanded(
-                child: Container(
+          // 전체 배경을 SafeArea로 감싸기
+          SafeArea(
+            child: Column(
+              children: [
+                // 주황색 헤더 영역 (고정 높이)
+                Container(
+                  height: screenHeight * 0.25,
+                  width: double.infinity,
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Color(0xFFFF5F01),
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(20),
-                      topRight: Radius.circular(20),
+                      bottomLeft: Radius.circular(40),
+                      bottomRight: Radius.circular(40),
                     ),
                   ),
-                  child: MyPageBottomSection(
-                    pets: petListItems,
-                    selectedPetId: provider.defaultPet?.id,
-                    onEditPets: () => setState(() => _showModal = true),
+                  child: MyPageTopSection(
+                    summary: _summary,
+                    loading: _loading,
+                    imageUrl: imageUrl,
+                    provider: provider,
                   ),
                 ),
-              ),
-            ],
+
+                // 나머지 공간은 DraggableScrollableSheet가 채움
+                Expanded(child: Container()),
+              ],
+            ),
           ),
-          
+
+          // 헤더를 덮는 딤 오버레이
+          IgnorePointer(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              color: Colors.black.withOpacity(_overlayOpacity),
+            ),
+          ),
+
+          // DraggableScrollableSheet - SafeArea 밖에 위치
+          DraggableScrollableSheet(
+            controller: _sheetController,
+            minChildSize: _minExtent,
+            initialChildSize: _initialExtent,
+            maxChildSize: _maxExtent,
+            snap: true,
+            snapSizes: const [0.74, 0.85],
+            builder: (context, scrollController) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0x1A000000),
+                      blurRadius: 12,
+                      offset: Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 9),
+                    Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE6E6E6),
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        controller: scrollController,
+                        physics: const ClampingScrollPhysics(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 88),
+                          child: MyPageBottomSection(
+                            pets: petListItems,
+                            selectedPetId: provider.defaultPet?.id,
+                            onEditPets: () => setState(() => _showModal = true),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
           // 하단 네비게이션
           Positioned(
             bottom: 0,
@@ -166,7 +254,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
               onClose: () => setState(() => _showModal = false),
               onUpdate: () async {
                 await _initialize();
-                setState(() => _showModal = false);
+                if (mounted) setState(() => _showModal = false);
               },
             ),
         ],
@@ -192,12 +280,12 @@ class _PetEditModalWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pets = provider.allPets;
-    
+
     return PetEditModal(
       onClose: onClose,
       pets: pets
           .map((p) => PetInfo(
-                id: p.id, // 추가
+                id: p.id,
                 name: p.name,
                 age: '${p.age}살',
                 isRepresentative: p.isDefault,

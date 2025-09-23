@@ -69,17 +69,11 @@ Future<void> main() async {
     MultiProvider(
       // 여러 provider 제공 -> 전역 프로바이더 사용
       providers: [
-        ChangeNotifierProvider(
-            create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
-        ChangeNotifierProvider(
-            create: (_) =>
-                RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
-        ChangeNotifierProvider(
-            create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
-        ChangeNotifierProvider(
-            create: (_) => PetInfoProvider()), // 반려동물 정보 입력 상태 관리
-        ChangeNotifierProvider(
-            create: (_) => PetProfileProvider()), // 반려동물 프로필 정보 제공
+        ChangeNotifierProvider(create: (_) => DefaultProfileProvider()),
+        ChangeNotifierProvider(create: (_) => RecordProvider()),
+        ChangeNotifierProvider(create: (_) => CloudScreenProvider()),
+        ChangeNotifierProvider(create: (_) => PetInfoProvider()),
+        ChangeNotifierProvider(create: (_) => PetProfileProvider()),
       ],
       child: const MyApp(), // 앱 실행
     ),
@@ -153,7 +147,7 @@ class MyApp extends StatelessWidget {
             const Close(), // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
 
         // 마이페이지 화면
-        '/my_page': (context) => const MyPageMainScreen(), // 마이페이지 화면
+        '/my_page': (context) => MyPageMainScreen(),
         '/my_info_page': (context) => MyInfoPage(), // 마이페이지 화면 (유저 상세)
         '/alarm_page': (context) => const AlarmPage(), // 알림 화면
 

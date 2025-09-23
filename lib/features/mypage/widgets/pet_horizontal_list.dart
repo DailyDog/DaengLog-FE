@@ -27,8 +27,8 @@ class PetHorizontalList extends StatelessWidget {
             Text(
               '내 반려동물',
               style: TextStyle(
-                fontSize: screenWidth * 0.05,
-                fontWeight: FontWeight.w700,
+                fontSize: screenWidth * 0.052, // 더 두껍고 약간 크게
+                fontWeight: FontWeight.w800,
                 color: const Color(0xFF484848),
               ),
             ),
@@ -39,30 +39,47 @@ class PetHorizontalList extends StatelessWidget {
                   Text(
                     '수정',
                     style: TextStyle(
-                      fontSize: screenWidth * 0.035,
+                      fontSize: screenWidth * 0.038,
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF9A9A9A),
                     ),
                   ),
                   SizedBox(width: screenWidth * 0.01),
-                  Transform.rotate(
-                    angle: 270 * 3.14159 / 180,
-                    child: Icon(
-                      Icons.chevron_right,
-                      size: screenWidth * 0.04,
-                      color: const Color(0xFF9A9A9A),
-                    ),
+                  Icon(
+                    Icons.chevron_right, // 우측 화살표 방향 유지
+                    size: screenWidth * 0.048,
+                    color: const Color(0xFF9A9A9A),
                   ),
                 ],
               ),
             ),
           ],
         ),
-        Text(
-          '반려동물 선택 시 대표 반려동물로 설정됩니다.',
-          style: TextStyle(
-            fontSize: screenWidth * 0.035,
-            color: const Color(0xFF9A9A9A),
+        // 문구를 RichText로 교체하여 '대표 반려동물'만 주황색으로 강조
+        SizedBox(height: screenHeight * 0.01),
+        RichText(
+          text: TextSpan(
+            children: [
+              TextSpan(
+                text: '반려동물 선택 시 ',
+                style: TextStyle(
+                    fontSize: screenWidth * 0.034,
+                    color: const Color(0xFF9A9A9A)),
+              ),
+              TextSpan(
+                text: '대표 반려동물',
+                style: TextStyle(
+                    fontSize: screenWidth * 0.034,
+                    color: const Color(0xFFFF5F01),
+                    fontWeight: FontWeight.w700),
+              ),
+              TextSpan(
+                text: '로 설정됩니다.',
+                style: TextStyle(
+                    fontSize: screenWidth * 0.034,
+                    color: const Color(0xFF9A9A9A)),
+              ),
+            ],
           ),
         ),
         SizedBox(height: screenHeight * 0.025),
@@ -105,25 +122,32 @@ class _PetCard extends StatelessWidget {
     return Column(
       children: [
         Container(
-          width: screenWidth * 0.15,
-          height: screenWidth * 0.15,
+          width: screenWidth * 0.19, // 아이콘 조금 더 크게
+          height: screenWidth * 0.19,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: isSelected ? const Color(0xFFFF5F01) : Colors.grey[400]!,
-              width: screenWidth * 0.005,
+              color: isSelected ? const Color(0xFFFF5F01) : Colors.grey[300]!,
+              width: screenWidth * 0.006,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF5F01).withOpacity(0.6),
+                blurRadius: screenWidth * 0.02,
+                spreadRadius: screenWidth * 0.001,
+              ),
+            ],
           ),
           child: PetAvatar(
             imageUrl: imageUrl,
-            size: screenWidth * 0.15,
+            size: screenWidth * 0.19,
           ),
         ),
         SizedBox(height: screenHeight * 0.01),
         Text(
           name,
           style: TextStyle(
-            fontSize: screenWidth * 0.023,
+            fontSize: screenWidth * 0.026,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
             color: const Color(0xFF5C5C5C),
           ),
@@ -137,7 +161,6 @@ class PetListItem {
   final int id;
   final String name;
   final String? imageUrl;
-  const PetListItem({required this.id, required this.name, required this.imageUrl});
+  const PetListItem(
+      {required this.id, required this.name, required this.imageUrl});
 }
-
-

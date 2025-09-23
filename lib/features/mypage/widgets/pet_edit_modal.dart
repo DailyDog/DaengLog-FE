@@ -30,7 +30,8 @@ class PetEditModal extends StatefulWidget {
   State<PetEditModal> createState() => _PetEditModalState();
 }
 
-class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderStateMixin {
+class _PetEditModalState extends State<PetEditModal>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
   int? selectedIndex;
@@ -40,7 +41,7 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
     super.initState();
     selectedIndex = widget.pets.indexWhere((p) => p.isRepresentative);
     if (selectedIndex == -1) selectedIndex = null;
-    
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 250),
@@ -49,7 +50,7 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
       begin: const Offset(0, 1),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
-    
+
     _controller.forward();
   }
 
@@ -67,7 +68,7 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    
+
     return GestureDetector(
       onTap: _close,
       child: Container(
@@ -83,7 +84,8 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
                   height: size.height * 0.65,
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
                   child: Column(
                     children: [
@@ -96,24 +98,30 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
                               Expanded(
                                 child: ListView.separated(
                                   itemCount: widget.pets.length,
-                                  separatorBuilder: (_, __) => const Divider(height: 32),
+                                  separatorBuilder: (_, __) =>
+                                      const Divider(height: 32),
                                   itemBuilder: (context, index) => _PetItem(
                                     pet: widget.pets[index],
                                     isSelected: selectedIndex == index,
-                                    isFamilyShared: widget.isFamilyShared?.call(widget.pets[index]) ?? false,
+                                    isFamilyShared: widget.isFamilyShared
+                                            ?.call(widget.pets[index]) ??
+                                        false,
                                     onTap: () {
                                       setState(() => selectedIndex = index);
-                                      widget.onSelectPet?.call(widget.pets[index], index);
+                                      widget.onSelectPet
+                                          ?.call(widget.pets[index], index);
                                     },
                                     onEdit: () {
-                                      final petId = widget.resolvePetId?.call(index);
+                                      final petId =
+                                          widget.resolvePetId?.call(index);
                                       Navigator.pushNamed(
                                         context,
                                         '/pet_detail',
                                         arguments: {'id': petId},
                                       );
                                     },
-                                    onSetDefault: () => _handleSetDefault(index),
+                                    onSetDefault: () =>
+                                        _handleSetDefault(index),
                                   ),
                                 ),
                               ),
@@ -123,10 +131,12 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
                                 const SizedBox(height: 12),
                                 _AddPetButton(
                                   label: '가족 반려동물 추가',
-                                  onTap: () => Navigator.pushNamed(context, '/pet_family_add'),
+                                  onTap: () => Navigator.pushNamed(
+                                      context, '/pet_family_add'),
                                 ),
                               ],
-                              const SizedBox(height: 40),
+                              // 로그아웃 버튼은 모달에서 제거 (하단 섹션으로 이동)
+                              const SizedBox(height: 20),
                             ],
                           ),
                         ),
@@ -166,7 +176,7 @@ class _PetEditModalState extends State<PetEditModal> with SingleTickerProviderSt
         confirmText: '설정',
       ),
     );
-    
+
     if (shouldSet == true) {
       setState(() => selectedIndex = index);
       await widget.onSetDefault?.call(index, widget.pets[index]);
@@ -216,15 +226,18 @@ class _PetItem extends StatelessWidget {
                     decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 2)],
+                      boxShadow: [
+                        BoxShadow(color: Colors.black12, blurRadius: 2)
+                      ],
                     ),
-                    child: const Icon(Icons.group, size: 18, color: Colors.grey),
+                    child:
+                        const Icon(Icons.group, size: 18, color: Colors.grey),
                   ),
                 ),
             ],
           ),
           const SizedBox(width: 16),
-          
+
           // 정보
           Expanded(
             child: Row(
@@ -245,7 +258,7 @@ class _PetItem extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // 대표 설정
           GestureDetector(
             onTap: onSetDefault,

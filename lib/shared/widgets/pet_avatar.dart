@@ -51,14 +51,18 @@ class _PetAvatarState extends State<PetAvatar> {
     setState(() {
       _isRetrying = true;
     });
-    
+
     _hasRetried = true;
     debugPrint('🔄 403 에러로 인한 이미지 URL 재요청: petId=${widget.petId}');
 
     try {
+      if (!mounted) {
+        _isRetrying = false;
+        return;
+      }
       final provider = Provider.of<PetProfileProvider>(context, listen: false);
       final newUrl = await provider.refreshPetImageUrl(widget.petId!);
-      
+
       if (newUrl != null && newUrl != _currentImageUrl && mounted) {
         setState(() {
           _currentImageUrl = newUrl;
@@ -81,23 +85,26 @@ class _PetAvatarState extends State<PetAvatar> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildAvatarContainer();
-  }
-
-  Widget _buildAvatarContainer() {
-    return Container(
+    return SizedBox(
       width: widget.size,
       height: widget.size,
-      child: CustomPaint(
-        painter: widget.borderWidth != null && widget.borderColor != null
-            ? CircleBorderPainter(
-                color: widget.borderColor!,
-                strokeWidth: widget.borderWidth!
-              )
-            : null,
-        child: ClipOval(
-          child: _buildImageContent(),
-        ),
+      child: Stack(
+        children: [
+          // 이미지 부분
+          ClipOval(
+            child: _buildImageContent(),
+          ),
+          // 테두리를 맨 위에 그리기
+          if (widget.borderWidth != null && widget.borderColor != null)
+            CustomPaint(
+              painter: CircleBorderPainter(
+                  color: widget.borderColor!, strokeWidth: widget.borderWidth!),
+              child: SizedBox(
+                width: widget.size,
+                height: widget.size,
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -119,6 +126,7 @@ class _PetAvatarState extends State<PetAvatar> {
     }
 
     final imageUrl = _currentImageUrl;
+
     if (imageUrl == null || imageUrl.isEmpty) {
       return _buildFallbackImage();
     }
@@ -131,7 +139,7 @@ class _PetAvatarState extends State<PetAvatar> {
         return _buildFallbackImage();
       }
     } catch (e) {
-      debugPrint('🔴 URI 파싱 실패: $imageUrl');
+      debugPrint('🔴 URI 파싱 실패: $imageUrl - $e');
       return _buildFallbackImage();
     }
 
@@ -141,33 +149,36 @@ class _PetAvatarState extends State<PetAvatar> {
       height: widget.size,
       fit: BoxFit.cover,
       errorBuilder: (context, error, stackTrace) {
-        debugPrint('🔴 이미지 로드 실패: $error');
-        
+        debugPrint('🔴 Image.network 에러: $error');
+
         // 403 에러이고 아직 재시도하지 않았다면
         if (error.toString().contains('403') && !_hasRetried && !_isRetrying) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            _retryImageLoad();
+            if (mounted) {
+              _retryImageLoad();
+            }
           });
         }
 
         return _buildFallbackImage();
       },
       loadingBuilder: (context, child, loadingProgress) {
-        if (_isRetrying) {
-          return Container(
-            width: widget.size,
-            height: widget.size,
-            color: Colors.grey[200],
-            child: const Center(
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            ),
-          );
+        if (loadingProgress == null) {
+          return child;
         }
-        return child;
+
+        return Container(
+          width: widget.size,
+          height: widget.size,
+          color: Colors.grey[100],
+          child: const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          ),
+        );
       },
     );
   }
@@ -178,6 +189,17 @@ class _PetAvatarState extends State<PetAvatar> {
       width: widget.size,
       height: widget.size,
       fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        debugPrint("🔴 Asset 이미지도 로드 실패: $error");
+        return Container(
+          width: widget.size,
+          height: widget.size,
+          color: Colors.grey[300],
+          child: const Center(
+            child: Icon(Icons.pets, color: Colors.white, size: 30),
+          ),
+        );
+      },
     );
   }
 }
