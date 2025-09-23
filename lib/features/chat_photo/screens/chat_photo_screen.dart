@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
 import 'package:daenglog_fe/features/chat_photo/widgets/painters/hand_drawn_wave_painter.dart';
-import 'package:daenglog_fe/features/chat_photo/widgets/customs/image_custom.dart';
-import 'package:daenglog_fe/features/chat_photo/widgets/customs/draw_custom.dart';
 import 'package:daenglog_fe/features/chat_photo/widgets/photo_app_bar.dart';
 import 'package:daenglog_fe/features/chat_photo/widgets/photo_bottom_buttons.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/decoration_tools_widget.dart';
 import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
 import 'package:daenglog_fe/features/chat_photo/services/photo_service.dart';
-import 'package:daenglog_fe/features/chat_photo/widgets/painters/drawing_painter.dart';
 import 'package:provider/provider.dart';
 
 // 포토카드 화면
@@ -21,6 +19,7 @@ class ChatPhotoScreen extends StatefulWidget {
 class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   final GlobalKey contentKey = GlobalKey();
   final GlobalKey imageKey = GlobalKey();
+  DecorationTool _selectedTool = DecorationTool.frame;
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +36,12 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   Widget _buildPhotoScreen(BuildContext context, PhotoScreenProvider provider) {
     final gptResponse = ModalRoute.of(context)?.settings.arguments as DiaryGptResponse;
     final size = MediaQuery.of(context).size;
-    final double imageHeight = size.height * (provider.isDecorateMode ? 0.45 : 0.35);
-    final double imageWidth = size.width * (provider.isDecorateMode ? 0.7 : 0.8);
+    final double imageHeight = provider.isDecorateMode 
+        ? size.height * 0.4 
+        : size.height * 0.4;
+    final double imageWidth = provider.isDecorateMode 
+        ? size.width * 0.8 
+        : size.width * 0.8;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
@@ -48,31 +51,52 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
         onDownload: () => _handleDownload(context, provider),
         gptResponse: gptResponse,
       ),
-      body: RepaintBoundary(
-        key: contentKey,
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Consumer<PhotoScreenProvider>(
-                  builder: (context, photoProvider, child) {
-                    return _buildImageSection(context, photoProvider, gptResponse, imageWidth, imageHeight);
-                  },
+      body: Stack(
+        children: [
+          RepaintBoundary(
+            key: contentKey,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Consumer<PhotoScreenProvider>(
+                      builder: (context, photoProvider, child) {
+                        return _buildImageSection(context, photoProvider, gptResponse, imageWidth, imageHeight);
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    _buildTitleSection(gptResponse),
+                    const SizedBox(height: 10),
+                    if (!provider.isDecorateMode)
+                      Consumer<PhotoScreenProvider>(
+                          builder: (context, photoProvider, child) {
+                            return _buildContentSection(context, photoProvider, gptResponse);
+                          },
+                        ),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                _buildTitleSection(gptResponse),
-                const SizedBox(height: 10),
-                Consumer<PhotoScreenProvider>(
-                    builder: (context, photoProvider, child) {
-                      return _buildContentSection(context, photoProvider, gptResponse);
-                    },
-                  ),
-              ],
+              ),
             ),
           ),
-        ),
+          
+          // 데코레이트 모드일 때 도구 위젯 표시
+          if (provider.isDecorateMode)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: DecorationToolsWidget(
+                provider: provider,
+                selectedTool: _selectedTool,
+                onToolSelected: (tool) {
+                  setState(() {
+                    _selectedTool = tool;
+                  });
+                },
+              ),
+            ),
+          
+        ],
       ),
       bottomNavigationBar: provider.isDecorateMode
           ? null
@@ -86,6 +110,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     );
   }
 
+  // 포토카드 사진 부분
   Widget _buildImageSection(
     BuildContext context,
     PhotoScreenProvider provider,
@@ -131,16 +156,14 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                     ),
                   ),
                 ),
-                // HandDrawnWave 테두리
+                // 테두리
                 Positioned.fill(
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(32),
-                    ),
-                    child: CustomPaint(
-                      painter: HandDrawnBorderPainter(
-                        color: provider.selectedFrameColor,
-                        strokeWidth: 3.0,
+                      border: Border.all(
+                        color: provider.imageAndContentColor,
+                        width: 3.0,
                       ),
                     ),
                   ),
@@ -148,29 +171,12 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
               ],
             ),
           ),
-          // 그림 그리기 오버레이
-           DrawCustomWidget(
-             isDrawingMode: provider.isDrawingMode,
-             imageKey: imageKey,
-             imageWidth: imageWidth,
-             imageHeight: imageHeight,
-             points: provider.points,
-             isEraser: provider.isEraser,
-             selectedColor: provider.selectedColor,
-             onPanUpdate: (rel, color, strokeWidth) {
-               if (color == Colors.transparent) {
-                 provider.erasePoints(rel, strokeWidth);
-               } else {
-                 provider.addDrawPoint(DrawPoint(rel, color, strokeWidth));
-               }
-             },
-             onPanEnd: () => provider.addNullPoint(),
-           ),
         ],
       ),
     );
   }
 
+  // 포토카드 글 부분
   Widget _buildTitleSection(DiaryGptResponse gptResponse) {
     return Text(
       gptResponse.title,
@@ -188,22 +194,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     final formattedDate = PhotoService.formatDate(gptResponse.date);
     final formattedContent = PhotoService.formatContent(gptResponse.content.replaceAll('\n', ' '));
 
-    return provider.isDecorateMode
-        ? ImageCustomWidget(
-            onComplete: () => provider.setDecorateMode(false),
-            onDrawingMode: () => provider.setDrawingMode(true),
-            selectedColor: provider.selectedColor,
-            isEraser: provider.isEraser,
-            onColorChanged: (color) => provider.setSelectedColor(color),
-            onEraserToggle: () => provider.setEraserMode(true),
-            selectedFrameColor: provider.selectedFrameColor,
-            onFrameColorChanged: (color) => provider.setFrameColor(color),
-                         onStickerSelected: (sticker) {
-               // 기존 Sticker 타입을 사용하므로 provider에서 처리
-               print('선택된 스티커: ${sticker.name}');
-             },
-          )
-        : Padding(
+    return Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -229,7 +220,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                           width: double.infinity,
                           height: 5,
                           child: HandDrawnWave(
-                            color: provider.selectedFrameColor,
+                            color: provider.imageAndContentColor,
                             strokeWidth: 2.3,
                             amplitude: 1,
                             segment: 3,
@@ -271,7 +262,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                   width: double.infinity,
                   height: 5,
                   child: HandDrawnWave(
-                    color: provider.selectedFrameColor,
+                    color: provider.imageAndContentColor,
                     strokeWidth: 2.3,
                     amplitude: 1,
                     segment: 3,
