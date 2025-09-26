@@ -80,6 +80,9 @@ flutter:
     - assets/images/home/widget/Sun_icon.png
     - assets/images/home/widget/Journal_icon.png
     
+    # 날씨 이미지
+    - assets/images/weather/walking_dog.png
+    
     # 스플래쉬
     - assets/images/splash/entire.png 
     

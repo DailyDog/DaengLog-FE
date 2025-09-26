@@ -59,6 +59,10 @@ import 'features/pet_detail/screens/pet_basic_edit_screen.dart';
 import 'features/pet_detail/screens/pet_personality_edit_screen.dart';
 import 'shared/services/pet_profile_provider.dart';
 
+// 날씨 화면
+import 'features/weather/screens/weather_screen.dart';
+import 'features/weather/providers/weather_provider.dart';
+
 // 메인 함수
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -69,11 +73,18 @@ Future<void> main() async {
     MultiProvider(
       // 여러 provider 제공 -> 전역 프로바이더 사용
       providers: [
-        ChangeNotifierProvider(create: (_) => DefaultProfileProvider()),
-        ChangeNotifierProvider(create: (_) => RecordProvider()),
-        ChangeNotifierProvider(create: (_) => CloudScreenProvider()),
-        ChangeNotifierProvider(create: (_) => PetInfoProvider()),
-        ChangeNotifierProvider(create: (_) => PetProfileProvider()),
+        ChangeNotifierProvider(
+            create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
+        ChangeNotifierProvider(
+            create: (_) =>
+                RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
+        ChangeNotifierProvider(
+            create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
+        ChangeNotifierProvider(
+            create: (_) => PetInfoProvider()), // 반려동물 정보 입력 상태 관리
+        ChangeNotifierProvider(
+            create: (_) => PetProfileProvider()), // 반려동물 프로필 정보 제공
+        ChangeNotifierProvider(create: (_) => WeatherProvider()), // 날씨 정보 제공
       ],
       child: const MyApp(), // 앱 실행
     ),
@@ -147,7 +158,7 @@ class MyApp extends StatelessWidget {
             const Close(), // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
 
         // 마이페이지 화면
-        '/my_page': (context) => MyPageMainScreen(),
+        '/my_page': (context) => const MyPageMainScreen(), // 마이페이지 화면
         '/my_info_page': (context) => MyInfoPage(), // 마이페이지 화면 (유저 상세)
         '/alarm_page': (context) => const AlarmPage(), // 알림 화면
 
@@ -173,6 +184,9 @@ class MyApp extends StatelessWidget {
 
         // 클라우드
         '/cloud_main': (context) => const CloudMainScreen(), // 클라우드 화면
+
+        // 날씨 화면
+        '/weather': (context) => const WeatherScreen(), // 날씨 화면
       },
       // 라우트 설정 종료
     );
