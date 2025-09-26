@@ -33,7 +33,6 @@ class HomeMainScreen extends StatefulWidget {
 class _HomeMainScreenState extends State<HomeMainScreen> {
   String selectedKeyword = "전체"; // 기본값
   late ScrollController _scrollController; // 스크롤 컨트롤러 추가
-  double _lastScrollPosition = 0.0; // 마지막 스크롤 위치
 
   // 날씨 상태에 따른 설명 반환
 
@@ -54,7 +53,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
   // 스크롤 리스너 - 아래로 스크롤하는 것을 막음
   void _onScroll() {
     // 스크롤이 맨 아래에 도달했을 때 더 이상 아래로 스크롤하지 못하게 함
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent) {
       // 이미 맨 아래에 있으면 더 이상 스크롤하지 않음
     }
   }
@@ -68,14 +68,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
   Widget build(BuildContext context) {
     // 날씨 상태에 따른 배경 이미지 설정
     String backgroundImage = 'assets/images/home/sun.png';
-    final weather = WeatherApi().getWeather();
-    if(weather == '폭염' || weather == '맑음') {
-      backgroundImage = 'assets/images/home/sun.png';
-    } else if(weather == '흐림' || weather == '소나기' || weather == '비' || weather == '폭우' || weather == '비/눈') {
-      backgroundImage = 'assets/images/home/rain.png';
-    } else if(weather == '한파' || weather == '눈' || weather == '눈/비') {
-      backgroundImage = 'assets/images/home/snow.png';
-    }
+    final weatherFuture = WeatherApi().getWeather();
 
     return Scaffold(
       body: Container(
@@ -89,37 +82,56 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
         child: NestedScrollView(
           headerSliverBuilder: (context, innerBoxIsScrolled) {
             return [
-                SliverAppBar(
-                  expandedHeight: 180,
-                  centerTitle: false,
-                  floating: true,
-                  pinned: true,
-                  backgroundColor: Colors.transparent, 
-                  elevation: 0,
-                  flexibleSpace: FlexibleSpaceBar(
-                    background: Container(
-                      padding: const EdgeInsets.fromLTRB(40, 0, 0, 50),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          FutureBuilder<Weather>(
-                            future: weather,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                final weather = snapshot.data!;
-                                return Text('오늘 날씨는\n\'${weather.weather}\' 입니다',
-                                    style: const TextStyle(color: Color(0XFFFFFFFF), fontFamily: 'Yeongdeok-Sea', fontWeight: FontWeight.w700, fontSize: 27, height: 1.2));
-                              } else {
-                                return const SizedBox.shrink();
-                              }
-                            },
-                          ),
-                        ],
-                      ),
+              SliverAppBar(
+                expandedHeight: 180,
+                centerTitle: false,
+                floating: true,
+                pinned: true,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    padding: const EdgeInsets.fromLTRB(40, 0, 0, 50),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FutureBuilder<Weather>(
+                          future: weatherFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData) {
+                              final weather = snapshot.data!;
+                              return Text('오늘 날씨는\n\'${weather.weather}\' 입니다',
+                                  style: const TextStyle(
+                                      color: Color(0XFFFFFFFF),
+                                      fontFamily: 'Yeongdeok-Sea',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 27,
+                                      height: 1.2));
+                            } else if (snapshot.hasError) {
+                              return Text('날씨 정보를\n불러올 수 없습니다',
+                                  style: const TextStyle(
+                                      color: Color(0XFFFFFFFF),
+                                      fontFamily: 'Yeongdeok-Sea',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 27,
+                                      height: 1.2));
+                            } else {
+                              return Text('날씨 정보를\n불러오는 중...',
+                                  style: const TextStyle(
+                                      color: Color(0XFFFFFFFF),
+                                      fontFamily: 'Yeongdeok-Sea',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 27,
+                                      height: 1.2));
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   ),
                 ),
+              ),
             ];
           },
           body: Container(
@@ -135,25 +147,24 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
               slivers: [
                 SliverToBoxAdapter(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      HomeTopSection(),
-                      // 회색 박스 추가
-                      Container(
-                        width: double.infinity,
-                        height: 8,
-                        color: Colors.grey[200],
-                      ),
-                      HomeMiddleSection(),
-                      HomeBottomSection()
-                    ]
-                  ),
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        HomeTopSection(),
+                        // 회색 박스 추가
+                        Container(
+                          width: double.infinity,
+                          height: 8,
+                          color: Colors.grey[200],
+                        ),
+                        HomeMiddleSection(),
+                        HomeBottomSection()
+                      ]),
                 ),
               ],
             ),
           ),
         ),
-    ),
+      ),
       bottomNavigationBar: commonBottomNavBar(
         context: context,
         currentIndex: 0,
@@ -161,4 +172,3 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
     );
   }
 }
-
