@@ -1,44 +1,24 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import 'package:daenglog_fe/features/chat_photo/widgets/painters/drawing_painter.dart';
-import 'package:daenglog_fe/features/chat_photo/models/photo_sticker_model.dart';
+import 'dart:ui' as ui;
+import 'package:daenglog_fe/features/chat_photo/models/drawing_path_model.dart';
+import 'package:dio/dio.dart';
 
 class PhotoScreenProvider extends ChangeNotifier {
+
   // --- 상태 변수 ---
   bool _isConfirmed = false;
   Uint8List? _capturedImageBytes;
   bool _imageLoaded = false;
   bool _isDecorateMode = false;
-  bool _isDrawingMode = false;
-
-  // --- 그림 그리기 관련 상태 ---
-  List<DrawPoint?> _points = [];
-  Color _selectedColor = Colors.red;
-  bool _isEraser = false;
-  double _strokeWidth = 4.0;
-
-  // --- 프레임 색상 관련 상태 ---
-  Color _selectedFrameColor = const Color(0xFFFF6600);
-
-  // --- 스티커 관련 상태 ---
-  Sticker? _selectedSticker;
-  List<PhotoStickerModel> _placedStickers = [];
-  PhotoStickerModel? _selectedPlacedSticker;
+  Color _imageAndContentColor = Color(0xFFF56F01);
 
   // --- Getters ---
   bool get isConfirmed => _isConfirmed;
   Uint8List? get capturedImageBytes => _capturedImageBytes;
   bool get imageLoaded => _imageLoaded;
   bool get isDecorateMode => _isDecorateMode;
-  bool get isDrawingMode => _isDrawingMode;
-  List<DrawPoint?> get points => _points;
-  Color get selectedColor => _selectedColor;
-  bool get isEraser => _isEraser;
-  double get strokeWidth => _strokeWidth;
-  Color get selectedFrameColor => _selectedFrameColor;
-  Sticker? get selectedSticker => _selectedSticker;
-  List<PhotoStickerModel> get placedStickers => _placedStickers;
-  PhotoStickerModel? get selectedPlacedSticker => _selectedPlacedSticker;
+  Color get imageAndContentColor => _imageAndContentColor;
 
   // --- Setters ---
   void setImageLoaded(bool loaded) {
@@ -52,104 +32,16 @@ class PhotoScreenProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 일기 꾸미기 모드인지
   void setDecorateMode(bool mode) {
     _isDecorateMode = mode;
     notifyListeners();
   }
 
-  void setDrawingMode(bool mode) {
-    _isDrawingMode = mode;
+  // 이미지 프레임 색상 변경시
+  void setImageAndContentColor(Color color) {
+    _imageAndContentColor = color;
     notifyListeners();
-  }
-
-  void setSelectedColor(Color color) {
-    _selectedColor = color;
-    _isEraser = false;
-    notifyListeners();
-  }
-
-  void setEraserMode(bool isEraser) {
-    _isEraser = isEraser;
-    notifyListeners();
-  }
-
-  void setFrameColor(Color color) {
-    _selectedFrameColor = color;
-    // 프레임 색상 변경 시 캡처 상태 초기화
-    _isConfirmed = false;
-    _capturedImageBytes = null;
-    notifyListeners();
-  }
-
-  void setSelectedSticker(Sticker? sticker) {
-    _selectedSticker = sticker;
-    notifyListeners();
-  }
-
-  void setSelectedPlacedSticker(PhotoStickerModel? sticker) {
-    _selectedPlacedSticker = sticker;
-    notifyListeners();
-  }
-
-  // --- 그림 그리기 메서드 ---
-  void addDrawPoint(DrawPoint point) {
-    _points.add(point);
-    notifyListeners();
-  }
-
-  void addNullPoint() {
-    _points.add(null);
-    notifyListeners();
-  }
-
-  void clearPoints() {
-    _points.clear();
-    notifyListeners();
-  }
-
-  void erasePoints(Offset position, double strokeWidth) {
-    final eraserRadius = strokeWidth / 8.0;
-    final newPoints = <DrawPoint?>[];
-    
-    for (int i = 0; i < _points.length; i++) {
-      final point = _points[i];
-      if (point == null) {
-        newPoints.add(null);
-        continue;
-      }
-      
-      final distance = (point.offset - position).distance;
-      if (distance >= eraserRadius) {
-        newPoints.add(point);
-      }
-    }
-    
-    _points.clear();
-    _points.addAll(newPoints);
-    notifyListeners();
-  }
-
-  // --- 스티커 관리 메서드 ---
-  void addPlacedSticker(PhotoStickerModel sticker) {
-    _placedStickers.add(sticker);
-    _selectedSticker = null;
-    notifyListeners();
-  }
-
-  void removePlacedSticker(PhotoStickerModel sticker) {
-    _placedStickers.remove(sticker);
-    if (_selectedPlacedSticker == sticker) {
-      _selectedPlacedSticker = null;
-    }
-    notifyListeners();
-  }
-
-  void updatePlacedStickerPosition(PhotoStickerModel sticker, Offset newPosition) {
-    final index = _placedStickers.indexOf(sticker);
-    if (index != -1) {
-      _placedStickers[index] = sticker.copyWith(position: newPosition);
-      notifyListeners();
-    }
   }
 
   // --- 초기화 메서드 ---
@@ -157,11 +49,134 @@ class PhotoScreenProvider extends ChangeNotifier {
     _isConfirmed = false;
     _capturedImageBytes = null;
     _isDecorateMode = false;
-    _isDrawingMode = false;
-    _points.clear();
-    _selectedSticker = null;
-    _placedStickers.clear();
-    _selectedPlacedSticker = null;
     notifyListeners();
   }
+
+// --------그리기 관련 상태관리---------
+
+  List<DrawingPathModel> _drawingPaths = [];
+  Color _selectedColor = Colors.red;
+  double _strokeWidth = 3.0;
+  DrawingTool _selectedTool = DrawingTool.pen;
+  ui.Image? _backgroundImage;
+  String? _currentImageUrl;
+
+
+  // getter
+  List<DrawingPathModel> get drawingPaths => _drawingPaths;
+  Color get selectedColor => _selectedColor;
+  double get strokeWidth => _strokeWidth;
+  DrawingTool get selectedTool => _selectedTool;
+  ui.Image? get backgroundImage => _backgroundImage;
+
+  // 그리기 경로 추가
+  void addDrawingPath(DrawingPathModel path) {
+    _drawingPaths.add(path);
+    notifyListeners();
+  }
+
+  // 실행 취소
+  void undoLastPath() {
+    if (_drawingPaths.isNotEmpty) {
+      _drawingPaths.removeLast();
+      notifyListeners();
+    }
+  }
+  
+  // 모든 그리기 지우기
+  void clearDrawing() {
+    _drawingPaths.clear();
+    notifyListeners();
+  }
+  
+  // 도구/색상 변경
+  void setSelectedTool(DrawingTool tool) {
+    _selectedTool = tool;
+    notifyListeners();
+  }
+  
+  void setSelectedColor(Color color) {
+    _selectedColor = color;
+    notifyListeners();
+  }
+  
+  // 이미지 로드
+  void setBackgroundImage(ui.Image image) {
+    _backgroundImage = image;
+    notifyListeners();
+  }
+
+  // 네트워크 이미지를 ui.Image로 변환하여 로드 (Dio 사용)
+  Future<void> loadNetworkImage(String imageUrl) async {
+    try {
+      // 이미 같은 URL의 이미지가 로드되어 있으면 스킵
+      if (_backgroundImage != null && _currentImageUrl == imageUrl) {
+        return;
+      }
+      
+      _currentImageUrl = imageUrl; // 현재 로딩 중인 URL 저장
+      
+      final dio = Dio();
+      final response = await dio.get<List<int>>(
+        imageUrl,
+        options: Options(
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      
+      if (response.statusCode == 200 && response.data != null) {
+        final bytes = Uint8List.fromList(response.data!);
+        final codec = await ui.instantiateImageCodec(bytes);
+        final frame = await codec.getNextFrame();
+        _backgroundImage = frame.image;
+        notifyListeners();
+        print('이미지 로드 성공: ${bytes.length} bytes');
+      }
+    } catch (e) {
+      print('이미지 로드 실패: $e');
+      _currentImageUrl = null; // 실패 시 URL 초기화
+    }
+  }
+
+  // 새 경로 시작
+  void startNewPath(Offset startPoint) {
+    print('🎨 startNewPath 호출됨: $startPoint');
+    print('🎨 현재 색상: $_selectedColor');
+    print('🎨 현재 굵기: $_strokeWidth');
+    
+    final paint = Paint()
+      ..color = _selectedColor
+      ..strokeWidth = _strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path()
+      ..moveTo(startPoint.dx, startPoint.dy);
+
+    _drawingPaths.add(
+      DrawingPathModel(path: path, paint: paint, tool: _selectedTool),
+    );
+    print('🎨 경로 추가됨. 총 경로 수: ${_drawingPaths.length}');
+    notifyListeners();
+  }
+
+  // 현재 경로 연장
+  void extendCurrentPath(Offset point) {
+    if (_drawingPaths.isEmpty) {
+      print('⚠️ extendCurrentPath: 경로가 비어있음');
+      return;
+    }
+    _drawingPaths.last.path.lineTo(point.dx, point.dy);
+    print('🎨 경로 연장됨: $point');
+    notifyListeners();
+  }
+
+  void setStrokeWidth(double width) {
+    _strokeWidth = width;
+    notifyListeners();
+  }
+
+  
 }

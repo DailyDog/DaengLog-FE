@@ -47,7 +47,8 @@ dependencies:
   geolocator: ^11.0.0 # 위치 정보 라이브러리
   geocoding: ^2.1.0 # 위치 정보 라이브러리
   flutter_dotenv: ^5.2.1 # 환경 변수 라이브러리
-  flutter_colorpicker: ^1.0.3 # 색상 선택 라이브러리
+  flutter_colorpicker: ^1.0.3 # 색상 선택 라이브러리 
+  go_router: ^14.2.0 # 라우터 라이브러리
 
   google_sign_in: ^6.2.0 # 구글 로그인 라이브러리
 

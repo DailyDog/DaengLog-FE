@@ -1,92 +1,62 @@
-// main.dart
-import 'package:daenglog_fe/features/pet_info/screens/pet_info_kind_screen.dart';
-import 'package:daenglog_fe/features/pet_info/screens/pet_info_name_screen.dart';
-import 'package:daenglog_fe/features/pet_info/screens/pet_info_character_screen.dart';
-import 'package:daenglog_fe/features/pet_info/screens/pet_info_profile_screen.dart';
-import 'package:daenglog_fe/features/record/screens/record_main_screen.dart';
-import 'package:daenglog_fe/features/record/screens/image_upload_screen.dart';
-import 'package:daenglog_fe/features/record/providers/record_provider.dart';
-import 'package:daenglog_fe/features/pet_info/screens/pet_info_screen.dart';
-import 'package:daenglog_fe/features/onboding/screens/onboding_fth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:daenglog_fe/shared/widgets/bottom_nav_bar.dart';
+
+// Providers
+import 'shared/services/default_profile_provider.dart';
+import 'features/record/providers/record_provider.dart';
+import 'features/cloud/providers/cloud_screen_provider.dart';
 import 'features/pet_info/providers/pet_info_provider.dart';
-import 'package:daenglog_fe/features/pet_detail/screens/pet_detail_screen.dart';
+import 'shared/services/pet_profile_provider.dart';
+import 'features/weather/providers/weather_provider.dart';
 
-// 로그인 화면
+// Screens
 import 'features/login/login.dart';
-
-// 스플래시 화면
 import 'features/splash/splash.dart';
-
-// 온보딩 화면
 import 'features/onboding/screens/onboding_start.dart';
 import 'features/onboding/screens/onboding_main.dart';
 import 'features/onboding/screens/onboding_sec.dart';
 import 'features/onboding/screens/onboding_trd.dart';
+import 'features/onboding/screens/onboding_fth.dart';
 
-// 정보 입력 화면
+import 'features/homeScreen/screens/home_main_screen.dart';
+import 'features/record/screens/record_main_screen.dart';
+import 'features/cloud/screens/cloud_main_screen.dart';
+import 'features/mypage/screens/mypage_main_screen.dart';
 
-// 채팅 화면
+// Additional screens
 import 'features/chat/screens/chat_main_prompt_screen.dart';
 import 'features/chat/screens/chat_communication_screen.dart';
-import 'features/chat_photo/screens/chat_photo_screen.dart';
 import 'features/chat/screens/chat_history_screen.dart';
-
-// 가족 공유 화면
-import 'features/family_share/screens/family_share_share.dart';
-import 'features/family_share/screens/family_send.dart';
-import 'features/family_share/screens/envelope_receive.dart';
-
-// 홈스크린 화면
-import 'features/homeScreen/screens/home_main_screen.dart';
-
-// 마이페이지 화면
-import 'features/mypage/screens/mypage_main_screen.dart';
-import 'features/mypage/screens/mypage_my_info_screen.dart';
-import 'features/mypage/screens/mypage_alarm_screen.dart';
-
-// 마켓 화면 -> 임시 대표화면
-import 'features/purchase/close.dart';
-
-// 클라우드 화면
-import 'features/cloud/screens/cloud_main_screen.dart';
-import 'features/cloud/providers/cloud_screen_provider.dart';
-
+import 'features/chat_photo/screens/chat_photo_screen.dart';
+import 'features/pet_info/screens/pet_info_screen.dart';
+import 'features/pet_detail/screens/pet_detail_screen.dart';
 import 'features/pet_detail/screens/pet_basic_edit_screen.dart';
 import 'features/pet_detail/screens/pet_personality_edit_screen.dart';
-import 'shared/services/pet_profile_provider.dart';
-
-// 날씨 화면
+// import 'features/family_share/screens/family_share_screen.dart';
+// import 'features/family_share/screens/family_send_screen.dart';
+// import 'features/family_share/screens/envelope_receive_screen.dart';
+import 'features/mypage/screens/mypage_my_info_screen.dart';
+import 'features/mypage/screens/mypage_alarm_screen.dart';
+import 'features/purchase/close.dart';
 import 'features/weather/screens/weather_screen.dart';
-import 'features/weather/providers/weather_provider.dart';
 
-// 메인 함수
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env"); // .env 파일 로드
+  await dotenv.load(fileName: ".env");
   runApp(
-    // ChangeNotifierProvider( // 기본 프로필 정보 제공
-    //   create: (_) => DefaultProfileProvider(),
     MultiProvider(
-      // 여러 provider 제공 -> 전역 프로바이더 사용
       providers: [
-        ChangeNotifierProvider(
-            create: (_) => DefaultProfileProvider()), // 기본 프로필 정보 제공
-        ChangeNotifierProvider(
-            create: (_) =>
-                RecordProvider()), // 기록 화면 제공 -> 나중에 전역 해제 특정 화면에서 사용
-        ChangeNotifierProvider(
-            create: (_) => CloudScreenProvider()), // 클라우드 화면 상태 관리
-        ChangeNotifierProvider(
-            create: (_) => PetInfoProvider()), // 반려동물 정보 입력 상태 관리
-        ChangeNotifierProvider(
-            create: (_) => PetProfileProvider()), // 반려동물 프로필 정보 제공
-        ChangeNotifierProvider(create: (_) => WeatherProvider()), // 날씨 정보 제공
+        ChangeNotifierProvider(create: (_) => DefaultProfileProvider()),
+        ChangeNotifierProvider(create: (_) => RecordProvider()),
+        ChangeNotifierProvider(create: (_) => CloudScreenProvider()),
+        ChangeNotifierProvider(create: (_) => PetInfoProvider()),
+        ChangeNotifierProvider(create: (_) => PetProfileProvider()),
+        ChangeNotifierProvider(create: (_) => WeatherProvider()),
       ],
-      child: const MyApp(), // 앱 실행
+      child: const MyApp(),
     ),
   );
 }
@@ -96,99 +66,91 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      // 메타데이터 제공
-      debugShowCheckedModeBanner: false, // 디버그 배너 숨기기
-      // 초기 라우트 설정 = 초기 화면
-      initialRoute: '/login', // 초기 화면 설정
-      // routes 추가
-      routes: {
-        // 초기 화면
-        '/splash': (context) => const Splash(), // 스플래시 화면
+    final router = GoRouter(
+      initialLocation: '/login',
+      routes: [
+        // ✅ 로그인/온보딩/스플래시 - ShellRoute 밖
+        GoRoute(path: '/splash', builder: (context, state) => const Splash()),
+        GoRoute(path: '/login', builder: (context, state) => const SocialLoginScreen()),
+        GoRoute(path: '/onboding_start', builder: (context, state) => const OnbodingStart()),
+        GoRoute(path: '/onboding_main', builder: (context, state) => const OnbodingMain()),
+        GoRoute(path: '/onboding_sec', builder: (context, state) => const OnbodingSec()),
+        GoRoute(path: '/onboding_trd', builder: (context, state) => const OnbodingTrd()),
+        GoRoute(path: '/onboding_fth', builder: (context, state) => const OnbodingFth()),
 
-        // 온보딩 화면
-        '/onboding_start': (context) => const OnbodingStart(), // 온보딩 시작 화면
-        '/onboding_main': (context) => const OnbodingMain(), // 온보딩 메인 화면
-        '/onboding_sec': (context) => const OnbodingSec(), // 온보딩 세컨드 화면
-        '/onboding_trd': (context) => const OnbodingTrd(), // 온보딩 세컨드 화면
-        '/onboding_fth': (context) => const OnbodingFth(), // 온보딩 포트폴리오 화면
+        // Additional routes
+        GoRoute(path: '/chat_main_prompt', builder: (context, state) => const ChatMainPromptScreen()),
+        GoRoute(path: '/chat_communication', builder: (context, state) => const ChatCommunicationScreen()),
+        GoRoute(path: '/chat_history', builder: (context, state) => const ChatHistoryScreen()),
+        GoRoute(path: '/chat_photo', builder: (context, state) => const ChatPhotoScreen()),
+        GoRoute(path: '/pet_info', builder: (context, state) => PetInfoScreen()),
+        GoRoute(path: '/pet_detail', builder: (context, state) => const PetDetailScreen()),
+        GoRoute(path: '/pet_basic_edit', builder: (context, state) => const PetBasicEditScreen()),
+        GoRoute(path: '/pet_personality_edit', builder: (context, state) => const PetPersonalityEditScreen()),
+        // GoRoute(path: '/family_share', builder: (context, state) => const FamilyShareScreen()),
+        // GoRoute(path: '/family_send', builder: (context, state) => const FamilySendScreen()),
+        // GoRoute(path: '/envelope_receive', builder: (context, state) => const EnvelopeReceiveScreen()),
+        GoRoute(path: '/my_info_page', builder: (context, state) => const MyInfoPage()),
+        GoRoute(path: '/alarm_page', builder: (context, state) => const AlarmPage()),
+        GoRoute(path: '/close', builder: (context, state) => const Close()),
+        GoRoute(path: '/weather', builder: (context, state) => const WeatherScreen()),
 
-        // 로그인 화면
-        '/login': (context) => const SocialLoginScreen(), // 로그인 화면
+        // ✅ 메인 탭 구조 - 하단바 고정
+        ShellRoute(
+          builder: (context, state, child) {
+            return MainScaffold(child: child);
+          },
+          routes: [
+            GoRoute(path: '/home', builder: (context, state) => const HomeMainScreen()),
+            GoRoute(path: '/record', builder: (context, state) => const RecordMainScreen()),
+            GoRoute(path: '/cloud', builder: (context, state) => const CloudMainScreen()),
+            GoRoute(path: '/mypage', builder: (context, state) => const MyPageMainScreen()),
+          ],
+        ),
+      ],
+    );
 
-        // 정보 입력 화면
-        '/pet_information_kind': (context) =>
-            PetInformationKindScreen(), // 반려동물 종류 화면
-        '/pet_information_name': (context) =>
-            PetInformationNameScreen(), // 반려동물 이름 화면
-        '/pet_information_character': (context) =>
-            PetInformationCharacterScreen(), // 반려동물 캐릭터 화면
-        '/pet_information_profile': (context) =>
-            PetInformationProfileScreen(), // 반려동물 프로필 화면
-        '/pet_info': (context) => PetInfoScreen(), // 반려동물 정보 화면
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      routerConfig: router,
+    );
+  }
+}
 
-        // 홈 화면
-        '/home_main': (context) => const HomeMainScreen(), // 홈 화면
+// ✅ 하단바 고정 레이아웃
+class MainScaffold extends StatefulWidget {
+  final Widget child;
+  const MainScaffold({super.key, required this.child});
 
-        // 채팅 화면
-        '/chat_main_prompt': (context) =>
-            const ChatMainPromptScreen(), // 홈 프롬프트 화면
-        '/chat_communication': (context) =>
-            ChatCommunicationScreen(), // 채팅 서비스 화면
-        '/chat_history': (context) => ChatHistoryScreen(), // 채팅 기록 화면
+  @override
+  State<MainScaffold> createState() => _MainScaffoldState();
+}
 
-        // 포토카드 화면
-        '/chat_photo': (context) => const ChatPhotoScreen(), // 채팅 포토카드 화면
+class _MainScaffoldState extends State<MainScaffold> {
+  int _selectedIndex = 0;
 
-        // 가족 공유 화면
-        '/family_share': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          return FamilyShareScreen(
-            sharedContent: args?['content'] ?? '공유할 내용이 없습니다.',
-            sharedImagePath: args?['imagePath'],
-          );
-        },
-        '/family_send': (context) => const FamilySendScreen(), // 가족 공유 화면
-        '/envelope_receive': (context) =>
-            const EnvelopeReceiveScreen(), // 가족 공유 화면
+  static const tabs = ['/home', '/record', '/cloud', '/mypage'];
 
-        // 마켓 화면
-        '/close': (context) =>
-            const Close(), // 마켓화면 -> 해당 라우터로 홈, 기록, 마켓, 마이페이지 이동
+  void _onTap(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
 
-        // 마이페이지 화면
-        '/my_page': (context) => const MyPageMainScreen(), // 마이페이지 화면
-        '/my_info_page': (context) => MyInfoPage(), // 마이페이지 화면 (유저 상세)
-        '/alarm_page': (context) => const AlarmPage(), // 알림 화면
+    // 카메라 권한 확인
+    if (index == 2) {
+      Provider.of<RecordProvider>(context, listen: false).takePhotoWithCamera(context);
+    }
+    // 라우터 이동
+    else{
+      context.go(tabs[index]);
+    }
+  }
 
-        // 반려동물 상세
-        '/pet_detail': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          return PetDetailScreen();
-        },
-        '/pet_basic_edit': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          return PetBasicEditScreen();
-        },
-        '/pet_personality_edit': (context) {
-          final args = ModalRoute.of(context)?.settings.arguments
-              as Map<String, dynamic>?;
-          return PetPersonalityEditScreen();
-        },
-        // 기록 화면
-        '/record_main': (context) => const RecordMainScreen(), // 기록 화면
-        '/image_upload': (context) => const ImageUploadScreen(), // 이미지 업로드 화면
-
-        // 클라우드
-        '/cloud_main': (context) => const CloudMainScreen(), // 클라우드 화면
-
-        // 날씨 화면
-        '/weather': (context) => const WeatherScreen(), // 날씨 화면
-      },
-      // 라우트 설정 종료
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: widget.child,
+      bottomNavigationBar: commonBottomNavBar(context: context, currentIndex: _selectedIndex),
     );
   }
 }

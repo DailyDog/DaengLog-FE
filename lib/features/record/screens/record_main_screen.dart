@@ -18,7 +18,6 @@ class RecordMainScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF3F3F3),
-      bottomNavigationBar: commonBottomNavBar(context: context),
       
       // Media selection modal
       body: Stack(

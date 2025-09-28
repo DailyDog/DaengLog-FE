@@ -238,14 +238,6 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
             },
           ),
 
-          // 하단 네비게이션
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: commonBottomNavBar(context: context, currentIndex: 3),
-          ),
-
           // 반려동물 편집 모달
           if (_showModal)
             _PetEditModalWrapper(

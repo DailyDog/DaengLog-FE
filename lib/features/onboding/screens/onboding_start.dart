@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class OnbodingStart extends StatelessWidget {
   const OnbodingStart({Key? key}) : super(key: key);
@@ -52,7 +53,7 @@ class OnbodingStart extends StatelessWidget {
               GestureDetector(
                 // 로그인 버튼 클릭 시 라우트 이동
                 onTap: () {
-                  Navigator.pushNamed(context, '/login');
+                  context.go('/login');
                 },
                 child: const Text(
                   '로그인',

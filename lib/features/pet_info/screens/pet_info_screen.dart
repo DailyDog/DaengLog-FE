@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/features/pet_info/screens/pet_info_kind_screen.dart';
 import 'package:daenglog_fe/features/pet_info/screens/pet_info_name_screen.dart';
 import 'package:daenglog_fe/features/pet_info/screens/pet_info_character_screen.dart';
@@ -60,7 +61,7 @@ class _PetInfoScreenState extends State<PetInfoScreen> {
           profileImage: PetInfoProvider().getPetProfileImage(),
         ));
         // 홈화면으로 이동
-        Navigator.pushNamed(context, '/home_main');
+        context.go('/home');
         break;
 
       default:

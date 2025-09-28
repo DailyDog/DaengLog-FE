@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:provider/provider.dart';  
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/features/record/providers/record_provider.dart';
 
 /// 공용 하단 네비게이션 바
@@ -38,19 +39,19 @@ Widget commonBottomNavBar({
   void onTap(int index) {
     switch (index) {
       case 0:
-        Navigator.pushReplacementNamed(context, '/home_main');
+        context.go('/home');
         break;
       case 1:
-        Navigator.pushReplacementNamed(context, '/record_main');
+        context.go('/record');
         break;
       case 2:
         Provider.of<RecordProvider>(context, listen: false).takePhotoWithCamera(context);
         break;
       case 3:
-        Navigator.pushReplacementNamed(context, '/close');
+        context.go('/close');
         break;
       case 4:
-        Navigator.pushReplacementNamed(context, '/my_page');
+        context.go('/mypage');
         break;
     }
   }
