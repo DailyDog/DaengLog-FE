@@ -54,7 +54,7 @@ class LoginModal extends StatelessWidget {
                   text: '구글로 시작하기',
                   onTap: () async {
                     await performGoogleLogin();
-                    Navigator.pushNamed(context, '/home_main');
+                    Navigator.pushNamed(context, '/home');
                   },
                 ),
                 const SizedBox(height: 12),

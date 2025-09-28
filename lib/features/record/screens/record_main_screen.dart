@@ -33,7 +33,7 @@ class RecordMainScreen extends StatelessWidget {
                     children: [
                       // Back button
                       IconButton(
-                        onPressed: () => Navigator.pop(context, '/home_main'),
+                        onPressed: () => Navigator.pop(context, '/home'),
                         icon: const Icon(
                           Icons.arrow_back_ios,
                           color: Colors.white,

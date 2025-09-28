@@ -50,7 +50,7 @@ class _PetInformationProfileScreenState extends State<PetInformationProfileScree
                     profileImage: _selectedImage,
                   ),
                 );
-                Navigator.pushNamed(context, '/home_main');
+                Navigator.pushNamed(context, '/home');
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('업로드 실패: $e')),

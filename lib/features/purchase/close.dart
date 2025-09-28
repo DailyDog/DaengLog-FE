@@ -11,7 +11,7 @@ class Close extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushReplacementNamed(context, '/home_main');
+            Navigator.pushReplacementNamed(context, '/home');
           },
         ),
         elevation: 0,
