@@ -48,9 +48,11 @@ class NoTransitionPage<T> extends CustomTransitionPage<T> {
   NoTransitionPage({required Widget child})
       : super(
           child: child,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              child,
         );
 }
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
@@ -79,29 +81,62 @@ class MyApp extends StatelessWidget {
       routes: [
         // ✅ 로그인/온보딩/스플래시 - ShellRoute 밖
         GoRoute(path: '/splash', builder: (context, state) => const Splash()),
-        GoRoute(path: '/login', builder: (context, state) => const SocialLoginScreen()),
-        GoRoute(path: '/onboding_start', builder: (context, state) => const OnbodingStart()),
-        GoRoute(path: '/onboding_main', builder: (context, state) => const OnbodingMain()),
-        GoRoute(path: '/onboding_sec', builder: (context, state) => const OnbodingSec()),
-        GoRoute(path: '/onboding_trd', builder: (context, state) => const OnbodingTrd()),
-        GoRoute(path: '/onboding_fth', builder: (context, state) => const OnbodingFth()),
+        GoRoute(
+            path: '/login',
+            builder: (context, state) => const SocialLoginScreen()),
+        GoRoute(
+            path: '/onboding_start',
+            builder: (context, state) => const OnbodingStart()),
+        GoRoute(
+            path: '/onboding_main',
+            builder: (context, state) => const OnbodingMain()),
+        GoRoute(
+            path: '/onboding_sec',
+            builder: (context, state) => const OnbodingSec()),
+        GoRoute(
+            path: '/onboding_trd',
+            builder: (context, state) => const OnbodingTrd()),
+        GoRoute(
+            path: '/onboding_fth',
+            builder: (context, state) => const OnbodingFth()),
 
         // Additional routes
-        GoRoute(path: '/chat_main_prompt', builder: (context, state) => const ChatMainPromptScreen()),
-        GoRoute(path: '/chat_communication', builder: (context, state) => const ChatCommunicationScreen()),
-        GoRoute(path: '/chat_history', builder: (context, state) => const ChatHistoryScreen()),
-        GoRoute(path: '/chat_photo', builder: (context, state) => const ChatPhotoScreen()),
-        GoRoute(path: '/pet_info', builder: (context, state) => PetInfoScreen()),
-        GoRoute(path: '/pet_detail', builder: (context, state) => const PetDetailScreen()),
-        GoRoute(path: '/pet_basic_edit', builder: (context, state) => const PetBasicEditScreen()),
-        GoRoute(path: '/pet_personality_edit', builder: (context, state) => const PetPersonalityEditScreen()),
+        GoRoute(
+            path: '/chat_main_prompt',
+            builder: (context, state) => const ChatMainPromptScreen()),
+        GoRoute(
+            path: '/chat_communication',
+            builder: (context, state) => const ChatCommunicationScreen()),
+        GoRoute(
+            path: '/chat_history',
+            builder: (context, state) => const ChatHistoryScreen()),
+        GoRoute(
+            path: '/chat_photo',
+            builder: (context, state) => const ChatPhotoScreen()),
+        GoRoute(
+            path: '/pet_info', builder: (context, state) => PetInfoScreen()),
+        GoRoute(
+            path: '/pet_detail',
+            builder: (context, state) => const PetDetailScreen()),
+        GoRoute(
+            path: '/pet_basic_edit',
+            builder: (context, state) => const PetBasicEditScreen()),
+        GoRoute(
+            path: '/pet_personality_edit',
+            builder: (context, state) => const PetPersonalityEditScreen()),
         // GoRoute(path: '/family_share', builder: (context, state) => const FamilyShareScreen()),
         // GoRoute(path: '/family_send', builder: (context, state) => const FamilySendScreen()),
         // GoRoute(path: '/envelope_receive', builder: (context, state) => const EnvelopeReceiveScreen()),
-        GoRoute(path: '/my_info_page', builder: (context, state) => const MyInfoPage()),
-        GoRoute(path: '/alarm_page', builder: (context, state) => const AlarmPage()),
+        GoRoute(
+            path: '/my_info_page',
+            builder: (context, state) => const MyInfoPage()),
+        GoRoute(
+            path: '/alarm_page',
+            builder: (context, state) => const AlarmPage()),
         GoRoute(path: '/close', builder: (context, state) => const Close()),
-        GoRoute(path: '/weather', builder: (context, state) => const WeatherScreen()),
+        GoRoute(
+            path: '/weather',
+            builder: (context, state) => const WeatherScreen()),
 
         // ✅ 메인 탭 구조 - 하단바 고정
         ShellRoute(
@@ -109,10 +144,22 @@ class MyApp extends StatelessWidget {
             return MainScaffold(child: child);
           },
           routes: [
-            GoRoute(path: '/home', pageBuilder: (context, state) => NoTransitionPage(child: const HomeMainScreen())),
-            GoRoute(path: '/record', pageBuilder: (context, state) => NoTransitionPage(child: const RecordMainScreen())),
-            GoRoute(path: '/cloud', pageBuilder: (context, state) => NoTransitionPage(child: const CloudMainScreen())),
-            GoRoute(path: '/mypage', pageBuilder: (context, state) => NoTransitionPage(child: const MyPageMainScreen())),
+            GoRoute(
+                path: '/home',
+                pageBuilder: (context, state) =>
+                    NoTransitionPage(child: const HomeMainScreen())),
+            GoRoute(
+                path: '/record',
+                pageBuilder: (context, state) =>
+                    NoTransitionPage(child: const RecordMainScreen())),
+            GoRoute(
+                path: '/cloud',
+                pageBuilder: (context, state) =>
+                    NoTransitionPage(child: const CloudMainScreen())),
+            GoRoute(
+                path: '/mypage',
+                pageBuilder: (context, state) =>
+                    NoTransitionPage(child: const MyPageMainScreen())),
           ],
         ),
       ],
@@ -137,7 +184,7 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _selectedIndex = 0;
 
-  static const tabs = ['/home', '/record', '/cloud', '/mypage'];
+  static const tabs = ['/home', '/record', '/cloud', '/mypage', '/mypage'];
 
   void _onTap(int index) {
     setState(() {
@@ -146,10 +193,11 @@ class _MainScaffoldState extends State<MainScaffold> {
 
     // 카메라 권한 확인
     if (index == 2) {
-      Provider.of<RecordProvider>(context, listen: false).takePhotoWithCamera(context);
+      Provider.of<RecordProvider>(context, listen: false)
+          .takePhotoWithCamera(context);
     }
     // 라우터 이동
-    else{
+    else {
       context.go(tabs[index]);
     }
   }
@@ -158,7 +206,11 @@ class _MainScaffoldState extends State<MainScaffold> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: widget.child,
-      bottomNavigationBar: commonBottomNavBar(context: context, currentIndex: _selectedIndex),
+      bottomNavigationBar: commonBottomNavBar(
+        context: context,
+        currentIndex: _selectedIndex,
+        onTap: _onTap,
+      ),
     );
   }
 }
