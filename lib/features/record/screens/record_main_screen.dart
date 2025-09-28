@@ -4,9 +4,9 @@ import '../widgets/calendar_widget.dart';
 import '../widgets/album_widget.dart';
 import '../widgets/memory_widget.dart';
 import '../providers/record_provider.dart';
-import 'package:daenglog_fe/shared/widgets/bottom_nav_bar.dart';
 import '../widgets/media_selection_modal.dart';
 import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:go_router/go_router.dart';
 
 class RecordMainScreen extends StatelessWidget {
   const RecordMainScreen({super.key});
@@ -32,10 +32,10 @@ class RecordMainScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       // Back button
-                      IconButton(
-                        onPressed: () => Navigator.pop(context, '/home'),
-                        icon: const Icon(
-                          Icons.arrow_back_ios,
+                        IconButton(
+                        onPressed: () => context.go('/home'),
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
                           color: Colors.white,
                           size: 20,
                         ),
