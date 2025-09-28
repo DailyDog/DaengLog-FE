@@ -6,9 +6,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class WeatherApi {
   final Dio _dio = Dio(BaseOptions(
-    connectTimeout: const Duration(seconds: 30),
-    receiveTimeout: const Duration(seconds: 30),
-    sendTimeout: const Duration(seconds: 30),
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+    sendTimeout: const Duration(seconds: 10),
+    validateStatus: (status) => status != null && status < 500,
   ));
   final LocationService _locationService = LocationService();
 
@@ -17,57 +18,28 @@ class WeatherApi {
   // 테스트용 날씨 타입 강제 설정 (개발 중에만 사용)
   WeatherType? _forceWeatherType;
 
+  // 위치 정보 캐싱
+  String? _cachedLocation;
+  DateTime? _lastLocationUpdate;
+
   Future<Weather> getWeather() async {
     print('🌤️ WeatherApi.getWeather() 시작');
     print(
         '🔑 API Key: ${weatherApiKey.isEmpty ? "없음 (공개 API 사용)" : weatherApiKey.substring(0, 8) + "..."}');
 
     try {
-      print('📍 위치 정보 가져오는 중...');
-      final position = await _locationService.getCurrentPosition();
-      print('📍 위치: ${position.latitude}, ${position.longitude}');
-
-      final grid =
-          _locationService.latLngToGrid(position.latitude, position.longitude);
-      print('🗺️ 그리드 좌표: ${grid}');
-
-      // 주소(행정동명) 얻기
-      print('🏠 주소 정보 가져오는 중...');
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-        localeIdentifier: "ko_KR",
-      );
-      String locationName =
-          '${placemarks.first.locality} ${placemarks.first.subLocality}';
-      print('🏠 주소: $locationName');
+      // 위치 정보 가져오기 (캐싱 적용)
+      final locationName = await _getLocationName();
+      print('🏠 사용할 위치: $locationName');
 
       final now = DateTime.now().toLocal();
 
-      // 기상청 API는 매시각 40분 이후에 해당 시각 자료를 제공
-      // 예: 02:40 이후에 02:00 자료 제공
-      int hour = now.hour;
-      DateTime baseDateTime = now;
-
-      if (now.minute < 40) {
-        hour = hour - 1;
-        if (hour < 0) {
-          hour = 23;
-          // 날짜도 하루 빼기
-          baseDateTime = now.subtract(const Duration(days: 1));
-        }
+      // 그리드 좌표 가져오기
+      final grid = await _getGridCoordinates();
+      if (grid == null) {
+        print('⚠️ 그리드 좌표를 가져올 수 없어서 기본 날씨 데이터를 반환합니다');
+        return _createDefaultWeather(locationName, now);
       }
-
-      final baseDate =
-          '${baseDateTime.year}${baseDateTime.month.toString().padLeft(2, '0')}${baseDateTime.day.toString().padLeft(2, '0')}';
-      final baseTime = '${hour.toString().padLeft(2, '0')}00';
-
-      // 디버깅: 현재 시간과 계산된 시간 출력
-      print('🕐 현재 시간: ${now.hour}:${now.minute}');
-      print('🕐 계산된 시간: $baseTime');
-
-      print('📅 날짜/시간: $baseDate $baseTime');
-      print('🌐 API 호출 시작...');
 
       // 기상청 API는 API 키가 필수이므로, 키가 없으면 기본 데이터 반환
       if (weatherApiKey.isEmpty) {
@@ -109,27 +81,33 @@ class WeatherApi {
           temperature = (int.parse(temperature) - 2).toString();
         }
 
-        // 간단한 날씨 변화 (시간 기반) 또는 테스트 설정
-        if (_forceWeatherType != null) {
-          weatherType = _forceWeatherType!;
-          switch (_forceWeatherType!) {
-            case WeatherType.sunny:
-              weather = '맑음';
-              break;
-            case WeatherType.rainy:
-              weather = '비';
-              break;
-            case WeatherType.snowy:
-              weather = '눈';
-              break;
-          }
-        } else if (hour % 4 == 0) {
-          weather = '흐림';
-          weatherType = WeatherType.rainy;
-        } else if (hour % 7 == 0) {
-          weather = '비';
-          weatherType = WeatherType.rainy;
-        }
+        // 원래 로직 (주석 처리)
+        // if (_forceWeatherType != null) {
+        //   weatherType = _forceWeatherType!;
+        //   switch (_forceWeatherType!) {
+        //     case WeatherType.sunny:
+        //       weather = '맑음';
+        //       break;
+        //     case WeatherType.rainy:
+        //       weather = '비';
+        //       break;
+        //     case WeatherType.snowy:
+        //       weather = '눈';
+        //       break;
+        //   }
+        // } else if (hour % 4 == 0) {
+        //   weather = '흐림';
+        //   weatherType = WeatherType.rainy;
+        // } else if (hour % 7 == 0) {
+        //   weather = '비';
+        //   weatherType = WeatherType.rainy;
+        // }
+
+        print('🌧️ 생성되는 Weather 객체:');
+        print('  - weather: $weather');
+        print('  - weatherType: $weatherType');
+        print('  - temperature: $temperature');
+        print('  - location: $locationName');
 
         return Weather(
           temperature: temperature,
@@ -148,8 +126,10 @@ class WeatherApi {
           'numOfRows': '10',
           'pageNo': '1',
           'dataType': 'JSON',
-          'base_date': baseDate,
-          'base_time': baseTime,
+          'base_date': now.year.toString().padLeft(4, '0') +
+              now.month.toString().padLeft(2, '0') +
+              now.day.toString().padLeft(2, '0'),
+          'base_time': '${now.hour.toString().padLeft(2, '0')}00',
           'nx': grid['nx'].toString(),
           'ny': grid['ny'].toString(),
         },
@@ -283,13 +263,22 @@ class WeatherApi {
         print('❌ 위치 정보 가져오기 실패: $locationError');
       }
 
+      // 강제로 비 날씨 설정 (테스트용)
+      String defaultWeather = '맑음';
+      WeatherType defaultWeatherType = WeatherType.sunny;
+
+      print('🌧️ API 실패 시 생성되는 Weather 객체:');
+      print('  - weather: $defaultWeather');
+      print('  - weatherType: $defaultWeatherType');
+      print('  - location: $locationName');
+
       return Weather(
         temperature: '25',
         humidity: '65',
-        weather: '맑음',
+        weather: defaultWeather,
         location: locationName,
         airQuality: '좋음',
-        weatherType: _forceWeatherType ?? WeatherType.sunny,
+        weatherType: defaultWeatherType,
       );
     }
   }
@@ -300,9 +289,107 @@ class WeatherApi {
     print('🧪 테스트 날씨 타입 설정: $weatherType');
   }
 
+  // 편의 메서드들
+  void setRainyWeather() => setTestWeatherType(WeatherType.rainy);
+  void setSnowyWeather() => setTestWeatherType(WeatherType.snowy);
+  void setSunnyWeather() => setTestWeatherType(WeatherType.sunny);
+
   // 테스트용: 강제 설정 해제
   void clearTestWeatherType() {
     _forceWeatherType = null;
     print('🧪 테스트 날씨 타입 해제');
+  }
+
+  // 위치 정보 가져오기 (캐싱 적용)
+  Future<String> _getLocationName() async {
+    // 캐시된 위치가 있고 5분 이내라면 재사용
+    if (_cachedLocation != null &&
+        _lastLocationUpdate != null &&
+        DateTime.now().difference(_lastLocationUpdate!).inMinutes < 5) {
+      print('📍 캐시된 위치 사용: $_cachedLocation');
+      return _cachedLocation!;
+    }
+
+    try {
+      print('📍 위치 정보 가져오는 중...');
+      final position = await _locationService.getCurrentPosition();
+      print('📍 위치: ${position.latitude}, ${position.longitude}');
+
+      // 주소(행정동명) 얻기
+      print('🏠 주소 정보 가져오는 중...');
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+        localeIdentifier: "ko_KR",
+      );
+
+      String locationName =
+          '${placemarks.first.locality} ${placemarks.first.subLocality}';
+
+      // 캐시 업데이트
+      _cachedLocation = locationName;
+      _lastLocationUpdate = DateTime.now();
+
+      print('🏠 주소: $locationName');
+      return locationName;
+    } catch (e) {
+      print('❌ 위치 정보 가져오기 실패: $e');
+      // 캐시된 위치가 있으면 사용, 없으면 기본값
+      return _cachedLocation ?? '위치 정보 없음';
+    }
+  }
+
+  // 그리드 좌표 가져오기
+  Future<Map<String, int>?> _getGridCoordinates() async {
+    try {
+      final position = await _locationService.getCurrentPosition();
+      return _locationService.latLngToGrid(
+          position.latitude, position.longitude);
+    } catch (e) {
+      print('❌ 그리드 좌표 가져오기 실패: $e');
+      return null;
+    }
+  }
+
+  // 기본 날씨 데이터 생성
+  Weather _createDefaultWeather(String locationName, DateTime now) {
+    final hour = now.hour;
+    final month = now.month;
+
+    String weather = '맑음';
+    String temperature = '22';
+    WeatherType weatherType = WeatherType.sunny;
+
+    // 계절별 기본 온도
+    if (month >= 3 && month <= 5) {
+      temperature = '18';
+    } else if (month >= 6 && month <= 8) {
+      temperature = '28';
+    } else if (month >= 9 && month <= 11) {
+      temperature = '20';
+    } else {
+      temperature = '5';
+    }
+
+    // 시간대별 온도 조정
+    if (hour >= 6 && hour <= 10) {
+      temperature = (int.parse(temperature) - 3).toString();
+    } else if (hour >= 14 && hour <= 18) {
+      temperature = (int.parse(temperature) + 5).toString();
+    } else if (hour >= 19 || hour <= 5) {
+      temperature = (int.parse(temperature) - 2).toString();
+    }
+
+    weather = '맑음';
+    weatherType = WeatherType.sunny;
+
+    return Weather(
+      temperature: temperature,
+      humidity: '65',
+      weather: weather,
+      location: locationName,
+      airQuality: '좋음',
+      weatherType: weatherType,
+    );
   }
 }

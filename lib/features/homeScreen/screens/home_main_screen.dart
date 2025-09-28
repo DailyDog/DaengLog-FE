@@ -52,15 +52,8 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
     if (!mounted) return;
 
     try {
-      // 1초 타임아웃 설정
-      final weather = await WeatherApi().getWeather().timeout(
-        const Duration(seconds: 1),
-        onTimeout: () {
-          debugPrint('Weather API timeout, using default weather');
-          throw TimeoutException(
-              'Weather API timeout', const Duration(seconds: 1));
-        },
-      );
+      // 타임아웃 제거 - WeatherApi에서 자체적으로 처리
+      final weather = await WeatherApi().getWeather();
 
       if (mounted) {
         setState(() {
