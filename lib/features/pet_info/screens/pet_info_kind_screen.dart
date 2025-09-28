@@ -25,7 +25,7 @@ class _PetInformationKindScreenState extends State<PetInformationKindScreen> {
       titleSub: ' 선택해 주세요',
       subtitle: 'AI에게 전달되는 정보에요.',
       onPrevious: () {
-        Navigator.pop(context,'/home_main');
+        Navigator.pop(context,'/home');
       },
       isFirst: 1,
       onNext: context.read<PetInfoProvider>().getPetKind() != null

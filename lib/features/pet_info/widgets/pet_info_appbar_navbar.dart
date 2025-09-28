@@ -22,7 +22,7 @@ Widget buildPetInfoScreen({
       elevation: 0,
       leading: IconButton(
         onPressed: () {
-          Navigator.pop(context!, '/home_main');
+          Navigator.pop(context!, '/home');
         },
         icon: const Icon(
           Icons.arrow_left,

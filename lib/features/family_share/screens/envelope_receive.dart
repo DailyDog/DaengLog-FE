@@ -106,14 +106,14 @@ class _EnvelopeReceiveScreenState extends State<EnvelopeReceiveScreen>
             Icons.arrow_back_ios_new_rounded,
             color: Color(0xFFFF5F01),
           ),
-          onPressed: () => Navigator.pushNamed(context, '/home_main'),
+          onPressed: () => Navigator.pushNamed(context, '/home'),
         ) : IconButton(
           icon: const Icon(
             Icons.home_outlined,
             color: Color(0xFFFF5F01),
             size: 30,
           ),
-          onPressed: () => Navigator.pushNamed(context, '/home_main'),
+          onPressed: () => Navigator.pushNamed(context, '/home'),
         ),
         actions: _isEnvelopeOpened ? [
           IconButton(
