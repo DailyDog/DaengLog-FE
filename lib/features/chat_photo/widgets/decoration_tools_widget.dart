@@ -187,7 +187,7 @@ class DecorationToolsWidget extends StatelessWidget {
             children: colors.map((color) {
               return GestureDetector(
                 onTap: () {
-                  // 브러시 색상 변경 로직
+                  provider.setSelectedColor(color);
                 },
                 child: Container(
                   width: 28,
@@ -206,12 +206,12 @@ class DecorationToolsWidget extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Slider(
-            value: 4.0,
+            value: provider.strokeWidth,
             min: 1.0,
             max: 10.0,
             divisions: 9,
             onChanged: (value) {
-              // 브러시 크기 변경 로직
+              provider.setStrokeWidth(value);
             },
             activeColor: const Color(0xFFF56F01),
           ),

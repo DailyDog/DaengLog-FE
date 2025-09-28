@@ -105,5 +105,35 @@ class PhotoScreenProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 새 경로 시작
+  void startNewPath(Offset startPoint) {
+    final paint = Paint()
+      ..color = _selectedColor
+      ..strokeWidth = _strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path()
+      ..moveTo(startPoint.dx, startPoint.dy);
+
+    _drawingPaths.add(
+      DrawingPathModel(path: path, paint: paint, tool: _selectedTool),
+    );
+    notifyListeners();
+  }
+
+  // 현재 경로 연장
+  void extendCurrentPath(Offset point) {
+    if (_drawingPaths.isEmpty) return;
+    _drawingPaths.last.path.lineTo(point.dx, point.dy);
+    notifyListeners();
+  }
+
+  void setStrokeWidth(double width) {
+    _strokeWidth = width;
+    notifyListeners();
+  }
+
   
 }

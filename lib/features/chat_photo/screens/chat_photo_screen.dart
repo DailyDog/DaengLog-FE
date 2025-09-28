@@ -4,6 +4,7 @@ import 'package:daenglog_fe/features/chat_photo/widgets/painters/hand_drawn_wave
 import 'package:daenglog_fe/features/chat_photo/widgets/photo_app_bar.dart';
 import 'package:daenglog_fe/features/chat_photo/widgets/photo_bottom_buttons.dart';
 import 'package:daenglog_fe/features/chat_photo/widgets/decoration_tools_widget.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/painters/drawing_painter.dart';
 import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
 import 'package:daenglog_fe/features/chat_photo/services/photo_service.dart';
 import 'package:provider/provider.dart';
@@ -54,7 +55,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
       body: Stack(
         children: [
           RepaintBoundary(
-            key: contentKey,
+            key: imageKey,
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -168,6 +169,35 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                     ),
                   ),
                 ),
+                // 드로잉 레이어 (그리기 도구 선택 시 활성화)
+                if (provider.isDecorateMode && _selectedTool == DecorationTool.draw)
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(32),
+                      child: GestureDetector(
+                        onPanStart: (details) {
+                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
+                          final local = box?.globalToLocal(details.globalPosition);
+                          if (local != null) {
+                            provider.startNewPath(local);
+                          }
+                        },
+                        onPanUpdate: (details) {
+                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
+                          final local = box?.globalToLocal(details.globalPosition);
+                          if (local != null) {
+                            provider.extendCurrentPath(local);
+                          }
+                        },
+                        child: RepaintBoundary(
+                          child: CustomPaint(
+                            painter: DrawingPainter(paths: provider.drawingPaths),
+                            size: Size.infinite,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
