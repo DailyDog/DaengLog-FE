@@ -16,13 +16,29 @@ class HomeBottomSection extends StatefulWidget {
 class _HomeBottomSectionState extends State<HomeBottomSection> {
   // 선택된 위젯들 (기본값: 공지사항, 캠퍼스맵, 학사일정)
   List<String> selectedWidgets = ['일기', '산책', '오늘의 미션', '날씨'];
-  
+
   // 사용 가능한 모든 위젯들
   final List<HomeWidgetItem> availableWidgets = [
-    HomeWidgetItem(id: '일기', title: '일기', description: '망고의 기분은 어떨까?', iconPath: 'assets/images/home/widget/Journal_icon.png'),
-    HomeWidgetItem(id: '산책', title: '산책', description: '이번주 망고는\n얼마나 산책을 했나?', iconPath: 'assets/images/home/widget/dog_icon.png'),
-    HomeWidgetItem(id: '오늘의 미션', title: '오늘의 미션', description: '망고와 신나는 미션', iconPath: 'assets/images/home/widget/Goal_icon.png'),
-    HomeWidgetItem(id: '날씨', title: '날씨', description: '성북구 정릉동', iconPath: 'assets/images/home/widget/Sun_icon.png'),
+    HomeWidgetItem(
+        id: '일기',
+        title: '일기',
+        description: '망고의 기분은 어떨까?',
+        iconPath: 'assets/images/home/widget/Journal_icon.png'),
+    HomeWidgetItem(
+        id: '산책',
+        title: '산책',
+        description: '이번주 망고는\n얼마나 산책을 했나?',
+        iconPath: 'assets/images/home/widget/dog_icon.png'),
+    HomeWidgetItem(
+        id: '오늘의 미션',
+        title: '오늘의 미션',
+        description: '망고와 신나는 미션',
+        iconPath: 'assets/images/home/widget/Goal_icon.png'),
+    HomeWidgetItem(
+        id: '날씨',
+        title: '날씨',
+        description: '성북구 정릉동',
+        iconPath: 'assets/images/home/widget/Sun_icon.png'),
   ];
 
   // 위젯 선택 모달 표시
@@ -76,7 +92,8 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
               } else {
                 // 위젯 카드들
                 final widgetId = selectedWidgets[index];
-                final widget = availableWidgets.firstWhere((w) => w.id == widgetId);
+                final widget =
+                    availableWidgets.firstWhere((w) => w.id == widgetId);
                 return _buildDraggableWidgetCard(widget, index);
               }
             },
@@ -132,7 +149,6 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                     widget.iconPath!,
                     width: 44,
                     height: 44,
-                   
                   ),
                 ),
               ],
@@ -174,7 +190,8 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
 
 //------------------------------------------------------------
   // 위젯 카드 생성
-  Widget _buildWidgetCard(HomeWidgetItem widget, {bool isSelectionCard = false}) {
+  Widget _buildWidgetCard(HomeWidgetItem widget,
+      {bool isSelectionCard = false}) {
     if (isSelectionCard) {
       // 위젯 선택 버튼 - 아이콘을 정가운데에 배치
       return GestureDetector(
@@ -202,70 +219,79 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
       );
     }
     // 일반 위젯 카드
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 제목과 화살표
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 12,
-                  color: Colors.grey,
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            
-            // 설명
-            Expanded(
-              child: Text(
-                widget.description,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            
-            // 아이콘
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Image.asset(
-                widget.iconPath!,
-                width: 50,
-                height: 50,
-              ),
+    return GestureDetector(
+      onTap: () {
+        // 날씨 위젯 클릭 시 날씨 화면으로 이동
+        if (widget.id == '날씨') {
+          Navigator.pushNamed(context, '/weather');
+        }
+        // 다른 위젯들도 필요에 따라 추가 가능
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 제목과 화살표
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 12,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              // 설명
+              Expanded(
+                child: Text(
+                  widget.description,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+
+              // 아이콘
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Image.asset(
+                  widget.iconPath!,
+                  width: 50,
+                  height: 50,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
