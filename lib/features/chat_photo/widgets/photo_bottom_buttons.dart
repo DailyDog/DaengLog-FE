@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 import 'package:daenglog_fe/shared/widgets/login_modal.dart';
+import 'package:go_router/go_router.dart';
 
 // 포토카드 하단 버튼
 class PhotoBottomButtons extends StatelessWidget {
@@ -34,7 +35,7 @@ class PhotoBottomButtons extends StatelessWidget {
                     final token = await SecureTokenStorage.getToken();
                     if (token != null && token.isNotEmpty) {
                       // 토큰이 있으면 클라우드 업로드 페이지로 이동
-                      Navigator.pushNamed(context, '/cloud_upload');
+                      context.push('/cloud_upload');
                     } else {
                       // 토큰이 없으면 로그인 페이지로 이동
                       await showLoginModal(context);

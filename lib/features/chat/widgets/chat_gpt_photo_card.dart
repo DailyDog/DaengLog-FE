@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
+import 'package:go_router/go_router.dart';
 
 class ChatGptPhotoCard extends StatelessWidget {
   final String formattedDate;
@@ -115,7 +116,7 @@ class ChatGptPhotoCard extends StatelessWidget {
                   width: buttonWidth,
                   child: OutlinedButton(
                     onPressed: () async {
-                      Navigator.pushNamed(context, '/chat_photo', arguments: gptResponse);
+                      context.push('/chat_photo', extra: gptResponse);
                     },
                     style: OutlinedButton.styleFrom(
                       backgroundColor: const Color(0xFFFFEEE8),

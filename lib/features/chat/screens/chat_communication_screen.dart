@@ -1,5 +1,6 @@
 // 외부 패키지
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 // 날짜 포맷 초기화용
 // 날짜 포맷
@@ -41,10 +42,11 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
   @override
   void didChangeDependencies() { // 화면 전환 시 호출되는 메서드
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments as Map?;
-    if (args != null && _messages.isEmpty) {
-      final prompt = args['prompt'] as String?; // 텍스트 입력
-      final image = args['image'] as XFile?; // 이미지 선택
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>;
+
+    if (extra != null && _messages.isEmpty) {
+      final prompt = extra['prompt'] as String?; // 텍스트 입력
+      final image = extra['image'] as XFile?; // 이미지 선택
       if (prompt != null && image != null) {
         _selectedImageXFile = image;
         _textController.text = prompt;
@@ -196,7 +198,7 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
               size: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
             ),
             onPressed: () {
-              Navigator.pushNamed(context, '/chat_history');
+              context.go('/chat_history');
             },
           ),
           IconButton(

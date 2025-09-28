@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:daenglog_fe/shared/widgets/bottom_nav_bar.dart';
 import 'package:daenglog_fe/api/weather/weather_api.dart';
 import 'package:daenglog_fe/shared/models/weather.dart';
 import 'package:daenglog_fe/shared/services/default_profile_provider.dart';

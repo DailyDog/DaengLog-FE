@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/shared/widgets/chat_bottom_widget.dart';
 import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class HomeTopSection extends StatefulWidget {
@@ -28,10 +29,9 @@ class _HomeTopSectionState extends State<HomeTopSection> {
   void _goToChatService() {
     final text = _controller.text.trim();
     if (text.isEmpty || _pickedImage == null) return;
-    Navigator.pushNamed(
-      context,
+    context.push(
       '/chat_communication',
-      arguments: {
+      extra: {
         'prompt': text,
         'image': _pickedImage,
       },
