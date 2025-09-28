@@ -67,7 +67,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = GoRouter(
-      initialLocation: '/login',
+      initialLocation: '/record',
       routes: [
         // ✅ 로그인/온보딩/스플래시 - ShellRoute 밖
         GoRoute(path: '/splash', builder: (context, state) => const Splash()),

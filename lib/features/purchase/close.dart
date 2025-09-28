@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 // 마켓 화면
 class Close extends StatelessWidget {
@@ -11,7 +12,7 @@ class Close extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pushReplacementNamed(context, '/home');
+            context.go('/home');
           },
         ),
         elevation: 0,

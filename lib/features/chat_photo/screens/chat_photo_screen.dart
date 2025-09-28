@@ -9,6 +9,7 @@ import 'package:daenglog_fe/features/chat_photo/providers/photo_provider_manager
 import 'package:daenglog_fe/features/chat_photo/services/photo_service.dart';
 import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 // 포토카드 화면
 class ChatPhotoScreen extends StatefulWidget {
@@ -43,7 +44,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   }
 
   Widget _buildPhotoScreen(BuildContext context, PhotoScreenProvider provider) {
-    final gptResponse = ModalRoute.of(context)?.settings.arguments as DiaryGptResponse;
+    final gptResponse = GoRouterState.of(context).extra as DiaryGptResponse;
     final size = MediaQuery.of(context).size;
     final double imageHeight = provider.isDecorateMode 
         ? size.height * 0.4 
