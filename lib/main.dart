@@ -43,6 +43,14 @@ import 'features/mypage/screens/mypage_alarm_screen.dart';
 import 'features/purchase/close.dart';
 import 'features/weather/screens/weather_screen.dart';
 
+// 페이지 이동 시 애니메이션 제거
+class NoTransitionPage<T> extends CustomTransitionPage<T> {
+  NoTransitionPage({required Widget child})
+      : super(
+          child: child,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+        );
+}
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
@@ -67,7 +75,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = GoRouter(
-      initialLocation: '/record',
+      initialLocation: '/login',
       routes: [
         // ✅ 로그인/온보딩/스플래시 - ShellRoute 밖
         GoRoute(path: '/splash', builder: (context, state) => const Splash()),
@@ -101,10 +109,10 @@ class MyApp extends StatelessWidget {
             return MainScaffold(child: child);
           },
           routes: [
-            GoRoute(path: '/home', builder: (context, state) => const HomeMainScreen()),
-            GoRoute(path: '/record', builder: (context, state) => const RecordMainScreen()),
-            GoRoute(path: '/cloud', builder: (context, state) => const CloudMainScreen()),
-            GoRoute(path: '/mypage', builder: (context, state) => const MyPageMainScreen()),
+            GoRoute(path: '/home', pageBuilder: (context, state) => NoTransitionPage(child: const HomeMainScreen())),
+            GoRoute(path: '/record', pageBuilder: (context, state) => NoTransitionPage(child: const RecordMainScreen())),
+            GoRoute(path: '/cloud', pageBuilder: (context, state) => NoTransitionPage(child: const CloudMainScreen())),
+            GoRoute(path: '/mypage', pageBuilder: (context, state) => NoTransitionPage(child: const MyPageMainScreen())),
           ],
         ),
       ],

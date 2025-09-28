@@ -61,16 +61,14 @@ class _HomeTopSectionState extends State<HomeTopSection> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  child: CircleAvatar(
-                    radius: 11,
-                    backgroundImage: profile?.imagePath != null &&
-                            profile!.imagePath!.isNotEmpty
+                CircleAvatar(
+                  radius: 11,
+                  backgroundImage: profile?.imagePath != null &&
+                        profile!.imagePath!.isNotEmpty
                         ? NetworkImage(profile.imagePath!)
                         : AssetImage('assets/images/home/default_profile.png')
                             as ImageProvider,
-                    backgroundColor: Colors.white,
-                  ),
+                  backgroundColor: Colors.white,
                 ),
                 const SizedBox(width: 10),
                 RichText(
