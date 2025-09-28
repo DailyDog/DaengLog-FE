@@ -125,18 +125,17 @@ class _PetEditModalState extends State<PetEditModal>
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 16),
                               _AddPetButton(onTap: widget.onAddPet),
                               if (widget.showAddFamilyPet) ...[
-                                const SizedBox(height: 12),
+                                const SizedBox(height: 8),
                                 _AddPetButton(
                                   label: '가족 반려동물 추가',
                                   onTap: () => Navigator.pushNamed(
                                       context, '/pet_family_add'),
                                 ),
                               ],
-                              // 로그아웃 버튼은 모달에서 제거 (하단 섹션으로 이동)
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
                             ],
                           ),
                         ),

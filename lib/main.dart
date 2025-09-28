@@ -128,8 +128,7 @@ class MyApp extends StatelessWidget {
         // GoRoute(path: '/family_send', builder: (context, state) => const FamilySendScreen()),
         // GoRoute(path: '/envelope_receive', builder: (context, state) => const EnvelopeReceiveScreen()),
         GoRoute(
-            path: '/my_info_page',
-            builder: (context, state) => const MyInfoPage()),
+            path: '/my_info', builder: (context, state) => const MyInfoPage()),
         GoRoute(
             path: '/alarm_page',
             builder: (context, state) => const AlarmPage()),

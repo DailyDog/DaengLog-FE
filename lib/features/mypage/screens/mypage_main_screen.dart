@@ -23,8 +23,8 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
   bool _showModal = false;
   late final DraggableScrollableController _sheetController;
 
-  double _minExtent = 0.70;
-  double _initialExtent = 0.72;
+  double _minExtent = 0.65;
+  double _initialExtent = 0.67;
   double _maxExtent = 0.90;
   double _overlayOpacity = 0.0;
 

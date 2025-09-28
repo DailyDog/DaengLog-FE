@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/features/mypage/widgets/pet_horizontal_list.dart';
 import 'package:daenglog_fe/features/mypage/widgets/section_divider.dart';
 import 'package:daenglog_fe/features/mypage/widgets/menu_item.dart';
@@ -43,23 +44,23 @@ class MyPageBottomSection extends StatelessWidget {
           MyPageMenuItem(
               title: '내정보 관리',
               icon: Icons.person_outline,
-              onTap: () => Navigator.pushNamed(context, '/my_info_page')),
+              onTap: () => context.push('/my_info')),
           MyPageMenuItem(
               title: '이벤트/혜택',
               icon: Icons.card_giftcard,
-              onTap: () => Navigator.pushNamed(context, '/event')),
+              onTap: () => context.push('/event')),
           MyPageMenuItem(
               title: '요금제 관리',
               icon: Icons.payment,
-              onTap: () => Navigator.pushNamed(context, '/cloud_main')),
+              onTap: () => context.push('/cloud')),
           MyPageMenuItem(
               title: '공지사항',
               icon: Icons.announcement,
-              onTap: () => Navigator.pushNamed(context, '/notice')),
+              onTap: () => context.push('/notice')),
           MyPageMenuItem(
               title: '고객센터',
               icon: Icons.help_outline,
-              onTap: () => Navigator.pushNamed(context, '/customer_center')),
+              onTap: () => context.push('/customer_center')),
 
           SizedBox(height: screenHeight * 0.02),
           const SectionDivider(),
