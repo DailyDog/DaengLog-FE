@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:daenglog_fe/shared/models/weather.dart';
 import '../repositories/weather_repository.dart';
@@ -24,7 +25,14 @@ class WeatherProvider extends ChangeNotifier {
 
     try {
       print('📡 WeatherRepository에서 날씨 데이터 요청 중...');
-      _weather = await _weatherRepository.getCurrentWeather();
+      _weather = await _weatherRepository.getCurrentWeather().timeout(
+        const Duration(seconds: 1),
+        onTimeout: () {
+          print('⏰ Weather API timeout, using default weather');
+          throw TimeoutException(
+              'Weather API timeout', const Duration(seconds: 1));
+        },
+      );
       print('✅ 날씨 데이터 로드 성공: ${_weather?.weather}');
     } catch (e) {
       print('❌ WeatherProvider 에러: $e');
