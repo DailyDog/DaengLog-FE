@@ -42,9 +42,9 @@ class Weather {
     );
   }
 
-  // 오전 날씨 정보 (임시로 현재 날씨와 동일하게 설정)
+  // 오전 날씨 정보 (온도 조정)
   Weather get morningWeather => Weather(
-        temperature: temperature,
+        temperature: (int.parse(temperature) - 3).toString(),
         humidity: humidity,
         weather: weather,
         location: location,
@@ -52,9 +52,9 @@ class Weather {
         weatherType: weatherType,
       );
 
-  // 오후 날씨 정보 (임시로 현재 날씨와 동일하게 설정)
+  // 오후 날씨 정보 (온도 조정)
   Weather get afternoonWeather => Weather(
-        temperature: temperature,
+        temperature: (int.parse(temperature) + 5).toString(),
         humidity: humidity,
         weather: weather,
         location: location,
