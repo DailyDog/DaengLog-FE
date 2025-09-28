@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:daenglog_fe/shared/widgets/bottom_nav_bar.dart';
 import 'package:daenglog_fe/features/mypage/widgets/pet_edit_modal.dart';
 import 'package:daenglog_fe/api/mypage/get/my_page_summary_api.dart';
 import 'package:daenglog_fe/api/mypage/models/my_page_summary.dart';
