@@ -14,6 +14,9 @@ class WeatherApi {
 
   final String weatherApiKey = dotenv.env['KMA_API_KEY'] ?? '';
 
+  // 테스트용 날씨 타입 강제 설정 (개발 중에만 사용)
+  WeatherType? _forceWeatherType;
+
   Future<Weather> getWeather() async {
     print('🌤️ WeatherApi.getWeather() 시작');
     print(
@@ -106,8 +109,21 @@ class WeatherApi {
           temperature = (int.parse(temperature) - 2).toString();
         }
 
-        // 간단한 날씨 변화 (시간 기반)
-        if (hour % 4 == 0) {
+        // 간단한 날씨 변화 (시간 기반) 또는 테스트 설정
+        if (_forceWeatherType != null) {
+          weatherType = _forceWeatherType!;
+          switch (_forceWeatherType!) {
+            case WeatherType.sunny:
+              weather = '맑음';
+              break;
+            case WeatherType.rainy:
+              weather = '비';
+              break;
+            case WeatherType.snowy:
+              weather = '눈';
+              break;
+          }
+        } else if (hour % 4 == 0) {
           weather = '흐림';
           weatherType = WeatherType.rainy;
         } else if (hour % 7 == 0) {
@@ -248,16 +264,45 @@ class WeatherApi {
       print('📋 에러 타입: ${e.runtimeType}');
       print('🔍 스택 트레이스: ${StackTrace.current}');
 
-      // API 실패 시 기본 날씨 데이터 반환
+      // API 실패 시 기본 날씨 데이터 반환 (실제 위치 사용)
       print('🔄 기본 날씨 데이터 반환');
+
+      // 위치 정보는 여전히 가져오기
+      String locationName = '위치 정보 없음';
+      try {
+        final position = await _locationService.getCurrentPosition();
+        List<Placemark> placemarks = await placemarkFromCoordinates(
+          position.latitude,
+          position.longitude,
+          localeIdentifier: "ko_KR",
+        );
+        locationName =
+            '${placemarks.first.locality} ${placemarks.first.subLocality}';
+        print('🏠 기본 위치: $locationName');
+      } catch (locationError) {
+        print('❌ 위치 정보 가져오기 실패: $locationError');
+      }
+
       return Weather(
         temperature: '25',
         humidity: '65',
         weather: '맑음',
-        location: '정릉동',
+        location: locationName,
         airQuality: '좋음',
-        weatherType: WeatherType.sunny,
+        weatherType: _forceWeatherType ?? WeatherType.sunny,
       );
     }
+  }
+
+  // 테스트용: 특정 날씨 타입 강제 설정
+  void setTestWeatherType(WeatherType weatherType) {
+    _forceWeatherType = weatherType;
+    print('🧪 테스트 날씨 타입 설정: $weatherType');
+  }
+
+  // 테스트용: 강제 설정 해제
+  void clearTestWeatherType() {
+    _forceWeatherType = null;
+    print('🧪 테스트 날씨 타입 해제');
   }
 }
