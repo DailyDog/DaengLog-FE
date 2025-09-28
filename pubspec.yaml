@@ -83,6 +83,9 @@ flutter:
     
     # 날씨 이미지
     - assets/images/weather/walking_dog.png
+    - assets/images/weather/sunny_icon.png
+    - assets/images/weather/rainy_icon.png
+    - assets/images/weather/snowy_icon.png
     
     # 스플래쉬
     - assets/images/splash/entire.png 

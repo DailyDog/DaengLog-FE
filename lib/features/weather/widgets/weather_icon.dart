@@ -15,14 +15,33 @@ class WeatherIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Icon(
-      _getIconData(),
-      size: size,
-      color: color ?? _getDefaultColor(),
+    return Image.asset(
+      _getIconPath(),
+      width: size,
+      height: size,
+      errorBuilder: (context, error, stackTrace) {
+        // 이미지 로드 실패 시 기본 아이콘 사용
+        return Icon(
+          _getFallbackIcon(),
+          size: size,
+          color: color ?? _getDefaultColor(),
+        );
+      },
     );
   }
 
-  IconData _getIconData() {
+  String _getIconPath() {
+    switch (weatherType) {
+      case WeatherType.sunny:
+        return 'assets/images/weather/sunny_icon.png';
+      case WeatherType.rainy:
+        return 'assets/images/weather/rainy_icon.png';
+      case WeatherType.snowy:
+        return 'assets/images/weather/snowy_icon.png';
+    }
+  }
+
+  IconData _getFallbackIcon() {
     switch (weatherType) {
       case WeatherType.sunny:
         return Icons.wb_sunny;

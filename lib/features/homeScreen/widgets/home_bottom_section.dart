@@ -1,9 +1,11 @@
 // 홈 화면 망고의 일주일 밑 부분 위젯
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/features/homeScreen/models/home_widget_item.dart';
 import 'package:daenglog_fe/features/homeScreen/widgets/components/home_bottom_section_modal.dart';
 import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
+import 'package:daenglog_fe/features/weather/providers/weather_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeBottomSection extends StatefulWidget {
@@ -60,6 +62,12 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
   @override
   Widget build(BuildContext context) {
     final profile = context.read<DefaultProfileProvider>().profile;
+    final weatherProvider = context.watch<WeatherProvider>();
+
+    // 날씨 위젯의 위치 정보 업데이트
+    final weatherWidget = availableWidgets.firstWhere((w) => w.id == '날씨');
+    final displayLocation = weatherProvider.weather?.location ?? '성북구 정릉동';
+
     return Container(
       color: const Color(0XFFF9F9F9),
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -94,6 +102,18 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                 final widgetId = selectedWidgets[index];
                 final widget =
                     availableWidgets.firstWhere((w) => w.id == widgetId);
+
+                // 날씨 위젯인 경우 동적 위치 정보 사용
+                if (widgetId == '날씨') {
+                  final dynamicWidget = HomeWidgetItem(
+                    id: widget.id,
+                    title: widget.title,
+                    description: displayLocation,
+                    iconPath: widget.iconPath,
+                  );
+                  return _buildDraggableWidgetCard(dynamicWidget, index);
+                }
+
                 return _buildDraggableWidgetCard(widget, index);
               }
             },
@@ -223,7 +243,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
       onTap: () {
         // 날씨 위젯 클릭 시 날씨 화면으로 이동
         if (widget.id == '날씨') {
-          Navigator.pushNamed(context, '/weather');
+          context.push('/weather');
         }
         // 다른 위젯들도 필요에 따라 추가 가능
       },
