@@ -4,9 +4,10 @@ import 'package:daenglog_fe/features/chat_photo/widgets/painters/hand_drawn_wave
 import 'package:daenglog_fe/features/chat_photo/widgets/photo_app_bar.dart';
 import 'package:daenglog_fe/features/chat_photo/widgets/photo_bottom_buttons.dart';
 import 'package:daenglog_fe/features/chat_photo/widgets/decoration_tools_widget.dart';
-import 'package:daenglog_fe/features/chat_photo/widgets/painters/drawing_painter.dart';
-import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
+import 'package:daenglog_fe/features/chat_photo/widgets/painters/image_draw_painter.dart';
+import 'package:daenglog_fe/features/chat_photo/providers/photo_provider_manager.dart';
 import 'package:daenglog_fe/features/chat_photo/services/photo_service.dart';
+import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
 import 'package:provider/provider.dart';
 
 // 포토카드 화면
@@ -20,12 +21,19 @@ class ChatPhotoScreen extends StatefulWidget {
 class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   final GlobalKey contentKey = GlobalKey();
   final GlobalKey imageKey = GlobalKey();
+  final GlobalKey captureKey = GlobalKey();
   DecorationTool _selectedTool = DecorationTool.frame;
 
   @override
+  void dispose() {
+    // 화면 종료 시 Provider 정리
+    PhotoProviderManager.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => PhotoScreenProvider(),
+    return PhotoProviderScope(
       child: Consumer<PhotoScreenProvider>(
         builder: (context, provider, child) {
           return _buildPhotoScreen(context, provider);
@@ -55,7 +63,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
       body: Stack(
         children: [
           RepaintBoundary(
-            key: imageKey,
+            key: captureKey,
             child: SingleChildScrollView(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -119,6 +127,13 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     double imageWidth,
     double imageHeight,
   ) {
+    // 이미지 로드 (한 번만 실행)
+    if (provider.backgroundImage == null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        provider.loadNetworkImage(gptResponse.imageUrl);
+      });
+    }
+
     return Center(
       child: Stack(
         children: [
@@ -126,79 +141,75 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
             key: imageKey,
             width: imageWidth,
             height: imageHeight,
-            child: Stack(
-              children: [
-                // 이미지
-                Container(
-                  width: imageWidth,
-                  height: imageHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(32),
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  child: Image.network(
-                    gptResponse.imageUrl,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) {
-                        if (!provider.imageLoaded) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            provider.setImageLoaded(true);
-                          });
+            child: Container(
+              width: imageWidth,
+              height: imageHeight,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(color: Colors.red, width: 2), // 테스트용 빨간 테두리
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: Consumer<PhotoScreenProvider>(
+                  builder: (context, photoProvider, child) {
+                    return GestureDetector(
+                      // 가장 기본적인 터치 테스트
+                      onTap: () {
+                        print('🎯 기본 터치 이벤트 발생!');
+                        print(provider.selectedColor);
+                      },
+                      onPanStart: (details) {
+                        print('👆 터치 시작: ${details.globalPosition}');
+                        print('👆 데코레이트 모드: ${photoProvider.isDecorateMode}');
+                        print('👆 선택된 도구: $_selectedTool');
+                        
+                        // 그리기 도구가 선택되었을 때만 그리기 실행
+                        if (_selectedTool == DecorationTool.draw) {
+                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
+                          final local = box?.globalToLocal(details.globalPosition);
+                          print('👆 로컬 좌표: $local');
+                          
+                          if (local != null) {
+                            photoProvider.startNewPath(local);
+                          }
+                        } else {
+                          print('⚠️ 그리기 도구가 선택되지 않음: $_selectedTool');
                         }
-                        return child;
-                      } else {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                    },
-                    errorBuilder: (c, e, s) => Container(
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.pets, size: 80, color: Color(0xFFFF6600)),
-                    ),
-                  ),
-                ),
-                // 테두리
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(32),
-                      border: Border.all(
-                        color: provider.imageAndContentColor,
-                        width: 3.0,
-                      ),
-                    ),
-                  ),
-                ),
-                // 드로잉 레이어 (그리기 도구 선택 시 활성화)
-                if (provider.isDecorateMode && _selectedTool == DecorationTool.draw)
-                  Positioned.fill(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(32),
-                      child: GestureDetector(
-                        onPanStart: (details) {
+                      },
+                      onPanUpdate: (details) {
+                        if (_selectedTool == DecorationTool.draw) {
                           final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
                           final local = box?.globalToLocal(details.globalPosition);
                           if (local != null) {
-                            provider.startNewPath(local);
+                            photoProvider.extendCurrentPath(local);
                           }
-                        },
-                        onPanUpdate: (details) {
-                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
-                          final local = box?.globalToLocal(details.globalPosition);
-                          if (local != null) {
-                            provider.extendCurrentPath(local);
-                          }
-                        },
-                        child: RepaintBoundary(
-                          child: CustomPaint(
-                            painter: DrawingPainter(paths: provider.drawingPaths),
-                            size: Size.infinite,
+                        }
+                      },
+                      child: RepaintBoundary(
+                        child: CustomPaint(
+                          painter: ImageDrawingPainter(
+                            backgroundImage: photoProvider.backgroundImage,
+                            drawingPaths: photoProvider.drawingPaths,
                           ),
+                          size: Size(imageWidth, imageHeight),
                         ),
                       ),
-                    ),
-                  ),
-              ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+          // 테두리
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(32),
+                border: Border.all(
+                  color: provider.imageAndContentColor,
+                  width: 3.0,
+                ),
+              ),
             ),
           ),
         ],

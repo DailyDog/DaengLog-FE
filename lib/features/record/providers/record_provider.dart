@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 
 class RecordProvider extends ChangeNotifier {
   bool _isModalVisible = false;
@@ -40,7 +41,7 @@ class RecordProvider extends ChangeNotifier {
         notifyListeners();
         
         // Navigate to image upload screen
-        Navigator.pushNamed(context, '/image_upload');
+        context.go('/image_upload');
       }
     } catch (e) {
       debugPrint('Gallery pick error: $e');
@@ -64,7 +65,7 @@ class RecordProvider extends ChangeNotifier {
         notifyListeners();
         
         // Navigate to image upload screen
-        Navigator.pushNamed(context, '/image_upload');
+        context.go('/image_upload');
       }
     } catch (e) {
       debugPrint('Camera pick error: $e');

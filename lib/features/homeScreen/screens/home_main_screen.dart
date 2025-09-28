@@ -250,12 +250,6 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
             ),
 
             // 하단 네비게이션
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: commonBottomNavBar(context: context, currentIndex: 0),
-            ),
           ],
         ),
       ),

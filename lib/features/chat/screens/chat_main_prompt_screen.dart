@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/shared/widgets/chat_bottom_widget.dart';
 
 class ChatMainPromptScreen extends StatefulWidget {
@@ -25,14 +26,10 @@ class _ChatMainPromptScreenState extends State<ChatMainPromptScreen> {
   void _goToChatService() {
     final text = _controller.text.trim();
     if (text.isEmpty || _pickedImage == null) return;
-    Navigator.pushNamed(
-      context,
-      '/chat_communication',
-      arguments: {
-        'prompt': text,
-        'image': _pickedImage,
-      },
-    );
+    context.go('/chat_communication', extra: {
+      'prompt': text,
+      'image': _pickedImage,
+    });
   }
 
   @override

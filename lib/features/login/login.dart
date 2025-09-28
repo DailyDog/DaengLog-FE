@@ -1,5 +1,6 @@
 import 'package:daenglog_fe/api/social_login/login_api.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SocialLoginScreen extends StatelessWidget {
   const SocialLoginScreen({super.key});
@@ -38,7 +39,7 @@ class SocialLoginScreen extends StatelessWidget {
                   // 구글 로그인 및 서버 인증 (통합)
                   final result = await performGoogleLogin();
                     // 기존 사용자는 홈 메인 화면으로
-                    Navigator.pushNamed(context, '/home_main');
+                    context.go('/home');
                 },
               ),
               const SizedBox(height: 16),

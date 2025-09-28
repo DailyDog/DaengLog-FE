@@ -1,8 +1,8 @@
-import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:daenglog_fe/features/chat_photo/models/drawing_path_model.dart';
+import 'package:dio/dio.dart';
 
 class PhotoScreenProvider extends ChangeNotifier {
 
@@ -59,6 +59,7 @@ class PhotoScreenProvider extends ChangeNotifier {
   double _strokeWidth = 3.0;
   DrawingTool _selectedTool = DrawingTool.pen;
   ui.Image? _backgroundImage;
+  String? _currentImageUrl;
 
 
   // getter
@@ -105,8 +106,45 @@ class PhotoScreenProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // 네트워크 이미지를 ui.Image로 변환하여 로드 (Dio 사용)
+  Future<void> loadNetworkImage(String imageUrl) async {
+    try {
+      // 이미 같은 URL의 이미지가 로드되어 있으면 스킵
+      if (_backgroundImage != null && _currentImageUrl == imageUrl) {
+        return;
+      }
+      
+      _currentImageUrl = imageUrl; // 현재 로딩 중인 URL 저장
+      
+      final dio = Dio();
+      final response = await dio.get<List<int>>(
+        imageUrl,
+        options: Options(
+          responseType: ResponseType.bytes,
+          receiveTimeout: const Duration(seconds: 30),
+        ),
+      );
+      
+      if (response.statusCode == 200 && response.data != null) {
+        final bytes = Uint8List.fromList(response.data!);
+        final codec = await ui.instantiateImageCodec(bytes);
+        final frame = await codec.getNextFrame();
+        _backgroundImage = frame.image;
+        notifyListeners();
+        print('이미지 로드 성공: ${bytes.length} bytes');
+      }
+    } catch (e) {
+      print('이미지 로드 실패: $e');
+      _currentImageUrl = null; // 실패 시 URL 초기화
+    }
+  }
+
   // 새 경로 시작
   void startNewPath(Offset startPoint) {
+    print('🎨 startNewPath 호출됨: $startPoint');
+    print('🎨 현재 색상: $_selectedColor');
+    print('🎨 현재 굵기: $_strokeWidth');
+    
     final paint = Paint()
       ..color = _selectedColor
       ..strokeWidth = _strokeWidth
@@ -120,13 +158,18 @@ class PhotoScreenProvider extends ChangeNotifier {
     _drawingPaths.add(
       DrawingPathModel(path: path, paint: paint, tool: _selectedTool),
     );
+    print('🎨 경로 추가됨. 총 경로 수: ${_drawingPaths.length}');
     notifyListeners();
   }
 
   // 현재 경로 연장
   void extendCurrentPath(Offset point) {
-    if (_drawingPaths.isEmpty) return;
+    if (_drawingPaths.isEmpty) {
+      print('⚠️ extendCurrentPath: 경로가 비어있음');
+      return;
+    }
     _drawingPaths.last.path.lineTo(point.dx, point.dy);
+    print('🎨 경로 연장됨: $point');
     notifyListeners();
   }
 
