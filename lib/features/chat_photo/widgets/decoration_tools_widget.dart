@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../providers/photo_screen_provider.dart';
+import '../models/photo_sticker_model.dart';
 
 // 데코레이트 도구 열거형
 enum DecorationTool {
@@ -174,6 +175,8 @@ class DecorationToolsWidget extends StatelessWidget {
       Colors.yellow,
       Colors.purple,
       Colors.orange,
+      Colors.black,
+      Colors.white,
     ];
 
     return Padding(
@@ -182,38 +185,107 @@ class DecorationToolsWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap( // 자식 위젯들을 가로 또는 세로로 감싸서 배치하다 공간 부족시 다음 줄로 넘기는 레이아웃 위젲
+          Row(
+            children: [
+              const Text(
+                '색상 선택',
+                style: TextStyle(
+                  fontFamily: 'Pretendard-Medium',
+                  fontSize: 11,
+                  color: Color(0xFF666666),
+                ),
+              ),
+              const Spacer(),
+              if (provider.drawingPaths.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () {
+                    provider.undoLastPath();
+                  },
+                  icon: const Icon(Icons.undo, size: 16, color: Color(0xFFFF6600)),
+                  label: const Text(
+                    '실행 취소',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard-Medium',
+                      fontSize: 11,
+                      color: Color(0xFFFF6600),
+                    ),
+                  ),
+                ),
+              if (provider.drawingPaths.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () {
+                    provider.clearDrawing();
+                  },
+                  icon: const Icon(Icons.clear, size: 16, color: Color(0xFFFF6600)),
+                  label: const Text(
+                    '전체 삭제',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard-Medium',
+                      fontSize: 11,
+                      color: Color(0xFFFF6600),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Wrap(
             spacing: 8,
             children: colors.map((color) {
+              final isSelected = provider.selectedColor == color;
               return GestureDetector(
                 onTap: () {
                   provider.setSelectedColor(color);
                 },
                 child: Container(
-                  width: 28,
-                  height: 28,
+                  width: 32,
+                  height: 32,
                   decoration: BoxDecoration(
                     color: color,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.grey.shade300,
-                      width: 2,
+                      color: isSelected ? const Color(0xFFFF6600) : Colors.grey.shade300,
+                      width: isSelected ? 3 : 2,
                     ),
                   ),
                 ),
               );
             }).toList(),
           ),
-          const SizedBox(height: 4),
-          Slider(
-            value: provider.strokeWidth,
-            min: 1.0,
-            max: 10.0,
-            divisions: 9,
-            onChanged: (value) {
-              provider.setStrokeWidth(value);
-            },
-            activeColor: const Color(0xFFF56F01),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Text(
+                '굵기',
+                style: TextStyle(
+                  fontFamily: 'Pretendard-Medium',
+                  fontSize: 11,
+                  color: Color(0xFF666666),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Slider(
+                  value: provider.strokeWidth,
+                  min: 1.0,
+                  max: 10.0,
+                  divisions: 9,
+                  label: provider.strokeWidth.toStringAsFixed(0),
+                  onChanged: (value) {
+                    provider.setStrokeWidth(value);
+                  },
+                  activeColor: const Color(0xFFF56F01),
+                ),
+              ),
+              Text(
+                provider.strokeWidth.toStringAsFixed(0),
+                style: const TextStyle(
+                  fontFamily: 'Pretendard-Medium',
+                  fontSize: 11,
+                  color: Color(0xFF666666),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -223,12 +295,18 @@ class DecorationToolsWidget extends StatelessWidget {
   // 스티커 옵션
   Widget _buildStickerOptions(PhotoScreenProvider provider) {
     final stickers = [
-      Icons.favorite,
-      Icons.star,
-      Icons.pets,
-      Icons.emoji_emotions,
-      Icons.cake,
-      Icons.local_florist,
+      Sticker(id: 'heart', icon: Icons.favorite, name: '하트', category: 'emotion'),
+      Sticker(id: 'star', icon: Icons.star, name: '별', category: 'shape'),
+      Sticker(id: 'pets', icon: Icons.pets, name: '발바닥', category: 'animal'),
+      Sticker(id: 'smile', icon: Icons.emoji_emotions, name: '웃는 얼굴', category: 'emotion'),
+      Sticker(id: 'cake', icon: Icons.cake, name: '케이크', category: 'food'),
+      Sticker(id: 'flower', icon: Icons.local_florist, name: '꽃', category: 'nature'),
+      Sticker(id: 'sun', icon: Icons.wb_sunny, name: '해', category: 'weather'),
+      Sticker(id: 'cloud', icon: Icons.cloud, name: '구름', category: 'weather'),
+      Sticker(id: 'music', icon: Icons.music_note, name: '음표', category: 'music'),
+      Sticker(id: 'gift', icon: Icons.card_giftcard, name: '선물', category: 'object'),
+      Sticker(id: 'camera', icon: Icons.camera_alt, name: '카메라', category: 'object'),
+      Sticker(id: 'thumb_up', icon: Icons.thumb_up, name: '좋아요', category: 'gesture'),
     ];
 
     return Padding(
@@ -237,42 +315,73 @@ class DecorationToolsWidget extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '스티커',
-            style: TextStyle(
-              fontFamily: 'Pretendard-Medium',
-              fontSize: 12,
-              color: Color(0xFF272727),
-            ),
-          ),
-          const SizedBox(height: 4),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: stickers.map((icon) {
-              return GestureDetector(
-                onTap: () {
-                  // 스티커 추가 로직
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.grey.shade300,
-                      width: 1,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '스티커를 선택한 후 이미지를 터치하세요',
+                style: TextStyle(
+                  fontFamily: 'Pretendard-Medium',
+                  fontSize: 11,
+                  color: Color(0xFF666666),
+                ),
+              ),
+              if (provider.placedStickers.isNotEmpty)
+                TextButton(
+                  onPressed: () {
+                    if (provider.selectedStickerIndex != null) {
+                      provider.removeSticker(provider.selectedStickerIndex!);
+                    }
+                  },
+                  child: const Text(
+                    '선택 삭제',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard-Medium',
+                      fontSize: 11,
+                      color: Color(0xFFFF6600),
                     ),
                   ),
-                  child: Icon(
-                    icon,
-                    size: 20,
-                    color: const Color(0xFF272727),
-                  ),
                 ),
-              );
-            }).toList(),
+            ],
+          ),
+          const SizedBox(height: 4),
+          SizedBox(
+            height: 120,
+            child: GridView.builder(
+              scrollDirection: Axis.horizontal,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: stickers.length,
+              itemBuilder: (context, index) {
+                final sticker = stickers[index];
+                final isSelected = provider.selectedSticker?.id == sticker.id;
+                
+                return GestureDetector(
+                  onTap: () {
+                    provider.selectSticker(sticker);
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFFFFF3E0) : Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFFFF6600) : Colors.grey.shade300,
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Icon(
+                      sticker.icon,
+                      size: 24,
+                      color: isSelected ? const Color(0xFFFF6600) : const Color(0xFF272727),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
