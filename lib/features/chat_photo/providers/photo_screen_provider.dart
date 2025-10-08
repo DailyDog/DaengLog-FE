@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:daenglog_fe/features/chat_photo/models/drawing_path_model.dart';
+import 'package:daenglog_fe/features/chat_photo/models/photo_sticker_model.dart';
 import 'package:dio/dio.dart';
 
 class PhotoScreenProvider extends ChangeNotifier {
@@ -35,6 +36,11 @@ class PhotoScreenProvider extends ChangeNotifier {
   // 일기 꾸미기 모드인지
   void setDecorateMode(bool mode) {
     _isDecorateMode = mode;
+    // 데코레이트 모드 종료 시 선택 상태 초기화
+    if (!mode) {
+      _selectedSticker = null;
+      _selectedStickerIndex = null;
+    }
     notifyListeners();
   }
 
@@ -49,6 +55,10 @@ class PhotoScreenProvider extends ChangeNotifier {
     _isConfirmed = false;
     _capturedImageBytes = null;
     _isDecorateMode = false;
+    _drawingPaths.clear();
+    _placedStickers.clear();
+    _selectedSticker = null;
+    _selectedStickerIndex = null;
     notifyListeners();
   }
 
@@ -175,6 +185,75 @@ class PhotoScreenProvider extends ChangeNotifier {
 
   void setStrokeWidth(double width) {
     _strokeWidth = width;
+    notifyListeners();
+  }
+
+// --------스티커 관련 상태관리---------
+
+  List<PhotoStickerModel> _placedStickers = [];
+  Sticker? _selectedSticker;
+  int? _selectedStickerIndex;
+
+  // getter
+  List<PhotoStickerModel> get placedStickers => _placedStickers;
+  Sticker? get selectedSticker => _selectedSticker;
+  int? get selectedStickerIndex => _selectedStickerIndex;
+
+  // 스티커 선택
+  void selectSticker(Sticker sticker) {
+    _selectedSticker = sticker;
+    notifyListeners();
+  }
+
+  // 스티커 추가
+  void addSticker(PhotoStickerModel sticker) {
+    _placedStickers.add(sticker);
+    notifyListeners();
+  }
+
+  // 스티커 위치 업데이트
+  void updateStickerPosition(int index, Offset position) {
+    if (index >= 0 && index < _placedStickers.length) {
+      _placedStickers[index] = _placedStickers[index].copyWith(position: position);
+      notifyListeners();
+    }
+  }
+
+  // 스티커 크기 업데이트
+  void updateStickerScale(int index, double scale) {
+    if (index >= 0 && index < _placedStickers.length) {
+      _placedStickers[index] = _placedStickers[index].copyWith(scale: scale);
+      notifyListeners();
+    }
+  }
+
+  // 스티커 회전 업데이트
+  void updateStickerRotation(int index, double rotation) {
+    if (index >= 0 && index < _placedStickers.length) {
+      _placedStickers[index] = _placedStickers[index].copyWith(rotation: rotation);
+      notifyListeners();
+    }
+  }
+
+  // 스티커 삭제
+  void removeSticker(int index) {
+    if (index >= 0 && index < _placedStickers.length) {
+      _placedStickers.removeAt(index);
+      _selectedStickerIndex = null;
+      notifyListeners();
+    }
+  }
+
+  // 선택된 스티커 인덱스 설정
+  void selectStickerByIndex(int? index) {
+    _selectedStickerIndex = index;
+    notifyListeners();
+  }
+
+  // 모든 스티커 삭제
+  void clearStickers() {
+    _placedStickers.clear();
+    _selectedStickerIndex = null;
     notifyListeners();
   }
 

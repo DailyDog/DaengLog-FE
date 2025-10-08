@@ -8,6 +8,7 @@ import 'package:daenglog_fe/features/chat_photo/widgets/painters/image_draw_pain
 import 'package:daenglog_fe/features/chat_photo/providers/photo_provider_manager.dart';
 import 'package:daenglog_fe/features/chat_photo/services/photo_service.dart';
 import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
+import 'package:daenglog_fe/features/chat_photo/models/photo_sticker_model.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
@@ -154,36 +155,73 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                 child: Consumer<PhotoScreenProvider>(
                   builder: (context, photoProvider, child) {
                     return GestureDetector(
-                      // 가장 기본적인 터치 테스트
-                      onTap: () {
-                        print('🎯 기본 터치 이벤트 발생!');
-                        print(provider.selectedColor);
+                      onTapUp: (details) {
+                        // 스티커 모드일 때만 처리
+                        if (_selectedTool == DecorationTool.sticker && photoProvider.selectedSticker != null) {
+                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
+                          final local = box?.globalToLocal(details.globalPosition);
+                          
+                          if (local != null) {
+                            // 스티커 추가
+                            photoProvider.addSticker(
+                              PhotoStickerModel(
+                                sticker: photoProvider.selectedSticker!,
+                                position: local,
+                                scale: 1.0,
+                                rotation: 0.0,
+                              ),
+                            );
+                          }
+                        }
                       },
                       onPanStart: (details) {
-                        print('👆 터치 시작: ${details.globalPosition}');
-                        print('👆 데코레이트 모드: ${photoProvider.isDecorateMode}');
-                        print('👆 선택된 도구: $_selectedTool');
+                        if (!photoProvider.isDecorateMode) return;
+                        
+                        final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
+                        final local = box?.globalToLocal(details.globalPosition);
+                        
+                        if (local == null) return;
                         
                         // 그리기 도구가 선택되었을 때만 그리기 실행
                         if (_selectedTool == DecorationTool.draw) {
-                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
-                          final local = box?.globalToLocal(details.globalPosition);
-                          print('👆 로컬 좌표: $local');
-                          
-                          if (local != null) {
-                            photoProvider.startNewPath(local);
+                          photoProvider.startNewPath(local);
+                        } 
+                        // 스티커 모드일 때 스티커 선택 확인
+                        else if (_selectedTool == DecorationTool.sticker) {
+                          // 스티커를 클릭했는지 확인
+                          int? selectedIndex;
+                          for (int i = photoProvider.placedStickers.length - 1; i >= 0; i--) {
+                            final sticker = photoProvider.placedStickers[i];
+                            final distance = (sticker.position - local).distance;
+                            if (distance < 30 * sticker.scale) {
+                              selectedIndex = i;
+                              break;
+                            }
                           }
-                        } else {
-                          print('⚠️ 그리기 도구가 선택되지 않음: $_selectedTool');
+                          photoProvider.selectStickerByIndex(selectedIndex);
                         }
                       },
                       onPanUpdate: (details) {
+                        if (!photoProvider.isDecorateMode) return;
+                        
+                        final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
+                        final local = box?.globalToLocal(details.globalPosition);
+                        
+                        if (local == null) return;
+                        
+                        // 그리기 모드
                         if (_selectedTool == DecorationTool.draw) {
-                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
-                          final local = box?.globalToLocal(details.globalPosition);
-                          if (local != null) {
-                            photoProvider.extendCurrentPath(local);
-                          }
+                          photoProvider.extendCurrentPath(local);
+                        }
+                        // 스티커 모드에서 선택된 스티커 이동
+                        else if (_selectedTool == DecorationTool.sticker && photoProvider.selectedStickerIndex != null) {
+                          photoProvider.updateStickerPosition(photoProvider.selectedStickerIndex!, local);
+                        }
+                      },
+                      onPanEnd: (details) {
+                        // 그리기 종료 시 선택 해제
+                        if (_selectedTool == DecorationTool.sticker) {
+                          // 스티커 선택 유지
                         }
                       },
                       child: RepaintBoundary(
@@ -191,6 +229,8 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                           painter: ImageDrawingPainter(
                             backgroundImage: photoProvider.backgroundImage,
                             drawingPaths: photoProvider.drawingPaths,
+                            placedStickers: photoProvider.placedStickers,
+                            selectedStickerIndex: photoProvider.selectedStickerIndex,
                           ),
                           size: Size(imageWidth, imageHeight),
                         ),
