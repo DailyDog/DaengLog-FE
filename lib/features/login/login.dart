@@ -11,16 +11,7 @@ class SocialLoginScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/home');
-            }
-          },
-        ),
+        automaticallyImplyLeading: false,
       ),
       backgroundColor: Colors.white,
       body: SafeArea(

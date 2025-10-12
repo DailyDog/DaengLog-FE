@@ -23,6 +23,7 @@ import 'features/onboding/screens/onboding_fth.dart';
 
 import 'features/homeScreen/screens/home_main_screen.dart';
 import 'features/record/screens/record_main_screen.dart';
+import 'features/record/screens/album_more_screen.dart';
 import 'features/cloud/screens/cloud_main_screen.dart';
 import 'features/mypage/screens/mypage_main_screen.dart';
 
@@ -153,6 +154,19 @@ class MyApp extends StatelessWidget {
             path: '/weather',
             builder: (context, state) => const WeatherScreen()),
 
+        // Album and diary routes
+        GoRoute(
+            path: '/album-more',
+            builder: (context, state) => const AlbumMoreScreen()),
+        GoRoute(
+            path: '/album-detail/:albumId',
+            builder: (context, state) =>
+                const SizedBox()), // TODO: Album detail screen
+        GoRoute(
+            path: '/diary-detail/:diaryId',
+            builder: (context, state) =>
+                const SizedBox()), // TODO: Diary detail screen
+
         // ✅ 메인 탭 구조 - 하단바 고정
         ShellRoute(
           builder: (context, state, child) {
@@ -170,7 +184,7 @@ class MyApp extends StatelessWidget {
             GoRoute(
                 path: '/cloud',
                 pageBuilder: (context, state) =>
-                    NoTransitionPage(child: const CloudMainScreen())),
+                    MaterialPage(child: const CloudMainScreen())),
             GoRoute(
                 path: '/mypage',
                 pageBuilder: (context, state) =>

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
 import '../providers/record_provider.dart';
-import 'package:daenglog_fe/shared/widgets/bottom_nav_bar.dart';
+import 'package:daenglog_fe/api/album/get/album_pet_api.dart';
+import 'package:daenglog_fe/api/album/models/album_item.dart';
+import 'package:daenglog_fe/api/album/post/album_create_api.dart';
 
 class ImageUploadScreen extends StatefulWidget {
   const ImageUploadScreen({super.key});
@@ -13,19 +15,46 @@ class ImageUploadScreen extends StatefulWidget {
 
 class _ImageUploadScreenState extends State<ImageUploadScreen> {
   DateTime _selectedDate = DateTime.now();
-  String _selectedAlbum = '산책';
-  List<String> _selectedKeywords = ['일상', '추억'];
-  List<String> _uploadedFiles = [];
+  String? _selectedAlbum;
+  List<String> _selectedKeywords = ['일상'];
+  List<AlbumItem> _albums = [];
+  bool _isLoadingAlbums = true;
 
-  final List<String> _albums = ['산책', '사료', '놀이', '간식'];
   final List<String> _keywords = ['일상', '산책', '기념일', '여행', '추억', '+'];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAlbums();
+  }
+
+  Future<void> _loadAlbums() async {
+    final recordProvider = context.read<RecordProvider>();
+    if (recordProvider.selectedPet != null) {
+      try {
+        final albums =
+            await AlbumPetApi().getAlbumsByPet(recordProvider.selectedPet!.id);
+        setState(() {
+          _albums = albums;
+          _isLoadingAlbums = false;
+          if (albums.isNotEmpty && _selectedAlbum == null) {
+            _selectedAlbum = albums.first.name;
+          }
+        });
+      } catch (e) {
+        setState(() {
+          _isLoadingAlbums = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
     final isSmallScreen = screenSize.width < 400;
     final isLargeScreen = screenSize.width > 600;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -60,7 +89,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: isSmallScreen ? 40 : 48), // Balance the layout
+                  SizedBox(
+                      width: isSmallScreen ? 40 : 48), // Balance the layout
                 ],
               ),
             ),
@@ -84,7 +114,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       ),
                     ),
                     SizedBox(height: isSmallScreen ? 12 : 16),
-                    
+
                     // Date picker field
                     Container(
                       height: isSmallScreen ? 35 : 37,
@@ -139,53 +169,80 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       ),
                     ),
                     SizedBox(height: isSmallScreen ? 12 : 16),
-                    
+
                     // Album options
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final itemWidth = (constraints.maxWidth - 24) / 4; // 4 items with spacing
-                        return Wrap(
-                          spacing: isSmallScreen ? 6 : 8,
-                          runSpacing: isSmallScreen ? 6 : 8,
-                          children: _albums.map((album) {
-                            final isSelected = _selectedAlbum == album;
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  _selectedAlbum = album;
-                                });
-                              },
-                              child: Container(
-                                width: isLargeScreen ? null : itemWidth,
-                                height: isSmallScreen ? 28 : 32,
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isSmallScreen ? 12 : 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: isSelected ? const Color(0xFFFF5F01) : const Color(0xFFADADAD),
-                                    width: 1,
-                                  ),
-                                  borderRadius: BorderRadius.circular(11),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    album,
-                                    style: TextStyle(
-                                      fontFamily: 'Pretendard',
-                                      fontSize: isSmallScreen ? 14 : 16,
-                                      fontWeight: FontWeight.w400,
-                                      color: isSelected ? const Color(0xFFFF5F01) : const Color(0xFFADADAD),
+                    if (_isLoadingAlbums)
+                      const Center(child: CircularProgressIndicator())
+                    else if (_albums.isEmpty)
+                      _buildCreateAlbumButton(isSmallScreen, isLargeScreen)
+                    else
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final itemWidth = (constraints.maxWidth - 24) /
+                              4; // 4 items with spacing
+                          return Wrap(
+                            spacing: isSmallScreen ? 6 : 8,
+                            runSpacing: isSmallScreen ? 6 : 8,
+                            children: [
+                              ..._albums.map((album) {
+                                final isSelected = _selectedAlbum == album.name;
+                                return GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedAlbum = album.name;
+                                    });
+                                  },
+                                  child: Container(
+                                    width: isLargeScreen ? null : itemWidth,
+                                    height: isSmallScreen ? 32 : 36,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isSmallScreen ? 12 : 16,
                                     ),
-                                    textAlign: TextAlign.center,
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? const Color(0xFFFF5F01)
+                                          : Colors.white,
+                                      border: Border.all(
+                                        color: isSelected
+                                            ? const Color(0xFFFF5F01)
+                                            : const Color(0xFFE0E0E0),
+                                        width: 1,
+                                      ),
+                                      borderRadius: BorderRadius.circular(18),
+                                      boxShadow: isSelected
+                                          ? [
+                                              BoxShadow(
+                                                color: const Color(0xFFFF5F01)
+                                                    .withOpacity(0.3),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        album.name,
+                                        style: TextStyle(
+                                          fontFamily: 'Pretendard',
+                                          fontSize: isSmallScreen ? 14 : 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: isSelected
+                                              ? Colors.white
+                                              : const Color(0xFF666666),
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        );
-                      },
-                    ),
+                                );
+                              }).toList(),
+                              _buildAddAlbumButton(
+                                  isSmallScreen, isLargeScreen, itemWidth),
+                            ],
+                          );
+                        },
+                      ),
 
                     SizedBox(height: isSmallScreen ? 24 : 32),
 
@@ -200,16 +257,18 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       ),
                     ),
                     SizedBox(height: isSmallScreen ? 12 : 16),
-                    
+
                     // Keyword options
                     LayoutBuilder(
                       builder: (context, constraints) {
-                        final itemWidth = (constraints.maxWidth - 24) / 6; // 6 items with spacing
+                        final itemWidth = (constraints.maxWidth - 24) /
+                            6; // 6 items with spacing
                         return Wrap(
                           spacing: isSmallScreen ? 6 : 8,
                           runSpacing: isSmallScreen ? 6 : 8,
                           children: _keywords.map((keyword) {
-                            final isSelected = _selectedKeywords.contains(keyword);
+                            final isSelected =
+                                _selectedKeywords.contains(keyword);
                             return GestureDetector(
                               onTap: () {
                                 setState(() {
@@ -227,25 +286,42 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                               },
                               child: Container(
                                 width: isLargeScreen ? null : itemWidth,
-                                height: isSmallScreen ? 28 : 32,
+                                height: isSmallScreen ? 32 : 36,
                                 padding: EdgeInsets.symmetric(
                                   horizontal: isSmallScreen ? 12 : 16,
                                 ),
                                 decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? const Color(0xFFFF5F01)
+                                      : Colors.white,
                                   border: Border.all(
-                                    color: isSelected ? const Color(0xFFFF5F01) : const Color(0xFFADADAD),
+                                    color: isSelected
+                                        ? const Color(0xFFFF5F01)
+                                        : const Color(0xFFE0E0E0),
                                     width: 1,
                                   ),
-                                  borderRadius: BorderRadius.circular(11),
+                                  borderRadius: BorderRadius.circular(18),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: const Color(0xFFFF5F01)
+                                                .withOpacity(0.3),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
                                 ),
                                 child: Center(
                                   child: Text(
                                     keyword,
                                     style: TextStyle(
                                       fontFamily: 'Pretendard',
-                                      fontSize: isSmallScreen ? 14 : 16,
-                                      fontWeight: FontWeight.w400,
-                                      color: isSelected ? const Color(0xFFFF5F01) : const Color(0xFFADADAD),
+                                      fontSize: isSmallScreen ? 14 : 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : const Color(0xFF666666),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -270,7 +346,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                       ),
                     ),
                     SizedBox(height: isSmallScreen ? 12 : 16),
-                    
+
                     // Selected image display
                     Consumer<RecordProvider>(
                       builder: (context, recordProvider, child) {
@@ -298,10 +374,11 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                             ),
                           );
                         }
-                        
+
                         return Dismissible(
                           key: Key(recordProvider.selectedImage!.path),
-                          direction: DismissDirection.endToStart, // 오른쪽에서 왼쪽으로만 슬라이드
+                          direction:
+                              DismissDirection.endToStart, // 오른쪽에서 왼쪽으로만 슬라이드
                           confirmDismiss: (direction) async {
                             // 삭제 확인 다이얼로그
                             return await showDialog<bool>(
@@ -312,11 +389,13 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                                   content: const Text('선택된 이미지를 삭제하시겠습니까?'),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(false),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(false),
                                       child: const Text('취소'),
                                     ),
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(true),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(true),
                                       style: TextButton.styleFrom(
                                         foregroundColor: Colors.red,
                                       ),
@@ -387,7 +466,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(8),
                                         image: DecorationImage(
-                                          image: FileImage(File(recordProvider.selectedImage!.path)),
+                                          image: FileImage(File(recordProvider
+                                              .selectedImage!.path)),
                                           fit: BoxFit.cover,
                                         ),
                                       ),
@@ -395,7 +475,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                                     SizedBox(width: isSmallScreen ? 12 : 16),
                                     Expanded(
                                       child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             recordProvider.selectedImage!.name,
@@ -406,7 +487,8 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
                                               color: const Color(0xFF2E2E2E),
                                             ),
                                           ),
-                                          SizedBox(height: isSmallScreen ? 6 : 8),
+                                          SizedBox(
+                                              height: isSmallScreen ? 6 : 8),
                                           Text(
                                             '${recordProvider.selectedImageSource == 'gallery' ? '갤러리' : '카메라'}에서 선택됨',
                                             style: TextStyle(
@@ -468,8 +550,6 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
     );
   }
 
-
-
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -520,6 +600,139 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
     );
   }
 
+  Widget _buildCreateAlbumButton(bool isSmallScreen, bool isLargeScreen) {
+    return Container(
+      width: double.infinity,
+      height: isSmallScreen ? 40 : 44,
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8F8F8),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFE0E0E0),
+          width: 1,
+        ),
+      ),
+      child: TextButton.icon(
+        onPressed: _showCreateAlbumDialog,
+        icon: const Icon(
+          Icons.add,
+          color: Color(0xFFFF5F01),
+          size: 20,
+        ),
+        label: Text(
+          '새 앨범 만들기',
+          style: TextStyle(
+            fontFamily: 'Pretendard',
+            fontSize: isSmallScreen ? 14 : 16,
+            fontWeight: FontWeight.w600,
+            color: const Color(0xFFFF5F01),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddAlbumButton(
+      bool isSmallScreen, bool isLargeScreen, double itemWidth) {
+    return GestureDetector(
+      onTap: _showCreateAlbumDialog,
+      child: Container(
+        width: isLargeScreen ? null : itemWidth,
+        height: isSmallScreen ? 32 : 36,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSmallScreen ? 12 : 16,
+        ),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F8F8),
+          border: Border.all(
+            color: const Color(0xFFE0E0E0),
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.add,
+            size: isSmallScreen ? 16 : 18,
+            color: const Color(0xFFFF5F01),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showCreateAlbumDialog() {
+    final TextEditingController controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(
+            '새 앨범 만들기',
+            style: TextStyle(
+              fontFamily: 'Pretendard',
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              hintText: '앨범 이름을 입력하세요',
+              border: OutlineInputBorder(),
+            ),
+            autofocus: true,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('취소'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (controller.text.trim().isNotEmpty) {
+                  await _createAlbum(controller.text.trim());
+                  Navigator.of(context).pop();
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF5F01),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('만들기'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _createAlbum(String name) async {
+    try {
+      await AlbumCreateApi().createAlbum(name);
+      await _loadAlbums(); // 앨범 목록 새로고침
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('"$name" 앨범이 생성되었습니다'),
+            backgroundColor: const Color(0xFFFF5F01),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('앨범 생성에 실패했습니다: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   void _uploadFiles() {
     // Upload logic here
     ScaffoldMessenger.of(context).showSnackBar(
@@ -528,7 +741,7 @@ class _ImageUploadScreenState extends State<ImageUploadScreen> {
         backgroundColor: Color(0xFFFF5F01),
       ),
     );
-    
+
     // Navigate back after upload
     Future.delayed(const Duration(seconds: 1), () {
       Navigator.pop(context);
