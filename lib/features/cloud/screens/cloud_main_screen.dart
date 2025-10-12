@@ -16,7 +16,7 @@ class CloudMainScreen extends StatefulWidget {
 }
 
 class _CloudMainScreenState extends State<CloudMainScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
   late TabController _tabController;
 
   @override
@@ -34,6 +34,9 @@ class _CloudMainScreenState extends State<CloudMainScreen>
   }
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   void dispose() {
     _tabController.dispose();
     super.dispose();
@@ -41,6 +44,7 @@ class _CloudMainScreenState extends State<CloudMainScreen>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // AutomaticKeepAliveClientMixin을 위해 필요
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 

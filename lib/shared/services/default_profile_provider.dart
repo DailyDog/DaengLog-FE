@@ -39,6 +39,9 @@ class DefaultProfileProvider extends ChangeNotifier {
     await fetchProfile();
   }
 
+  // 디폴트 프로필 객체 가져오기
+  DefaultProfile? get profile => _profile;
+
   // 디폴트 프로필 정보 가져오기 -> fetchProfile() 호출 시 자동으로 가져옴
   // API에서 프로필이 없거나, 특정 필드 값이 null일 경우에도 기본값을 반환하여 안전하게 접근할 수 있도록 처리
   int? get petId => _profile?.id;
@@ -56,7 +59,4 @@ class DefaultProfileProvider extends ChangeNotifier {
   bool? get isMyPet => _profile?.isMyPet;
   bool? get isFamilyPet => _profile?.isFamilyPet;
   int? get familyId => _profile?.familyId;
-
-  // 디폴트 프로필 가져오기
-  DefaultProfile? get profile => _profile;
 }
