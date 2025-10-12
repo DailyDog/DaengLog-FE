@@ -64,10 +64,10 @@ class _HomeTopSectionState extends State<HomeTopSection> {
                 CircleAvatar(
                   radius: 11,
                   backgroundImage: profile?.imagePath != null &&
-                        profile!.imagePath!.isNotEmpty
-                        ? NetworkImage(profile.imagePath!)
-                        : AssetImage('assets/images/home/default_profile.png')
-                            as ImageProvider,
+                          profile!.imagePath!.isNotEmpty
+                      ? NetworkImage(profile.imagePath!)
+                      : AssetImage('assets/images/home/default_profile.png')
+                          as ImageProvider,
                   backgroundColor: Colors.white,
                 ),
                 const SizedBox(width: 10),

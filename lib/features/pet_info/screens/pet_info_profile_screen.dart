@@ -1,5 +1,6 @@
 // pet_information_profile.dart
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:daenglog_fe/features/pet_info/widgets/pet_info_appbar_navbar.dart';
 import 'package:daenglog_fe/shared/utils/selectable_image.dart';
@@ -12,10 +13,12 @@ class PetInformationProfileScreen extends StatefulWidget {
   PetInformationProfileScreen({super.key});
 
   @override
-  State<PetInformationProfileScreen> createState() => _PetInformationProfileScreenState();
+  State<PetInformationProfileScreen> createState() =>
+      _PetInformationProfileScreenState();
 }
 
-class _PetInformationProfileScreenState extends State<PetInformationProfileScreen> {
+class _PetInformationProfileScreenState
+    extends State<PetInformationProfileScreen> {
   XFile? _selectedImage;
 
   @override
@@ -23,40 +26,47 @@ class _PetInformationProfileScreenState extends State<PetInformationProfileScree
     return buildPetInfoScreen(
       context: context,
       currentStep: 3,
-      subject: PetInfoProvider().getPetName() != null ? '${PetInfoProvider().getPetName()}의 ' : '반려동물의 ',
+      subject: PetInfoProvider().getPetName() != null
+          ? '${PetInfoProvider().getPetName()}의 '
+          : '반려동물의 ',
       title: '프로필',
       titleSub: '을 올려주세요',
       subtitle: '선택사항이지만 첨부해주시면 좋아요',
       onPrevious: () {
-        Navigator.pushNamed(context, '/pet_information_character');
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/pet_information_character');
+        }
       },
       onNext: () async {
-              final petInfo = context.read<PetInfoProvider>();
+        final petInfo = context.read<PetInfoProvider>();
 
-              // 선택사항이면 이 줄도 null 허용
-              if (_selectedImage != null) {
-                petInfo.setPetProfileImage(_selectedImage!);
-              }
+        // 선택사항이면 이 줄도 null 허용
+        if (_selectedImage != null) {
+          petInfo.setPetProfileImage(_selectedImage!);
+        }
 
-              try {
-                await PetPersonalInfoPostApi().postPetPersonalInfo(
-                  PetsPersonalInfoPostModel(
-                    petKind: petInfo.getPetKind(),
-                    name: petInfo.getPetName(),
-                    birthday: petInfo.getPetBirthday()?.toIso8601String().split('T')[0],
-                    gender: petInfo.getPetGender(),
-                    characters: petInfo.getPetCharacters(),
-                    // provider 대신 선택한 이미지를 직접 전달해도 OK
-                    profileImage: _selectedImage,
-                  ),
-                );
-                Navigator.pushNamed(context, '/home');
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('업로드 실패: $e')),
-                );
-              }
-          },
+        try {
+          await PetPersonalInfoPostApi().postPetPersonalInfo(
+            PetsPersonalInfoPostModel(
+              petKind: petInfo.getPetKind(),
+              name: petInfo.getPetName(),
+              birthday:
+                  petInfo.getPetBirthday()?.toIso8601String().split('T')[0],
+              gender: petInfo.getPetGender(),
+              characters: petInfo.getPetCharacters(),
+              // provider 대신 선택한 이미지를 직접 전달해도 OK
+              profileImage: _selectedImage,
+            ),
+          );
+          context.go('/home');
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('업로드 실패: $e')),
+          );
+        }
+      },
       // 이미지 선택 컴포넌트
       child: Column(
         children: [

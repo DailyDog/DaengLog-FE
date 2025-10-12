@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/api/mypage/post/pet_update_api.dart';
 
 class PetBasicEditScreen extends StatefulWidget {
@@ -32,16 +33,15 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
 
     // 한 번만 초기화
     if (!_isInitialized) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null) {
-        _petId = args['id'] as int?;
-        _nameController.text = (args['name'] as String?) ?? '';
-        _birthdayController.text = (args['birthday'] as String?) ?? '';
-        _gender = (args['gender'] as String?) ?? '';
-        _species = (args['species'] as String?) ?? '';
+      final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+      if (extra != null) {
+        _petId = extra['id'] as int?;
+        _nameController.text = (extra['name'] as String?) ?? '';
+        _birthdayController.text = (extra['birthday'] as String?) ?? '';
+        _gender = (extra['gender'] as String?) ?? '';
+        _species = (extra['species'] as String?) ?? '';
         _personalities =
-            List<String>.from((args['personalities'] as List?) ?? []);
+            List<String>.from((extra['personalities'] as List?) ?? []);
         _isInitialized = true;
 
         // 상태 업데이트
@@ -69,7 +69,7 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
         species: _species.isEmpty ? 'DOG' : _species,
         personalities: _personalities,
       );
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) context.pop(true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -119,7 +119,13 @@ class _PetBasicEditScreenState extends State<PetBasicEditScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/pet_detail');
+            }
+          },
         ),
         title: Text(
           '반려동물 정보 수정',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/api/mypage/get/my_info_api.dart';
 import 'package:daenglog_fe/api/mypage/models/my_info.dart';
 import 'package:daenglog_fe/shared/services/logout_service.dart';
@@ -22,27 +23,19 @@ class _MyInfoPageState extends State<MyInfoPage> {
   }
 
   Future<void> _fetch() async {
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       _myInfo = await MyInfoApi().getMyInfo();
     } catch (e) {
       _error = '$e';
     } finally {
-      if (mounted) setState(() { _loading = false; });
-    }
-  }
-
-  String _formatBirth(String birthDate) {
-    try {
-      if (birthDate.isEmpty) return '';
-      final parts = birthDate.split('-');
-      if (parts.length != 3) return birthDate;
-      final y = parts[0];
-      final m = int.tryParse(parts[1]) ?? 0;
-      final d = int.tryParse(parts[2]) ?? 0;
-      return '${y}년 ${m}월 ${d}일';
-    } catch (_) {
-      return birthDate;
+      if (mounted)
+        setState(() {
+          _loading = false;
+        });
     }
   }
 
@@ -76,167 +69,164 @@ class _MyInfoPageState extends State<MyInfoPage> {
           : _error != null
               ? Center(child: Text('불러오기 실패'))
               : SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              color: Colors.white,
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.08,
-                vertical: screenHeight * 0.02,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        '${_myInfo?.name ?? ''}님, 안녕하세요!',
-                        style: TextStyle(
-                          fontSize: screenWidth * 0.044,
-                          fontWeight: FontWeight.w900,
-                          color: const Color(0xFF484848),
+                      Container(
+                        width: double.infinity,
+                        color: Colors.white,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.08,
+                          vertical: screenHeight * 0.02,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '${_myInfo?.name ?? ''}님, 안녕하세요!',
+                                  style: TextStyle(
+                                    fontSize: screenWidth * 0.044,
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFF484848),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.03,
+                                vertical: screenHeight * 0.01,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _providerColor(_myInfo?.provider),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              // 소셜로그인 버튼
+                              child: Text(
+                                '${(_myInfo?.provider ?? '').isEmpty ? 'Provider' : _myInfo!.provider}',
+                                style: TextStyle(
+                                  fontSize: screenWidth * 0.025,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      Container(height: 8, color: const Color(0xFFF7F7F7)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.08,
+                          vertical: screenHeight * 0.04,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '회원정보',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.045,
+                                fontWeight: FontWeight.w700,
+                                color: const Color(0xFF484848),
+                              ),
+                            ),
+                            SizedBox(height: screenHeight * 0.015),
+                            Container(
+                                height: 1, color: const Color(0xFFEFEFEF)),
+                            SizedBox(height: screenHeight * 0.02),
+                            _infoRow(context,
+                                label: '이름', value: _myInfo?.name ?? ''),
+                            _infoRow(context,
+                                label: '이메일', value: _myInfo?.email ?? ''),
+                          ],
+                        ),
+                      ),
+                      Container(height: 8, color: const Color(0xFFF7F7F7)),
+                      Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.08,
+                          vertical: screenHeight * 0.014,
+                        ),
+                        child: Column(
+                          children: [
+                            _menuItem(context, '자동 로그인 기기 설정', onTap: () {}),
+                            _menuItem(context, '알림 설정', onTap: () {
+                              context.go('/alarm_page');
+                            }),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Center(
+                        child: GestureDetector(
+                          // 이 부분 추가
+                          onTap: () => LogoutService.showLogoutDialog(context),
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: screenWidth * 0.08,
+                              vertical: screenHeight * 0.012,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD4B0),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: Text(
+                              '로그아웃',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.04,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.02),
+                      Center(
+                        child: Column(
+                          children: [
+                            Text(
+                              '회원정보를 완전히 삭제하고 싶으신가요?',
+                              style: TextStyle(
+                                fontSize: screenWidth * 0.03,
+                                color: const Color(0xFFBDBDBD),
+                              ),
+                            ),
+                            SizedBox(height: screenHeight * 0.01),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: screenWidth * 0.05,
+                                vertical: screenHeight * 0.008,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE5E5E5),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                '회원탈퇴',
+                                style: TextStyle(
+                                  fontSize: screenWidth * 0.035,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF9A9A9A),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: screenHeight * 0.04),
                     ],
                   ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.03,
-                      vertical: screenHeight * 0.01,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _providerColor(_myInfo?.provider),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    // 소셜로그인 버튼
-                    child: Text(
-                      '${(_myInfo?.provider ?? '').isEmpty ? 'Provider' : _myInfo!.provider}',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.025,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Container(height: 8, color: const Color(0xFFF7F7F7)),
-
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.08,
-                vertical: screenHeight * 0.04,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '회원정보',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.045,
-                      fontWeight: FontWeight.w700,
-                      color: const Color(0xFF484848),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.015),
-                  Container(height: 1, color: const Color(0xFFEFEFEF)),
-                  SizedBox(height: screenHeight * 0.02),
-
-                  _infoRow(context, label: '이름', value: _myInfo?.name ?? ''),
-                  _infoRow(context, label: '이메일', value: _myInfo?.email ?? ''),
-                ],
-              ),
-            ),
-
-            Container(height: 8, color: const Color(0xFFF7F7F7)),
-
-            Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: screenWidth * 0.08,
-                vertical: screenHeight * 0.014,
-              ),
-              child: Column(
-                children: [
-                  _menuItem(context, '자동 로그인 기기 설정', onTap: () {}),
-                  _menuItem(context, '알림 설정', onTap: () { Navigator.pushNamed(context, '/alarm_page'); }),
-                ],
-              ),
-            ),
-
-            SizedBox(height: screenHeight * 0.02),
-
-            Center(
-              child: GestureDetector( // 이 부분 추가
-                onTap: () => LogoutService.showLogoutDialog(context),
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: screenWidth * 0.08,
-                    vertical: screenHeight * 0.012,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD4B0),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  child: Text(
-                    '로그아웃',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.04,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
                 ),
-              ),
-            ),
-
-            SizedBox(height: screenHeight * 0.02),
-
-            Center(
-              child: Column(
-                children: [
-                  Text(
-                    '회원정보를 완전히 삭제하고 싶으신가요?',
-                    style: TextStyle(
-                      fontSize: screenWidth * 0.03,
-                      color: const Color(0xFFBDBDBD),
-                    ),
-                  ),
-                  SizedBox(height: screenHeight * 0.01),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: screenWidth * 0.05,
-                      vertical: screenHeight * 0.008,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE5E5E5),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      '회원탈퇴',
-                      style: TextStyle(
-                        fontSize: screenWidth * 0.035,
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF9A9A9A),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            SizedBox(height: screenHeight * 0.04),
-          ],
-        ),
-      ),
     );
   }
 
-  Widget _infoRow(BuildContext context, {required String label, required String value}) {
+  Widget _infoRow(BuildContext context,
+      {required String label, required String value}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     return Padding(
@@ -269,7 +259,8 @@ class _MyInfoPageState extends State<MyInfoPage> {
     );
   }
 
-  Widget _menuItem(BuildContext context, String title, {required VoidCallback onTap}) {
+  Widget _menuItem(BuildContext context, String title,
+      {required VoidCallback onTap}) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
     return GestureDetector(

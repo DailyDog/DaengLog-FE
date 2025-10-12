@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/api/pets/models/pets_info.dart';
 import 'package:daenglog_fe/shared/widgets/pet_avatar.dart';
 
@@ -70,86 +71,79 @@ class _PetEditModalState extends State<PetEditModal>
     final size = MediaQuery.of(context).size;
 
     return GestureDetector(
-      onTap: _close,
-      child: Container(
-        color: Colors.black54,
-        child: Column(
-          children: [
-            SizedBox(height: size.height * 0.35),
-            SlideTransition(
-              position: _slideAnimation,
-              child: GestureDetector(
-                onTap: () {}, // 모달 내부 클릭 방지
-                child: Container(
-                  height: size.height * 0.65,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  child: Column(
-                    children: [
-                      _buildHandle(),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32),
-                          child: Column(
-                            children: [
-                              Expanded(
-                                child: ListView.separated(
-                                  itemCount: widget.pets.length,
-                                  separatorBuilder: (_, __) =>
-                                      const Divider(height: 32),
-                                  itemBuilder: (context, index) => _PetItem(
-                                    pet: widget.pets[index],
-                                    isSelected: selectedIndex == index,
-                                    isFamilyShared: widget.isFamilyShared
-                                            ?.call(widget.pets[index]) ??
-                                        false,
-                                    onTap: () {
-                                      setState(() => selectedIndex = index);
-                                      widget.onSelectPet
-                                          ?.call(widget.pets[index], index);
-                                    },
-                                    onEdit: () {
-                                      final petId =
-                                          widget.resolvePetId?.call(index);
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/pet_detail',
-                                        arguments: {'id': petId},
-                                      );
-                                    },
-                                    onSetDefault: () =>
-                                        _handleSetDefault(index),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              _AddPetButton(onTap: widget.onAddPet),
-                              if (widget.showAddFamilyPet) ...[
-                                const SizedBox(height: 12),
-                                _AddPetButton(
-                                  label: '가족 반려동물 추가',
-                                  onTap: () => Navigator.pushNamed(
-                                      context, '/pet_family_add'),
-                                ),
-                              ],
-                              // 로그아웃 버튼은 모달에서 제거 (하단 섹션으로 이동)
-                              const SizedBox(height: 20),
-                            ],
-                          ),
-                        ),
+        onTap: _close,
+        child: Container(
+          color: Colors.black54,
+          child: SafeArea(
+            child: Column(
+              children: [
+                SizedBox(height: size.height * 0.316),
+                SlideTransition(
+                  position: _slideAnimation,
+                  child: GestureDetector(
+                    onTap: () {}, // 모달 내부 클릭 방지
+                    child: Container(
+                      height: size.height * 0.5,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(20)),
                       ),
-                    ],
+                      child: Column(
+                        children: [
+                          _buildHandle(),
+                          const SizedBox(height: 24), // 핸들과 리스트 사이 간격 늘리기
+                          Expanded(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 32),
+                              child: Column(
+                                children: [
+                                  // 펫 리스트만 스크롤 가능하게
+                                  Expanded(
+                                    child: ListView.separated(
+                                      itemCount: widget.pets.length,
+                                      separatorBuilder: (_, __) =>
+                                          const Divider(height: 32),
+                                      itemBuilder: (context, index) => _PetItem(
+                                        pet: widget.pets[index],
+                                        isSelected: selectedIndex == index,
+                                        isFamilyShared: widget.isFamilyShared
+                                                ?.call(widget.pets[index]) ??
+                                            false,
+                                        onTap: () {
+                                          setState(() => selectedIndex = index);
+                                          widget.onSelectPet
+                                              ?.call(widget.pets[index], index);
+                                        },
+                                        onEdit: () {
+                                          final petId =
+                                              widget.resolvePetId?.call(index);
+                                          context.go('/pet_detail',
+                                              extra: {'id': petId});
+                                        },
+                                        onSetDefault: () =>
+                                            _handleSetDefault(index),
+                                      ),
+                                    ),
+                                  ),
+                                  // 하단에 고정된 추가 버튼
+                                  const SizedBox(height: 16),
+                                  _AddPetButton(onTap: widget.onAddPet),
+                                  const SizedBox(height: 16),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   Widget _buildHandle() {

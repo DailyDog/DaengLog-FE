@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class AlarmPage extends StatefulWidget {
   const AlarmPage({super.key});
@@ -21,7 +22,7 @@ class _AlarmPageState extends State<AlarmPage> {
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: _buildAppBar(context),
@@ -32,7 +33,7 @@ class _AlarmPageState extends State<AlarmPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: screenHeight * 0.02),
-              
+
               // 푸시 / 문자 / 이메일
               _buildNotificationSection(
                 context,
@@ -44,13 +45,13 @@ class _AlarmPageState extends State<AlarmPage> {
                   });
                 },
               ),
-              
+
               // 구분선
               Container(
                 height: 1,
                 color: const Color(0xFFF0F0F0),
               ),
-              
+
               // 기기 알림 설정
               _buildNotificationSection(
                 context,
@@ -61,9 +62,10 @@ class _AlarmPageState extends State<AlarmPage> {
                     _deviceNotification = value;
                   });
                 },
-                description: '기기 알림을 켜시면 일기 생성 알림, 반려동물 편지 등\n다양한 소식을 받아보실 수 있어요.',
+                description:
+                    '기기 알림을 켜시면 일기 생성 알림, 반려동물 편지 등\n다양한 소식을 받아보실 수 있어요.',
               ),
-              
+
               // 일기 알림
               _buildNotificationSection(
                 context,
@@ -76,7 +78,7 @@ class _AlarmPageState extends State<AlarmPage> {
                 },
                 description: '일기 생성이 완료되거나, 일기 생성이 필요할 때 알려드려요.',
               ),
-              
+
               // 편지 알림
               _buildNotificationSection(
                 context,
@@ -89,7 +91,7 @@ class _AlarmPageState extends State<AlarmPage> {
                 },
                 description: '데이터 기반 반려동물이 직접 쓰는 편지를 알림으로 보내드려요.',
               ),
-              
+
               // 가족편지 알림
               _buildNotificationSection(
                 context,
@@ -102,7 +104,7 @@ class _AlarmPageState extends State<AlarmPage> {
                 },
                 description: '가족 구성원이 보내는 일기나 편지를 알림으로 보내드려요.',
               ),
-              
+
               // 문자 / 이메일
               _buildNotificationSection(
                 context,
@@ -115,9 +117,9 @@ class _AlarmPageState extends State<AlarmPage> {
                 },
                 description: '다양한 혜택과 이벤트 알림',
               ),
-              
+
               SizedBox(height: screenHeight * 0.02),
-              
+
               // 문자
               _buildSubNotificationSection(
                 context,
@@ -129,7 +131,7 @@ class _AlarmPageState extends State<AlarmPage> {
                   });
                 },
               ),
-              
+
               // 이메일
               _buildSubNotificationSection(
                 context,
@@ -141,7 +143,7 @@ class _AlarmPageState extends State<AlarmPage> {
                   });
                 },
               ),
-              
+
               SizedBox(height: screenHeight * 0.05),
             ],
           ),
@@ -153,12 +155,18 @@ class _AlarmPageState extends State<AlarmPage> {
   // AppBar
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     return AppBar(
       backgroundColor: const Color(0xFFFF5F01),
       elevation: 0,
       leading: GestureDetector(
-        onTap: () => Navigator.pop(context),
+        onTap: () {
+          if (context.canPop()) {
+            context.pop();
+          } else {
+            context.go('/mypage');
+          }
+        },
         child: Transform.rotate(
           angle: 90 * 3.14159 / 180,
           child: Icon(
@@ -190,7 +198,7 @@ class _AlarmPageState extends State<AlarmPage> {
   }) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Container(
       padding: EdgeInsets.symmetric(vertical: screenHeight * 0.02),
       child: Row(
@@ -224,9 +232,9 @@ class _AlarmPageState extends State<AlarmPage> {
               ],
             ),
           ),
-          
+
           SizedBox(width: screenWidth * 0.02),
-          
+
           // 토글 스위치
           Switch(
             value: value,
@@ -250,7 +258,7 @@ class _AlarmPageState extends State<AlarmPage> {
   ) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return Container(
       padding: EdgeInsets.symmetric(vertical: screenHeight * 0.015),
       child: Row(
@@ -264,9 +272,9 @@ class _AlarmPageState extends State<AlarmPage> {
               color: const Color(0xFF7B7B7B),
             ),
           ),
-          
+
           const Spacer(),
-          
+
           // 토글 스위치
           Switch(
             value: value,
@@ -280,4 +288,4 @@ class _AlarmPageState extends State<AlarmPage> {
       ),
     );
   }
-} 
+}

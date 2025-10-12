@@ -13,7 +13,13 @@ class SocialLoginScreen extends StatelessWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
         ),
       ),
       backgroundColor: Colors.white,
@@ -33,30 +39,34 @@ class SocialLoginScreen extends StatelessWidget {
               const SizedBox(height: 24),
               const SizedBox(height: 60),
               _socialButton(
-                icon: Image.asset('assets/images/login/google_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/google_icon.png',
+                    width: 24),
                 text: '구글로 시작하기    ',
                 onTap: () async {
                   // 구글 로그인 및 서버 인증 (통합)
                   final result = await performGoogleLogin();
-                    // 기존 사용자는 홈 메인 화면으로
-                    context.go('/home');
+                  // 기존 사용자는 홈 메인 화면으로
+                  context.go('/home');
                 },
               ),
               const SizedBox(height: 16),
               _socialButton(
-                icon: Image.asset('assets/images/login/kakao_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/kakao_icon.png',
+                    width: 24),
                 text: '카카오로 시작하기',
                 onTap: () {},
               ),
               const SizedBox(height: 16),
               _socialButton(
-                icon: Image.asset('assets/images/login/naver_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/naver_icon.png',
+                    width: 24),
                 text: '네이버로 시작하기',
                 onTap: () {},
               ),
               const SizedBox(height: 16),
               _socialButton(
-                icon: Image.asset('assets/images/login/apple_icon.png', width: 24),
+                icon: Image.asset('assets/images/login/apple_icon.png',
+                    width: 24),
                 text: '애플로 시작하기    ',
                 onTap: () {},
               ),

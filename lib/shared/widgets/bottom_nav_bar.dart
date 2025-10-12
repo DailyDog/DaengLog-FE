@@ -109,36 +109,32 @@ Widget commonBottomNavBar({
 
         return GestureDetector(
           onTap: () => handleTap(index),
-          child: Transform.translate(
-            offset: const Offset(0, -8), // 카메라 버튼과 같은 높이로 맞춤
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal:
-                    (index == 0 || index == 4) ? screenWidth * 0.005 : 0,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset(
-                    iconPaths[index],
-                    width: screenWidth * 0.06,
-                    height: screenWidth * 0.06,
-                    colorBlendMode: BlendMode.srcIn,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: (index == 0 || index == 4) ? screenWidth * 0.005 : 0,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset(
+                  iconPaths[index],
+                  width: screenWidth * 0.06,
+                  height: screenWidth * 0.06,
+                  colorBlendMode: BlendMode.srcIn,
+                  color: selected ? selectedColor : unselectedColor,
+                  filterQuality: FilterQuality.high,
+                ),
+                SizedBox(height: screenHeight * 0.011),
+                Text(
+                  _getTabLabel(index),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                     color: selected ? selectedColor : unselectedColor,
-                    filterQuality: FilterQuality.high,
+                    fontFamily: 'Pretendard',
                   ),
-                  SizedBox(height: screenHeight * 0.011),
-                  Text(
-                    _getTabLabel(index),
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                      color: selected ? selectedColor : unselectedColor,
-                      fontFamily: 'Pretendard',
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );

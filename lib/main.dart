@@ -32,6 +32,10 @@ import 'features/chat/screens/chat_communication_screen.dart';
 import 'features/chat/screens/chat_history_screen.dart';
 import 'features/chat_photo/screens/chat_photo_screen.dart';
 import 'features/pet_info/screens/pet_info_screen.dart';
+import 'features/pet_info/screens/pet_info_kind_screen.dart';
+import 'features/pet_info/screens/pet_info_name_screen.dart';
+import 'features/pet_info/screens/pet_info_character_screen.dart';
+import 'features/pet_info/screens/pet_info_profile_screen.dart';
 import 'features/pet_detail/screens/pet_detail_screen.dart';
 import 'features/pet_detail/screens/pet_basic_edit_screen.dart';
 import 'features/pet_detail/screens/pet_personality_edit_screen.dart';
@@ -116,6 +120,18 @@ class MyApp extends StatelessWidget {
         GoRoute(
             path: '/pet_info', builder: (context, state) => PetInfoScreen()),
         GoRoute(
+            path: '/pet_information_kind',
+            builder: (context, state) => const PetInformationKindScreen()),
+        GoRoute(
+            path: '/pet_information_name',
+            builder: (context, state) => const PetInformationNameScreen()),
+        GoRoute(
+            path: '/pet_information_character',
+            builder: (context, state) => PetInformationCharacterScreen()),
+        GoRoute(
+            path: '/pet_information_profile',
+            builder: (context, state) => PetInformationProfileScreen()),
+        GoRoute(
             path: '/pet_detail',
             builder: (context, state) => const PetDetailScreen()),
         GoRoute(
@@ -128,8 +144,7 @@ class MyApp extends StatelessWidget {
         // GoRoute(path: '/family_send', builder: (context, state) => const FamilySendScreen()),
         // GoRoute(path: '/envelope_receive', builder: (context, state) => const EnvelopeReceiveScreen()),
         GoRoute(
-            path: '/my_info_page',
-            builder: (context, state) => const MyInfoPage()),
+            path: '/my_info', builder: (context, state) => const MyInfoPage()),
         GoRoute(
             path: '/alarm_page',
             builder: (context, state) => const AlarmPage()),

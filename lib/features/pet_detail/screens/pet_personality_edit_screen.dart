@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/api/mypage/post/pet_update_api.dart';
 
 class PetPersonalityEditScreen extends StatefulWidget {
@@ -39,16 +40,15 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
     super.didChangeDependencies();
 
     if (!_isInitialized) {
-      final args =
-          ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null) {
-        _petId = args['id'] as int?;
-        _name = (args['name'] as String?) ?? '';
-        _birthday = (args['birthday'] as String?) ?? '';
-        _gender = (args['gender'] as String?) ?? '';
-        _species = (args['species'] as String?) ?? '';
+      final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
+      if (extra != null) {
+        _petId = extra['id'] as int?;
+        _name = (extra['name'] as String?) ?? '';
+        _birthday = (extra['birthday'] as String?) ?? '';
+        _gender = (extra['gender'] as String?) ?? '';
+        _species = (extra['species'] as String?) ?? '';
 
-        final personalities = (args['personalities'] as List?) ?? [];
+        final personalities = (extra['personalities'] as List?) ?? [];
         selectedTags = Set<String>.from(personalities.cast<String>());
 
         _isInitialized = true;
@@ -75,7 +75,7 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
       );
 
       if (mounted) {
-        Navigator.pop(context, true);
+        context.pop(true);
       }
     } catch (e) {
       if (mounted) {
@@ -126,7 +126,13 @@ class _PetPersonalityEditScreenState extends State<PetPersonalityEditScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/pet_detail');
+            }
+          },
         ),
         title: Text(
           '반려동물 성격 수정',

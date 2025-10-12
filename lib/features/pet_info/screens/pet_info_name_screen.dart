@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/features/pet_info/widgets/pet_info_appbar_navbar.dart';
 import 'package:daenglog_fe/features/pet_info/providers/pet_info_provider.dart';
 import 'package:provider/provider.dart';
 
 class PetInformationNameScreen extends StatefulWidget {
-  
   const PetInformationNameScreen({super.key});
 
   @override
-    State<PetInformationNameScreen> createState() => _PetInformationNameScreenState();
+  State<PetInformationNameScreen> createState() =>
+      _PetInformationNameScreenState();
 }
 
 class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
@@ -23,7 +24,7 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
       initialDate: selectedBirthday ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
-      builder: (context, child) { 
+      builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
@@ -57,7 +58,11 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
       titleSub: '를 입력해 주세요',
       subtitle: 'AI에게 전달되는 정보에요.',
       onPrevious: () {
-        Navigator.pushNamed(context, '/pet_information_kind');
+        if (context.canPop()) {
+          context.pop();
+        } else {
+          context.go('/pet_information_kind');
+        }
       },
       onNext: _nameController.text.trim().isNotEmpty
           ? () async {
@@ -66,7 +71,7 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
               petInfo.setPetName(name);
               petInfo.setPetBirthday(selectedBirthday!);
               petInfo.setPetGender(selectedGender!);
-              Navigator.pushNamed(context, '/pet_information_character');
+              context.go('/pet_information_character');
             }
           : null,
       child: Padding(
@@ -100,9 +105,9 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // 생일 선택
             GestureDetector(
               onTap: () {
@@ -133,11 +138,11 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        selectedBirthday != null 
+                        selectedBirthday != null
                             ? _formatDate(selectedBirthday!)
                             : '생일 선택하기',
                         style: TextStyle(
-                          color: selectedBirthday != null 
+                          color: selectedBirthday != null
                               ? const Color(0xFF333333)
                               : const Color(0xFF8C8B8B),
                           fontSize: 16,
@@ -236,4 +241,3 @@ class _PetInformationNameScreenState extends State<PetInformationNameScreen> {
     );
   }
 }
-

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 Widget buildOnboardingContent({
   required String titleHighlight, // 하이라이트 텍스트
@@ -17,8 +18,15 @@ Widget buildOnboardingContent({
             top: 10,
             left: 9,
             child: IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.grey, size: 20),
-              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_ios,
+                  color: Colors.grey, size: 20),
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/home');
+                }
+              },
             ),
           ),
           Center(
@@ -62,7 +70,7 @@ Widget buildOnboardingContent({
                 Image.asset(imagePath), // 이미지 파일 경로
                 SizedBox(
                   width: 275,
-                  height: 48,        
+                  height: 48,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFFF5F01),
@@ -71,7 +79,8 @@ Widget buildOnboardingContent({
                       ),
                     ),
                     onPressed: () {
-                      Navigator.pushNamed(context, navigationButtonText); // 텍스트 + 네비게이션 버튼
+                      Navigator.pushNamed(
+                          context, navigationButtonText); // 텍스트 + 네비게이션 버튼
                     },
                     child: const Text(
                       '다음',
