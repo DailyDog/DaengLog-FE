@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 import '../widgets/my_membership/free_plan_widget.dart';
 import '../widgets/my_membership/daeng_cloud_plus_widget.dart';
 import '../widgets/my_membership/family_members_widget.dart';
@@ -14,15 +15,17 @@ class CloudMainScreen extends StatefulWidget {
   State<CloudMainScreen> createState() => _CloudMainScreenState();
 }
 
-class _CloudMainScreenState extends State<CloudMainScreen> with SingleTickerProviderStateMixin {
+class _CloudMainScreenState extends State<CloudMainScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     final provider = context.read<CloudScreenProvider>();
-    _tabController = TabController(length: 2, vsync: this, initialIndex: provider.currentMainTabIndex);
-    
+    _tabController = TabController(
+        length: 2, vsync: this, initialIndex: provider.currentMainTabIndex);
+
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         provider.setMainTabIndex(_tabController.index);
@@ -48,7 +51,9 @@ class _CloudMainScreenState extends State<CloudMainScreen> with SingleTickerProv
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            context.go('/record');
+          },
         ),
         title: Text(
           '용량 관리',
@@ -68,7 +73,7 @@ class _CloudMainScreenState extends State<CloudMainScreen> with SingleTickerProv
               controller: _tabController,
               indicatorColor: Colors.black, // 활성 탭 밑줄
               indicatorWeight: 3,
-              labelColor: Colors.black,      // 활성 탭 글자색
+              labelColor: Colors.black, // 활성 탭 글자색
               unselectedLabelColor: Colors.grey[600], // 비활성 탭 글자색
               labelStyle: TextStyle(
                 fontSize: screenWidth * 0.04,
@@ -102,7 +107,7 @@ class CloudMainContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     return SingleChildScrollView(
       child: Column(
         children: [
