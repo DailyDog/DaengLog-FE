@@ -40,7 +40,7 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          onPressed: () => context.pop(),
+          onPressed: () => context.go('/record'),
           icon: const Icon(
             Icons.arrow_back_ios,
             color: Color(0xFF272727),
@@ -64,12 +64,25 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
               color: const Color(0xFF666666),
             ),
           ),
-          IconButton(
-            onPressed: _showCreateAlbumDialog,
-            icon: const Icon(
-              Icons.add,
-              color: Color(0xFFFF5F01),
-            ),
+          Consumer<RecordProvider>(
+            builder: (context, recordProvider, child) {
+              return IconButton(
+                onPressed: recordProvider.selectedPet != null
+                    ? _showCreateAlbumDialog
+                    : () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('반려동물을 먼저 선택해주세요'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      },
+                icon: const Icon(
+                  Icons.add,
+                  color: Color(0xFFFF5F01),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -117,9 +130,9 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
       child: GridView.builder(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          crossAxisSpacing: 16 * scale,
-          mainAxisSpacing: 16 * scale,
-          childAspectRatio: 0.85,
+          crossAxisSpacing: 20 * scale,
+          mainAxisSpacing: 20 * scale,
+          childAspectRatio: 0.75,
         ),
         itemCount: albums.length,
         itemBuilder: (context, index) {
@@ -182,46 +195,163 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
 
   void _showCreateAlbumDialog() {
     final TextEditingController controller = TextEditingController();
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 400;
 
     showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            '새 앨범 만들기',
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: isSmallScreen ? 24 : 32,
+          ),
+          child: Container(
+            padding: EdgeInsets.all(isSmallScreen ? 24 : 32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Title
+                Text(
+                  '새 앨범 만들기',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: isSmallScreen ? 18 : 20,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF272727),
+                  ),
+                ),
+
+                SizedBox(height: isSmallScreen ? 16 : 20),
+
+                // Content
+                Text(
+                  '앨범 이름을 입력해주세요',
+                  style: TextStyle(
+                    fontFamily: 'Pretendard',
+                    fontSize: isSmallScreen ? 14 : 16,
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF666666),
+                  ),
+                ),
+
+                SizedBox(height: isSmallScreen ? 20 : 24),
+
+                // Text field
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F8F8),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFE0E0E0),
+                      width: 1,
+                    ),
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: isSmallScreen ? 14 : 16,
+                      color: const Color(0xFF272727),
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '앨범 이름을 입력하세요',
+                      hintStyle: TextStyle(
+                        fontFamily: 'Pretendard',
+                        fontSize: isSmallScreen ? 14 : 16,
+                        color: const Color(0xFF999999),
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: isSmallScreen ? 16 : 20,
+                        vertical: isSmallScreen ? 12 : 16,
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: isSmallScreen ? 24 : 32),
+
+                // Buttons
+                Row(
+                  children: [
+                    // Cancel button
+                    Expanded(
+                      child: Container(
+                        height: isSmallScreen ? 48 : 52,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFE0E0E0),
+                            width: 1,
+                          ),
+                        ),
+                        child: TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            '취소',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: isSmallScreen ? 14 : 16,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF666666),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(width: isSmallScreen ? 12 : 16),
+
+                    // Create button
+                    Expanded(
+                      child: Container(
+                        height: isSmallScreen ? 48 : 52,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF5F01),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: TextButton(
+                          onPressed: () async {
+                            if (controller.text.trim().isNotEmpty) {
+                              await _createAlbum(controller.text.trim());
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            '만들기',
+                            style: TextStyle(
+                              fontFamily: 'Pretendard',
+                              fontSize: isSmallScreen ? 14 : 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              hintText: '앨범 이름을 입력하세요',
-              border: OutlineInputBorder(),
-            ),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('취소'),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (controller.text.trim().isNotEmpty) {
-                  await _createAlbum(controller.text.trim());
-                  Navigator.of(context).pop();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF5F01),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('만들기'),
-            ),
-          ],
         );
       },
     );
@@ -229,9 +359,21 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
 
   Future<void> _createAlbum(String name) async {
     try {
-      await AlbumCreateApi().createAlbum(name);
+      final recordProvider = context.read<RecordProvider>();
+      final petId = recordProvider.selectedPet?.id;
+
+      if (petId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('반려동물을 먼저 선택해주세요'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      await AlbumCreateApi().createAlbum(name, petId: petId);
       setState(() {
-        final recordProvider = context.read<RecordProvider>();
         _albumsFuture =
             AlbumPetApi().getAlbumsByPet(recordProvider.selectedPet!.id);
       });
@@ -291,7 +433,6 @@ class _AlbumGridCard extends StatelessWidget {
           children: [
             // Thumbnail
             Expanded(
-              flex: 3,
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -346,35 +487,37 @@ class _AlbumGridCard extends StatelessWidget {
               ),
             ),
             // Album info
-            Expanded(
-              flex: 1,
-              child: Padding(
-                padding: EdgeInsets.all(12 * scale),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+            Container(
+              height: 60 * scale,
+              padding: EdgeInsets.all(8 * scale),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
                       album.name,
                       style: TextStyle(
                         fontFamily: 'Pretendard',
-                        fontSize: (14 * scale).clamp(12.0, 16.0),
+                        fontSize: (13 * scale).clamp(11.0, 15.0),
                         fontWeight: FontWeight.w600,
                         color: const Color(0xFF272727),
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 4 * scale),
-                    Text(
-                      '${album.imageCount}개의 사진',
-                      style: TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: (12 * scale).clamp(10.0, 14.0),
-                        color: const Color(0xFF666666),
-                      ),
+                  ),
+                  Text(
+                    '${album.imageCount}개의 사진',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontSize: (11 * scale).clamp(9.0, 13.0),
+                      color: const Color(0xFF666666),
                     ),
-                  ],
-                ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
             ),
           ],

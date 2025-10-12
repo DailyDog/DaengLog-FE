@@ -1,37 +1,32 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
 import 'package:daenglog_fe/shared/services/dio_client.dart';
 
 // 일기 생성 (이미지 첨부 및 프롬프트 입력)
 class DiaryCreatePromptApi {
-  final Dio _dio = Dio();
-  
+  final Dio _dio = getDioWithAuth('api/v1/diary/preview');
+
   // 요청 취소 토큰
   CancelToken? _cancelToken;
-
-  final String _baseUrl = '${dotenv.env['API_URL']!}/api/v1/diary/preview';
 
   /// API 요청을 중단합니다.
   void cancelRequest() {
     _cancelToken?.cancel('요청이 취소되었습니다.');
   }
 
-  Future<DiaryGptResponse?> diaryCreatePrompt({required String prompt, required int? petId, required File imageFile}) async {
+  Future<DiaryGptResponse?> diaryCreatePrompt(
+      {required String prompt,
+      required int? petId,
+      required File imageFile}) async {
     // 새로운 CancelToken 생성
     _cancelToken = CancelToken();
-    
+
     try {
-      // 토큰 값 가져오기
-      String? token = await SecureTokenStorage.getToken();
-      
       // URL 파라미터 설정
       final Map<String, dynamic> queryParams = {
         'prompt': prompt,
-        // 토큰이 있을 때만 petId 추가
-        if(token != null && token.isNotEmpty && petId != null) 'petId': petId,
+        if (petId != null) 'petId': petId,
       };
 
       // FormData에는 image만 포함
@@ -41,15 +36,9 @@ class DiaryCreatePromptApi {
 
       // 요청 정보 로그 출력
       final response = await _dio.post(
-        _baseUrl,
+        '',
         queryParameters: queryParams,
         data: formData,
-        options: Options(
-          headers: {
-            'Authorization': token != null && token.isNotEmpty ? 'Bearer $token' : null,
-            // FormData 사용 시 Content-Type은 자동으로 설정됨
-          },
-        ),
         cancelToken: _cancelToken,
       );
 
@@ -58,24 +47,9 @@ class DiaryCreatePromptApi {
       if (e is DioException && e.type == DioExceptionType.cancel) {
         return null;
       }
-      // 401 에러 시 토큰 갱신 시도
-      if (e is DioException && await SecureTokenStorage.getToken() != null && e.response?.statusCode == 401) {
-        final refreshToken = await SecureTokenStorage.getRefreshToken();
-        if (refreshToken != null) {
-          try {
-            // 토큰 갱신 (dio_client.dart의 함수 사용)
-            final newToken = await refreshAccessToken(refreshToken);
-            if (newToken != null) {
-              // 새로운 토큰으로 재요청
-              return await diaryCreatePrompt(prompt: prompt, petId: petId, imageFile: imageFile);
-            }
-          } catch (refreshError) {
-            print('갱신할 토큰이 없어잉 !: $refreshError');
-          }
-        }
-      }
-      
-      throw Exception('토큰이 아무것도 없어잉 !: $e');
+
+      print('일기 생성 API 오류: $e');
+      throw Exception('일기 생성 실패: $e');
     }
   }
 }

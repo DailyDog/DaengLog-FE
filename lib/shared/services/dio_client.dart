@@ -2,14 +2,14 @@ import 'package:dio/dio.dart';
 import '../utils/secure_token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-
 /// 토큰 갱신
 Future<String?> refreshAccessToken(String refreshToken) async {
   try {
     print('[refreshAccessToken] 요청 시작 - refreshToken: $refreshToken');
-    final refreshUrl = dotenv.env['REFRESH_API_URL']!;  
+    final refreshUrl = dotenv.env['REFRESH_API_URL']!;
 
-    final response = await Dio().post( // 토큰 갱신 요청
+    final response = await Dio().post(
+      // 토큰 갱신 요청
       refreshUrl,
       options: Options(
         headers: {
@@ -24,7 +24,7 @@ Future<String?> refreshAccessToken(String refreshToken) async {
     final newAccessToken = data['accessToken'] as String?; // 새로운 액세스 토큰
     if (newAccessToken == null) return null;
 
-    await SecureTokenStorage.saveToken(newAccessToken); // 새로운 액세스 토큰 저장 
+    await SecureTokenStorage.saveToken(newAccessToken); // 새로운 액세스 토큰 저장
     return newAccessToken;
   } catch (_) {
     print('refreshAccessToken error: $_');
@@ -45,7 +45,8 @@ Dio getDioWithAuth(String uri) {
     onRequest: (options, handler) async {
       final token = await SecureTokenStorage.getToken();
       print('[onRequest] 현재 accessToken: $token');
-      print('[onRequest] 현재 refreshToken: ${await SecureTokenStorage.getRefreshToken()}');
+      print(
+          '[onRequest] 현재 refreshToken: ${await SecureTokenStorage.getRefreshToken()}');
 
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
@@ -54,11 +55,11 @@ Dio getDioWithAuth(String uri) {
     },
     // 401 에러 처리
     onError: (error, handler) async {
-      final status = error.response?.statusCode;
       final options = error.requestOptions;
 
       // 이미 재시도 된 요청이거나, 401이 아니면 패스
-      if (options.extra['retried'] == true || status != 401) {
+      if (options.extra['retried'] == true ||
+          error.response?.statusCode != 401) {
         return handler.next(error);
       }
 
@@ -76,7 +77,8 @@ Dio getDioWithAuth(String uri) {
             return handler.next(error);
           }
 
-          _refreshing = refreshAccessToken(refreshToken).whenComplete(() { // 토큰 갱신 요청 완료 후 참조 해제
+          _refreshing = refreshAccessToken(refreshToken).whenComplete(() {
+            // 토큰 갱신 요청 완료 후 참조 해제
             _refreshing = null;
           });
         }

@@ -84,7 +84,7 @@ class MyApp extends StatelessWidget {
     final router = GoRouter(
       initialLocation: '/login',
       routes: [
-        // ✅ 로그인/온보딩/스플래시 - ShellRoute 밖
+        // 로그인/온보딩/스플래시 - ShellRoute 밖
         GoRoute(path: '/splash', builder: (context, state) => const Splash()),
         GoRoute(
             path: '/login',
@@ -154,20 +154,7 @@ class MyApp extends StatelessWidget {
             path: '/weather',
             builder: (context, state) => const WeatherScreen()),
 
-        // Album and diary routes
-        GoRoute(
-            path: '/album-more',
-            builder: (context, state) => const AlbumMoreScreen()),
-        GoRoute(
-            path: '/album-detail/:albumId',
-            builder: (context, state) =>
-                const SizedBox()), // TODO: Album detail screen
-        GoRoute(
-            path: '/diary-detail/:diaryId',
-            builder: (context, state) =>
-                const SizedBox()), // TODO: Diary detail screen
-
-        // ✅ 메인 탭 구조 - 하단바 고정
+        // 메인 탭 구조 - 하단바 고정
         ShellRoute(
           builder: (context, state, child) {
             return MainScaffold(child: child);
@@ -184,11 +171,25 @@ class MyApp extends StatelessWidget {
             GoRoute(
                 path: '/cloud',
                 pageBuilder: (context, state) =>
-                    MaterialPage(child: const CloudMainScreen())),
+                    NoTransitionPage(child: const CloudMainScreen())),
             GoRoute(
                 path: '/mypage',
                 pageBuilder: (context, state) =>
                     NoTransitionPage(child: const MyPageMainScreen())),
+
+            // Album and diary routes (inside ShellRoute for proper navigation)
+            GoRoute(
+                path: '/album-more',
+                pageBuilder: (context, state) =>
+                    MaterialPage(child: const AlbumMoreScreen())),
+            GoRoute(
+                path: '/album-detail/:albumId',
+                pageBuilder: (context, state) => MaterialPage(
+                    child: const SizedBox())), // TODO: Album detail screen
+            GoRoute(
+                path: '/diary-detail/:diaryId',
+                pageBuilder: (context, state) => MaterialPage(
+                    child: const SizedBox())), // TODO: Diary detail screen
           ],
         ),
       ],
@@ -201,7 +202,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
-// ✅ 하단바 고정 레이아웃
+// 하단바 고정 레이아웃
 class MainScaffold extends StatefulWidget {
   final Widget child;
   const MainScaffold({super.key, required this.child});

@@ -19,32 +19,35 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
   // 선택된 위젯들 (기본값: 공지사항, 캠퍼스맵, 학사일정)
   List<String> selectedWidgets = ['일기', '산책', '오늘의 미션', '날씨'];
 
-  // 사용 가능한 모든 위젯들
-  final List<HomeWidgetItem> availableWidgets = [
-    HomeWidgetItem(
-        id: '일기',
-        title: '일기',
-        description: '망고의 기분은 어떨까?',
-        iconPath: 'assets/images/home/widget/Journal_icon.png'),
-    HomeWidgetItem(
-        id: '산책',
-        title: '산책',
-        description: '이번주 망고는\n얼마나 산책을 했나?',
-        iconPath: 'assets/images/home/widget/dog_icon.png'),
-    HomeWidgetItem(
-        id: '오늘의 미션',
-        title: '오늘의 미션',
-        description: '망고와 신나는 미션',
-        iconPath: 'assets/images/home/widget/Goal_icon.png'),
-    HomeWidgetItem(
-        id: '날씨',
-        title: '날씨',
-        description: '성북구 정릉동',
-        iconPath: 'assets/images/home/widget/Sun_icon.png'),
-  ];
+  // 사용 가능한 모든 위젯들 (동적으로 생성)
+  List<HomeWidgetItem> _getAvailableWidgets(String petName, String location) {
+    return [
+      HomeWidgetItem(
+          id: '일기',
+          title: '일기',
+          description: '$petName의 기분은 어떨까?',
+          iconPath: 'assets/images/home/widget/Journal_icon.png'),
+      HomeWidgetItem(
+          id: '산책',
+          title: '산책',
+          description: '이번주 $petName는\n얼마나 산책을 했나?',
+          iconPath: 'assets/images/home/widget/dog_icon.png'),
+      HomeWidgetItem(
+          id: '오늘의 미션',
+          title: '오늘의 미션',
+          description: '$petName와 신나는 미션',
+          iconPath: 'assets/images/home/widget/Goal_icon.png'),
+      HomeWidgetItem(
+          id: '날씨',
+          title: '날씨',
+          description: location,
+          iconPath: 'assets/images/home/widget/Sun_icon.png'),
+    ];
+  }
 
   // 위젯 선택 모달 표시
-  void _showWidgetSelectionModal(BuildContext context) {
+  void _showWidgetSelectionModal(
+      BuildContext context, List<HomeWidgetItem> availableWidgets) {
     showDialog(
       context: context,
       builder: (context) => HomeBottomSectionModal(
@@ -61,12 +64,17 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.read<DefaultProfileProvider>().profile;
+    final profile = context.watch<DefaultProfileProvider>().profile;
     final weatherProvider = context.watch<WeatherProvider>();
 
+    // 반려동물 이름
+    final petName = profile?.petName ?? '망고';
+
     // 날씨 위젯의 위치 정보 업데이트
-    final weatherWidget = availableWidgets.firstWhere((w) => w.id == '날씨');
     final displayLocation = weatherProvider.weather?.location ?? '성북구 정릉동';
+
+    // 동적으로 위젯 리스트 생성
+    final availableWidgets = _getAvailableWidgets(petName, displayLocation);
 
     return Container(
       color: const Color(0XFFF9F9F9),
@@ -96,23 +104,13 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                     iconPath: 'assets/images/home/widget/plus_icon.png',
                   ),
                   isSelectionCard: true,
+                  availableWidgets: availableWidgets,
                 );
               } else {
                 // 위젯 카드들
                 final widgetId = selectedWidgets[index];
                 final widget =
                     availableWidgets.firstWhere((w) => w.id == widgetId);
-
-                // 날씨 위젯인 경우 동적 위치 정보 사용
-                if (widgetId == '날씨') {
-                  final dynamicWidget = HomeWidgetItem(
-                    id: widget.id,
-                    title: widget.title,
-                    description: displayLocation,
-                    iconPath: widget.iconPath,
-                  );
-                  return _buildDraggableWidgetCard(dynamicWidget, index);
-                }
 
                 return _buildDraggableWidgetCard(widget, index);
               }
@@ -211,11 +209,11 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
 //------------------------------------------------------------
   // 위젯 카드 생성
   Widget _buildWidgetCard(HomeWidgetItem widget,
-      {bool isSelectionCard = false}) {
+      {bool isSelectionCard = false, List<HomeWidgetItem>? availableWidgets}) {
     if (isSelectionCard) {
       // 위젯 선택 버튼 - 아이콘을 정가운데에 배치
       return GestureDetector(
-        onTap: () => _showWidgetSelectionModal(context),
+        onTap: () => _showWidgetSelectionModal(context, availableWidgets!),
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white,

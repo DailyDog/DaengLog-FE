@@ -6,6 +6,7 @@ import 'package:daenglog_fe/api/mypage/get/my_page_summary_api.dart';
 import 'package:daenglog_fe/api/mypage/models/my_page_summary.dart';
 import 'package:daenglog_fe/api/mypage/post/pet_set_default_api.dart';
 import 'package:daenglog_fe/shared/services/pet_profile_provider.dart';
+import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
 import 'package:daenglog_fe/features/mypage/widgets/top_section.dart';
 import 'package:daenglog_fe/features/mypage/widgets/bottom_section.dart';
 import 'package:daenglog_fe/features/mypage/widgets/pet_horizontal_list.dart';
@@ -289,7 +290,8 @@ class _PetEditModalWrapper extends StatelessWidget {
       onSetDefault: (i, pet) async {
         final petId = pets[i].id;
         await PetSetDefaultApi().setDefault(petId);
-        provider.setDefaultPet(petId);
+        // DefaultProfileProvider 업데이트
+        await context.read<DefaultProfileProvider>().fetchProfile();
         onUpdate();
       },
       onAddPet: () {
@@ -298,7 +300,8 @@ class _PetEditModalWrapper extends StatelessWidget {
       onSelectPet: (pet, index) async {
         final petId = pets[index].id;
         await PetSetDefaultApi().setDefault(petId);
-        provider.setDefaultPet(petId);
+        // DefaultProfileProvider 업데이트
+        await context.read<DefaultProfileProvider>().fetchProfile();
       },
       isFamilyShared: (pet) {
         final match = pets.firstWhere(
