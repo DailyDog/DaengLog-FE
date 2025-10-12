@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:go_router/go_router.dart';
 
 // 반려동물 정보 입력 화면 위젯
 Widget buildPetInfoScreen({
@@ -9,29 +9,33 @@ Widget buildPetInfoScreen({
   required String title,
   required String titleSub,
   required String subtitle,
-  required VoidCallback onPrevious,  // 이전 버튼 클릭 시 동작
-  required VoidCallback? onNext,  // 다음 버튼 클릭 시 동작
+  required VoidCallback onPrevious, // 이전 버튼 클릭 시 동작
+  required VoidCallback? onNext, // 다음 버튼 클릭 시 동작
   int isFirst = 0, // 0: 이전+다음 버튼, 1: 다음 버튼만
   Widget? child, // 추가된 부분
 }) {
   bool isActive = false;
   return Scaffold(
-
-    appBar: isFirst != 0 ? AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        onPressed: () {
-          Navigator.pop(context!, '/home');
-        },
-        icon: const Icon(
-          Icons.arrow_left,
-          color: Color(0xFFFF5F01),
-          size: 30,
-        ),
-      ),
-    ) : null,
-    
+    appBar: isFirst != 0
+        ? AppBar(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              onPressed: () {
+                if (context!.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/home');
+                }
+              },
+              icon: const Icon(
+                Icons.arrow_left,
+                color: Color(0xFFFF5F01),
+                size: 30,
+              ),
+            ),
+          )
+        : null,
     body: Stack(
       children: [
         Positioned.fill(
@@ -62,11 +66,11 @@ Widget buildPetInfoScreen({
                         return TextSpan(
                           text: labels[index],
                           style: TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: 20,
-                          color: isActive
-                              ? Color(0xFFFF5F01)
-                              : Color(0xFFADADAD),
+                            fontFamily: 'Pretendard',
+                            fontSize: 20,
+                            color: isActive
+                                ? Color(0xFFFF5F01)
+                                : Color(0xFFADADAD),
                           ),
                         );
                       }),
@@ -78,26 +82,51 @@ Widget buildPetInfoScreen({
               SizedBox(
                 width: 75,
                 child: Divider(
-                  color: currentStep != null ? Color(0xFFFF5F01) : Color(0xFFADADAD),
+                  color: currentStep != null
+                      ? Color(0xFFFF5F01)
+                      : Color(0xFFADADAD),
                   thickness: 1,
                   height: 1,
                 ),
               ),
-              
+
               // 메인 제목
               const SizedBox(height: 40),
               RichText(
                 text: TextSpan(
                   children: [
-                    TextSpan(text: subject, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF272727))),
-                    TextSpan(text: title, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFFFF5F01))),
-                    TextSpan(text: titleSub, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w700, fontSize: 20, color: Color(0xFF272727))),
+                    TextSpan(
+                        text: subject,
+                        style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            color: Color(0xFF272727))),
+                    TextSpan(
+                        text: title,
+                        style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            color: Color(0xFFFF5F01))),
+                    TextSpan(
+                        text: titleSub,
+                        style: TextStyle(
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                            color: Color(0xFF272727))),
                   ],
                 ),
               ),
               // 서브타이틀
               const SizedBox(height: 5),
-              Text(subtitle, style: TextStyle(fontFamily: 'Pretendard',fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF8C8B8B))),
+              Text(subtitle,
+                  style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: Color(0xFF8C8B8B))),
               const SizedBox(height: 40),
               if (child != null) child,
             ],
@@ -105,7 +134,6 @@ Widget buildPetInfoScreen({
         ),
       ],
     ),
-  
     bottomNavigationBar: SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
@@ -139,8 +167,8 @@ Widget buildPetInfoScreen({
                         minimumSize: const Size.fromHeight(48),
                       ),
                       child: const Text('다음',
-                          style:
-                              TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
@@ -159,8 +187,8 @@ Widget buildPetInfoScreen({
                         minimumSize: const Size.fromHeight(48),
                       ),
                       child: const Text('다음',
-                          style:
-                              TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

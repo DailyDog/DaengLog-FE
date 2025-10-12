@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:daenglog_fe/shared/services/pet_profile_provider.dart';
@@ -23,10 +24,10 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // arguments에서 petData 추출
-    final arguments = ModalRoute.of(context)?.settings.arguments;
-    if (arguments != null && arguments is Map<String, dynamic>) {
-      detail = arguments;
+    // GoRouter extra에서 petData 추출
+    final extra = GoRouterState.of(context).extra;
+    if (extra != null && extra is Map<String, dynamic>) {
+      detail = extra;
       _isDataLoaded = true;
     } else {
       // Provider에서 기본 펫 데이터 가져오기
@@ -100,7 +101,13 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/mypage');
+              }
+            },
           ),
           title: const Text(
             '내 정보 관리',
@@ -128,7 +135,13 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/mypage');
+            }
+          },
         ),
         title: const Text(
           '내 정보 관리',
@@ -655,11 +668,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
   }
 
   void _editBasicInfo() {
-    Navigator.pushNamed(
-      context,
-      '/pet_basic_edit',
-      arguments: detail,
-    ).then((result) {
+    context.push('/pet_basic_edit', extra: detail).then((result) {
       if (result == true) {
         _loadPetDetailInBackground(); // 수정 후 상세 정보 다시 로드
       }
@@ -667,11 +676,7 @@ class _PetDetailScreenState extends State<PetDetailScreen> {
   }
 
   void _editPersonality() {
-    Navigator.pushNamed(
-      context,
-      '/pet_personality_edit',
-      arguments: detail,
-    ).then((result) {
+    context.push('/pet_personality_edit', extra: detail).then((result) {
       if (result == true) {
         _loadPetDetailInBackground(); // 수정 후 상세 정보 다시 로드
       }

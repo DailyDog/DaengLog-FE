@@ -3,22 +3,28 @@ import 'package:flutter/material.dart';
 class PetEditModalShell extends StatefulWidget {
   final Widget child;
   final VoidCallback onClose;
-  const PetEditModalShell({super.key, required this.child, required this.onClose});
+  const PetEditModalShell(
+      {super.key, required this.child, required this.onClose});
 
   @override
   State<PetEditModalShell> createState() => _PetEditModalShellState();
 }
 
-class _PetEditModalShellState extends State<PetEditModalShell> with SingleTickerProviderStateMixin {
+class _PetEditModalShellState extends State<PetEditModalShell>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<Offset> _slide;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 250));
-    _slide = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic));
+    _controller = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 250));
+    _slide = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero).animate(
+        CurvedAnimation(
+            parent: _controller,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic));
     _controller.forward();
   }
 
@@ -29,7 +35,9 @@ class _PetEditModalShellState extends State<PetEditModalShell> with SingleTicker
   }
 
   Future<void> _close() async {
-    try { await _controller.reverse(); } catch (_) {}
+    try {
+      await _controller.reverse();
+    } catch (_) {}
     if (mounted) widget.onClose();
   }
 
@@ -52,7 +60,9 @@ class _PetEditModalShellState extends State<PetEditModalShell> with SingleTicker
                   height: screenHeight * 0.65,
                   decoration: const BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10)),
                   ),
                   child: Column(
                     children: [
@@ -81,5 +91,3 @@ class _PetEditModalShellState extends State<PetEditModalShell> with SingleTicker
     );
   }
 }
-
-

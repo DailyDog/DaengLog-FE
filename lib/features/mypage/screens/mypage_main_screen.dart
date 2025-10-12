@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:daenglog_fe/features/mypage/widgets/pet_edit_modal.dart';
 import 'package:daenglog_fe/api/mypage/get/my_page_summary_api.dart';
@@ -292,7 +293,7 @@ class _PetEditModalWrapper extends StatelessWidget {
         onUpdate();
       },
       onAddPet: () {
-        Navigator.pushNamed(context, '/pet_info');
+        context.go('/pet_info');
       },
       onSelectPet: (pet, index) async {
         final petId = pets[index].id;
@@ -311,11 +312,7 @@ class _PetEditModalWrapper extends StatelessWidget {
           (p) => p.name == pet.name,
           orElse: () => pets.first,
         );
-        Navigator.pushNamed(
-          context,
-          '/pet_detail',
-          arguments: {'id': match.id},
-        );
+        context.go('/pet_detail', extra: {'id': match.id});
       },
     );
   }
