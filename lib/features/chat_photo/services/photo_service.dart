@@ -14,11 +14,48 @@ class PhotoService {
     try {
       // 프레임 색상 변경이 반영되도록 더 긴 지연 시간
       await Future.delayed(const Duration(milliseconds: 200));
-      RenderRepaintBoundary boundary = contentKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
+      final renderObject = contentKey.currentContext?.findRenderObject();
+      if (renderObject is! RenderRepaintBoundary) {
+        print('이미지 캡처 오류: 대상 위젯이 RepaintBoundary가 아닙니다.');
+        return null;
+      }
+
+      RenderRepaintBoundary boundary = renderObject;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+
+      // ---- 9:16 세로 비율, 흰 배경으로 다시 그리기 ----
+      final double targetWidth = image.width.toDouble();
+      final double targetHeight = targetWidth * (16 / 9); // 세로 9:16
+
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(
+        recorder,
+        Rect.fromLTWH(0, 0, targetWidth, targetHeight),
+      );
+
+      // 흰색 배경
+      final bgPaint = Paint()..color = const Color(0xFFFFFFFF);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, targetWidth, targetHeight),
+        bgPaint,
+      );
+
+      // 이미지 비율 유지하면서 중앙에 배치
+      final srcRect =
+          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      final double scale = targetWidth / image.width;
+      final double drawHeight = image.height * scale;
+      final double top = (targetHeight - drawHeight) / 2;
+      final dstRect =
+          Rect.fromLTWH(0, top, targetWidth, drawHeight.clamp(0, targetHeight));
+
+      canvas.drawImageRect(image, srcRect, dstRect, Paint());
+
+      final composedImage =
+          await recorder.endRecording().toImage(targetWidth.toInt(), targetHeight.toInt());
+
       ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+          await composedImage.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         return byteData.buffer.asUint8List();
       }

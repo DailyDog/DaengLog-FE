@@ -23,7 +23,8 @@ class ChatPhotoScreen extends StatefulWidget {
 class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   final GlobalKey contentKey = GlobalKey();
   final GlobalKey imageKey = GlobalKey();
-  final GlobalKey captureKey = GlobalKey();
+  final GlobalKey captureKey = GlobalKey(); // 전체 포토카드 캡처용
+  final GlobalKey imageCaptureKey = GlobalKey(); // 이미지 영역 캡처용
   DecorationTool _selectedTool = DecorationTool.frame;
   bool _imageLoadRequested = false; // 이미지 로드 요청 플래그
 
@@ -250,6 +251,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                         }
                       },
                       child: RepaintBoundary(
+                        key: imageCaptureKey,
                         child: CustomPaint(
                           painter: ImageDrawingPainter(
                             backgroundImage: photoProvider.backgroundImage,
@@ -389,8 +391,8 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
 
   Future<void> _captureImage(PhotoScreenProvider provider) async {
     try {
-      print('🎯 이미지 캡처 시작...');
-      final bytes = await PhotoService.captureAndConvertToJpg(captureKey);
+      print('🎯 이미지 캡처 시작 (이미지 영역만)...');
+      final bytes = await PhotoService.captureAndConvertToJpg(imageCaptureKey);
       if (bytes != null) {
         provider.setCapturedImageBytes(bytes);
         print('✅ 이미지 캡처 성공: ${bytes.length} bytes');
