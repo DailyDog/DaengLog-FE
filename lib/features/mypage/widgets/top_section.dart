@@ -35,15 +35,8 @@ class MyPageTopSection extends StatelessWidget {
           Container(
             width: avatarSize,
             height: avatarSize,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFFB98A).withOpacity(0.6),
-                  blurRadius: 15,
-                  spreadRadius: 3,
-                ),
-              ],
             ),
             child: PetAvatar(
               imageUrl: imageUrl,

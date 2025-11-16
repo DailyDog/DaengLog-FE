@@ -6,7 +6,6 @@ import '../widgets/weather_error.dart';
 import '../widgets/weather_action_button.dart';
 import '../widgets/weather_app_bar.dart';
 import '../widgets/weather_info_card.dart';
-import '../widgets/weather_background.dart';
 
 class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
@@ -68,7 +67,9 @@ class _WeatherScreenState extends State<WeatherScreen> {
           // 상단 고정 영역 (뒤로가기 버튼 + 위치)
           WeatherAppBar(
             location: weather.location,
-            onBackPressed: () => Navigator.of(context).pop(),
+          onBackPressed: () => Navigator.of(context).pop(),
+          onRefreshPressed: () =>
+              context.read<WeatherProvider>().loadWeather(),
             screenWidth: screenWidth,
           ),
 

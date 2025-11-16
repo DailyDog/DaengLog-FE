@@ -44,7 +44,7 @@ class Weather {
 
   // 오전 날씨 정보 (온도 조정)
   Weather get morningWeather => Weather(
-        temperature: (int.parse(temperature) - 3).toString(),
+        temperature: _adjustedTemperature(-3),
         humidity: humidity,
         weather: weather,
         location: location,
@@ -54,13 +54,21 @@ class Weather {
 
   // 오후 날씨 정보 (온도 조정)
   Weather get afternoonWeather => Weather(
-        temperature: (int.parse(temperature) + 5).toString(),
+        temperature: _adjustedTemperature(5),
         humidity: humidity,
         weather: weather,
         location: location,
         airQuality: airQuality,
         weatherType: weatherType,
       );
+
+  /// 온도 문자열이 소수(`"16.3"`)여도 안전하게 처리해서 정수 문자열로 반환
+  String _adjustedTemperature(num diff) {
+    final base = double.tryParse(temperature) ?? 0;
+    final adjusted = base + diff;
+    // 소수점 없이 표시 (기존 UI와 동일하게 보이도록)
+    return adjusted.round().toString();
+  }
 
   // 날씨 메시지
   String get weatherMessage {

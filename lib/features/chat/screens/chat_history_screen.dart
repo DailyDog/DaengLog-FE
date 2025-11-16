@@ -87,7 +87,7 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
             size: iconSize,
           ),
           onPressed: () {
-            context.go('/home');
+            context.pop();
           },
         ),
         actions: [
