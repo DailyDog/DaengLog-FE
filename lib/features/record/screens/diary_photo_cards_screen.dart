@@ -45,13 +45,17 @@ class _DiaryCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AspectRatio(
-              aspectRatio: 16 / 10,
-              child: Image.network(
-                item.thumbnailUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (c, e, s) => Container(
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.pets, size: 60, color: Color(0xFFFF6600)),
+              aspectRatio: 9 / 16,
+              child: Container(
+                color: Colors.white,
+                child: Image.network(
+                  item.thumbnailUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (c, e, s) => Container(
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.pets,
+                        size: 60, color: Color(0xFFFF6600)),
+                  ),
                 ),
               ),
             ),

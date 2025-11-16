@@ -28,20 +28,12 @@ class _HomeMiddleSectionState extends State<HomeMiddleSection> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // 프로필이 변경될 때마다 다시 로드
-    final profile = context.read<DefaultProfileProvider>().profile;
-    if (profile?.id != null && (_weeklyDiaries == null || _isLoading)) {
-      _loadWeeklyDiaries();
-    }
+    _loadWeeklyDiaries();
   }
 
   Future<void> _loadWeeklyDiaries() async {
     final profile = context.read<DefaultProfileProvider>().profile;
     if (profile?.id == null) {
-      setState(() {
-        _isLoading = false;
-        _weeklyDiaries = [];
-        _error = null;
-      });
       return;
     }
 

@@ -54,6 +54,7 @@ class PhotoScreenProvider extends ChangeNotifier {
     _isConfirmed = false;
     _capturedImageBytes = null;
     _isDecorateMode = false;
+    _imageAndContentColor = const Color(0xFFF56F01); // 기본 주황색으로 초기화
     _drawingPaths.clear();
     _placedStickers.clear();
     _selectedSticker = null;
