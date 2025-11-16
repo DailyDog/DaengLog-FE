@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:go_router/go_router.dart';
@@ -57,27 +56,25 @@ class _ChatMainPromptScreenState extends State<ChatMainPromptScreen> {
                 ),
                 const SizedBox(height: 32),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Container(
-                    color: Colors.white,
-                    child: ChatBottomWidget(
-                      color: 0XFFF56F01,
-                      textController: _controller,
-                      selectedImageXFile: _pickedImage,
-                      onImageSelected: _onImageSelected,
-                      onSendPressed: _goToChatService,
-                      onCancelPressed: () {
-                        // 중단 콜백 추가
-                      },
-                      onErrorCleared: () {
-                        setState(() => _error = null);
-                      },
-                      loading: _loading,
-                      error: _error,
-                    ),
-                  )
-                ),
-                
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      color: Colors.white,
+                      child: ChatBottomWidget(
+                        color: 0XFFF56F01,
+                        textController: _controller,
+                        selectedImageXFile: _pickedImage,
+                        onImageSelected: _onImageSelected,
+                        onSendPressed: _goToChatService,
+                        onCancelPressed: () {
+                          // 중단 콜백 추가
+                        },
+                        onErrorCleared: () {
+                          setState(() => _error = null);
+                        },
+                        loading: _loading,
+                        error: _error,
+                      ),
+                    )),
               ],
             ),
             const Spacer(),

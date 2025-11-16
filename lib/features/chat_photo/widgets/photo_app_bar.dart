@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/shared/utils/secure_token_storage.dart';
 import 'package:daenglog_fe/shared/widgets/login_modal.dart';
 import 'package:daenglog_fe/features/family_share/screens/family_share_share.dart';
@@ -25,11 +26,14 @@ class PhotoAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.transparent,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFFFF6600)),
-        onPressed: () => Navigator.of(context).pop(),
+        icon: const Icon(Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFFFF6600)),
+        onPressed: () => context.go('/home'),
       ),
       centerTitle: true,
-      title: const Text('', style: TextStyle(fontFamily: 'Pretendard-Bold', color: Color(0xFF272727))),
+      title: const Text('',
+          style: TextStyle(
+              fontFamily: 'Pretendard-Bold', color: Color(0xFF272727))),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 16),
@@ -91,4 +95,4 @@ class PhotoAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-} 
+}

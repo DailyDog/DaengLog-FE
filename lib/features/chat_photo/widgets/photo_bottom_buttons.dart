@@ -10,6 +10,7 @@ class PhotoBottomButtons extends StatelessWidget {
   final VoidCallback onLeftButtonPressed;
   final VoidCallback onRightButtonPressed;
   final VoidCallback onSharePressed;
+  final VoidCallback? onCloudUploadPressed;
 
   const PhotoBottomButtons({
     super.key,
@@ -18,6 +19,7 @@ class PhotoBottomButtons extends StatelessWidget {
     required this.onLeftButtonPressed,
     required this.onRightButtonPressed,
     required this.onSharePressed,
+    this.onCloudUploadPressed,
   });
 
   @override
@@ -34,8 +36,12 @@ class PhotoBottomButtons extends StatelessWidget {
                     // 클라우드 업로드 버튼일 때 토큰 체크
                     final token = await SecureTokenStorage.getToken();
                     if (token != null && token.isNotEmpty) {
-                      // 토큰이 있으면 클라우드 업로드 페이지로 이동
-                      context.push('/cloud_upload');
+                      // 토큰이 있으면 클라우드 업로드 콜백 실행 또는 페이지로 이동
+                      if (onCloudUploadPressed != null) {
+                        onCloudUploadPressed!();
+                      } else {
+                        context.push('/cloud_upload');
+                      }
                     } else {
                       // 토큰이 없으면 로그인 페이지로 이동
                       await showLoginModal(context);
@@ -46,9 +52,11 @@ class PhotoBottomButtons extends StatelessWidget {
                   }
                 },
                 style: OutlinedButton.styleFrom(
-                  backgroundColor: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
+                  backgroundColor:
+                      isConfirmed ? const Color(0xFFFF6600) : Colors.white,
                   side: const BorderSide(color: Color(0xFFFF6600)),
-                  foregroundColor: isConfirmed ? Colors.white : const Color(0xFFFF6600),
+                  foregroundColor:
+                      isConfirmed ? Colors.white : const Color(0xFFFF6600),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32),
                   ),
@@ -68,21 +76,29 @@ class PhotoBottomButtons extends StatelessWidget {
             const SizedBox(width: 16),
             Expanded(
               child: ElevatedButton(
-                onPressed: imageLoaded ? (isConfirmed ? () async {
-                  // 공유하기 버튼일 때 토큰 체크
-                  final token = await SecureTokenStorage.getToken();
-                  if (token != null && token.isNotEmpty) {
-                    // 토큰이 있으면 공유 기능 실행
-                    onSharePressed();
-                  } else {
-                    // 토큰이 없으면 로그인 모달 표시
-                    await showLoginModal(context);
-                  }
-                } : onRightButtonPressed) : null,
+                onPressed: imageLoaded
+                    ? (isConfirmed
+                        ? () async {
+                            // 공유하기 버튼일 때 토큰 체크
+                            final token = await SecureTokenStorage.getToken();
+                            if (token != null && token.isNotEmpty) {
+                              // 토큰이 있으면 공유 기능 실행
+                              onSharePressed();
+                            } else {
+                              // 토큰이 없으면 로그인 모달 표시
+                              await showLoginModal(context);
+                            }
+                          }
+                        : onRightButtonPressed)
+                    : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isConfirmed ? Colors.white : const Color(0xFFFF6600),
-                  foregroundColor: isConfirmed ? const Color(0xFFFF6600) : Colors.white,
-                  side: isConfirmed ? const BorderSide(color: Color(0xFFFF6600)) : null,
+                  backgroundColor:
+                      isConfirmed ? Colors.white : const Color(0xFFFF6600),
+                  foregroundColor:
+                      isConfirmed ? const Color(0xFFFF6600) : Colors.white,
+                  side: isConfirmed
+                      ? const BorderSide(color: Color(0xFFFF6600))
+                      : null,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32),
                   ),
@@ -103,4 +119,4 @@ class PhotoBottomButtons extends StatelessWidget {
       ),
     );
   }
-} 
+}

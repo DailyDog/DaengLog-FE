@@ -6,7 +6,6 @@ import 'package:daenglog_fe/features/chat_photo/models/photo_sticker_model.dart'
 import 'package:dio/dio.dart';
 
 class PhotoScreenProvider extends ChangeNotifier {
-
   // --- 상태 변수 ---
   bool _isConfirmed = false;
   Uint8List? _capturedImageBytes;
@@ -71,7 +70,6 @@ class PhotoScreenProvider extends ChangeNotifier {
   ui.Image? _backgroundImage;
   String? _currentImageUrl;
 
-
   // getter
   List<DrawingPathModel> get drawingPaths => _drawingPaths;
   Color get selectedColor => _selectedColor;
@@ -92,24 +90,24 @@ class PhotoScreenProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
-  
+
   // 모든 그리기 지우기
   void clearDrawing() {
     _drawingPaths.clear();
     notifyListeners();
   }
-  
+
   // 도구/색상 변경
   void setSelectedTool(DrawingTool tool) {
     _selectedTool = tool;
     notifyListeners();
   }
-  
+
   void setSelectedColor(Color color) {
     _selectedColor = color;
     notifyListeners();
   }
-  
+
   // 이미지 로드
   void setBackgroundImage(ui.Image image) {
     _backgroundImage = image;
@@ -121,11 +119,15 @@ class PhotoScreenProvider extends ChangeNotifier {
     try {
       // 이미 같은 URL의 이미지가 로드되어 있으면 스킵
       if (_backgroundImage != null && _currentImageUrl == imageUrl) {
+        _imageLoaded = true; // 이미 로드된 경우도 true로 설정
+        notifyListeners();
         return;
       }
-      
+
       _currentImageUrl = imageUrl; // 현재 로딩 중인 URL 저장
-      
+      _imageLoaded = false; // 로딩 시작 시 false
+      notifyListeners();
+
       final dio = Dio();
       final response = await dio.get<List<int>>(
         imageUrl,
@@ -134,18 +136,21 @@ class PhotoScreenProvider extends ChangeNotifier {
           receiveTimeout: const Duration(seconds: 30),
         ),
       );
-      
+
       if (response.statusCode == 200 && response.data != null) {
         final bytes = Uint8List.fromList(response.data!);
         final codec = await ui.instantiateImageCodec(bytes);
         final frame = await codec.getNextFrame();
         _backgroundImage = frame.image;
+        _imageLoaded = true; // 이미지 로드 성공 시 true
         notifyListeners();
-        print('이미지 로드 성공: ${bytes.length} bytes');
+        print('✅ 이미지 로드 성공: ${bytes.length} bytes');
       }
     } catch (e) {
-      print('이미지 로드 실패: $e');
+      print('❌ 이미지 로드 실패: $e');
       _currentImageUrl = null; // 실패 시 URL 초기화
+      _imageLoaded = false; // 실패 시 false
+      notifyListeners();
     }
   }
 
@@ -154,7 +159,7 @@ class PhotoScreenProvider extends ChangeNotifier {
     print('🎨 startNewPath 호출됨: $startPoint');
     print('🎨 현재 색상: $_selectedColor');
     print('🎨 현재 굵기: $_strokeWidth');
-    
+
     final paint = Paint()
       ..color = _selectedColor
       ..strokeWidth = _strokeWidth
@@ -162,8 +167,7 @@ class PhotoScreenProvider extends ChangeNotifier {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final path = Path()
-      ..moveTo(startPoint.dx, startPoint.dy);
+    final path = Path()..moveTo(startPoint.dx, startPoint.dy);
 
     _drawingPaths.add(
       DrawingPathModel(path: path, paint: paint, tool: _selectedTool),
@@ -214,7 +218,8 @@ class PhotoScreenProvider extends ChangeNotifier {
   // 스티커 위치 업데이트
   void updateStickerPosition(int index, Offset position) {
     if (index >= 0 && index < _placedStickers.length) {
-      _placedStickers[index] = _placedStickers[index].copyWith(position: position);
+      _placedStickers[index] =
+          _placedStickers[index].copyWith(position: position);
       notifyListeners();
     }
   }
@@ -230,7 +235,8 @@ class PhotoScreenProvider extends ChangeNotifier {
   // 스티커 회전 업데이트
   void updateStickerRotation(int index, double rotation) {
     if (index >= 0 && index < _placedStickers.length) {
-      _placedStickers[index] = _placedStickers[index].copyWith(rotation: rotation);
+      _placedStickers[index] =
+          _placedStickers[index].copyWith(rotation: rotation);
       notifyListeners();
     }
   }
@@ -256,6 +262,4 @@ class PhotoScreenProvider extends ChangeNotifier {
     _selectedStickerIndex = null;
     notifyListeners();
   }
-
-  
 }

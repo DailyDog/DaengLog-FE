@@ -11,6 +11,7 @@ import 'features/cloud/providers/cloud_screen_provider.dart';
 import 'features/pet_info/providers/pet_info_provider.dart';
 import 'shared/services/pet_profile_provider.dart';
 import 'features/weather/providers/weather_provider.dart';
+import 'features/chat_photo/providers/photo_screen_provider.dart';
 
 // Screens
 import 'features/login/login.dart';
@@ -32,6 +33,7 @@ import 'features/chat/screens/chat_main_prompt_screen.dart';
 import 'features/chat/screens/chat_communication_screen.dart';
 import 'features/chat/screens/chat_history_screen.dart';
 import 'features/chat_photo/screens/chat_photo_screen.dart';
+import 'features/cloud_upload/screens/cloud_upload_screen.dart';
 import 'features/pet_info/screens/pet_info_screen.dart';
 import 'features/pet_info/screens/pet_info_kind_screen.dart';
 import 'features/pet_info/screens/pet_info_name_screen.dart';
@@ -70,6 +72,7 @@ Future<void> main() async {
         ChangeNotifierProvider(create: (_) => PetInfoProvider()),
         ChangeNotifierProvider(create: (_) => PetProfileProvider()),
         ChangeNotifierProvider(create: (_) => WeatherProvider()),
+        ChangeNotifierProvider(create: (_) => PhotoScreenProvider()),
       ],
       child: const MyApp(),
     ),
@@ -118,6 +121,9 @@ class MyApp extends StatelessWidget {
         GoRoute(
             path: '/chat_photo',
             builder: (context, state) => const ChatPhotoScreen()),
+        GoRoute(
+            path: '/cloud_upload',
+            builder: (context, state) => const CloudUploadScreen()),
         GoRoute(
             path: '/pet_info', builder: (context, state) => PetInfoScreen()),
         GoRoute(
