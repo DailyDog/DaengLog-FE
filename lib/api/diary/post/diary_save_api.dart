@@ -109,22 +109,8 @@ class DiarySaveApi {
         throw Exception('이미지 디코딩 실패');
       }
 
-      // 이미지 리사이징 (최대 800px로 제한)
-      img.Image resizedImage = image;
-      if (image.width > 800 || image.height > 800) {
-        final ratio =
-            800 / (image.width > image.height ? image.width : image.height);
-        resizedImage = img.copyResize(
-          image,
-          width: (image.width * ratio).round(),
-          height: (image.height * ratio).round(),
-        );
-        print(
-            '📸 이미지 리사이징: ${image.width}x${image.height} → ${resizedImage.width}x${resizedImage.height}');
-      }
-
-      // JPEG로 인코딩 (품질 85%)
-      final compressedBytes = img.encodeJpg(resizedImage, quality: 85);
+      // 리사이징 없이 원본 해상도를 유지한 채 JPEG로만 인코딩 (품질 95%)
+      final compressedBytes = img.encodeJpg(image, quality: 95);
       final compressedSize = compressedBytes.length;
       print(
           '📸 압축된 이미지 크기: ${compressedSize} bytes (${((originalSize - compressedSize) / originalSize * 100).toStringAsFixed(1)}% 감소)');

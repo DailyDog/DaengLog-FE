@@ -57,4 +57,37 @@ class DiaryWeeklyApi {
       throw Exception('일주일 일기 불러오기 실패: $e');
     }
   }
+
+  /// 통계(todayCount, weeklyCount)를 함께 가져오는 헬퍼
+  Future<DiaryWeeklySummary> getDiaryWeeklySummary({required int petId}) async {
+    final response = await _dio.get(
+      '',
+      queryParameters: {'petId': petId},
+      options: Options(
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      ),
+    );
+
+    final data = response.data as Map<String, dynamic>;
+    List<DiaryWeekly> diaries = [];
+    int todayCount = 0;
+    int weeklyCount = 0;
+
+    if (data.containsKey('diaries') && data['diaries'] is List) {
+      diaries = (data['diaries'] as List)
+          .map((json) => DiaryWeekly.fromJson(json))
+          .toList();
+      final stats = data['statistics'] as Map<String, dynamic>? ?? {};
+      todayCount = (stats['todayCount'] as num?)?.toInt() ?? 0;
+      weeklyCount = (stats['weeklyCount'] as num?)?.toInt() ?? 0;
+    }
+
+    return DiaryWeeklySummary(
+      diaries: diaries,
+      todayCount: todayCount,
+      weeklyCount: weeklyCount,
+    );
+  }
 }

@@ -1,11 +1,12 @@
-// 일주일치 일기 조회
 class DiaryWeekly {
+  final int? diaryId;
   final String? title;
   final String? date;
   final String? keyword;
   final String? imageUrl;
 
   DiaryWeekly({
+    required this.diaryId,
     required this.title,
     required this.date,
     required this.keyword,
@@ -17,10 +18,24 @@ class DiaryWeekly {
     final image = json['imageUrl'] ?? json['thumbnailUrl'];
 
     return DiaryWeekly(
+      diaryId: (json['diaryId'] as num?)?.toInt(),
       title: json['title'],
       date: json['date'],
       keyword: json['keyword'],
       imageUrl: image,
     );
   }
+}
+
+// 주간 일기 + 통계 응답 래퍼
+class DiaryWeeklySummary {
+  final List<DiaryWeekly> diaries;
+  final int todayCount;
+  final int weeklyCount;
+
+  DiaryWeeklySummary({
+    required this.diaries,
+    required this.todayCount,
+    required this.weeklyCount,
+  });
 }

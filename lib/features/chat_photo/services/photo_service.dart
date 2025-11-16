@@ -6,7 +6,6 @@ import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:daenglog_fe/shared/widgets/daeng_toast.dart';
 import 'package:characters/characters.dart';
 
 class PhotoService {
@@ -15,29 +14,45 @@ class PhotoService {
     try {
       // 프레임 색상 변경이 반영되도록 더 긴 지연 시간
       await Future.delayed(const Duration(milliseconds: 200));
-      RenderRepaintBoundary boundary = contentKey.currentContext!
-          .findRenderObject() as RenderRepaintBoundary;
+      final renderObject = contentKey.currentContext?.findRenderObject();
+      if (renderObject is! RenderRepaintBoundary) {
+        print('이미지 캡처 오류: 대상 위젯이 RepaintBoundary가 아닙니다.');
+        return null;
+      }
+
+      RenderRepaintBoundary boundary = renderObject;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
 
-      // 투명 배경 대신 흰색 배경으로 한 번 더 렌더링
+      // ---- 9:16 세로 비율, 흰 배경으로 다시 그리기 ----
+      final double targetWidth = image.width.toDouble();
+      final double targetHeight = targetWidth * (16 / 9); // 세로 9:16
+
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(
         recorder,
-        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        Rect.fromLTWH(0, 0, targetWidth, targetHeight),
       );
 
       // 흰색 배경
-      final paint = Paint()..color = const Color(0xFFFFFFFF);
+      final bgPaint = Paint()..color = const Color(0xFFFFFFFF);
       canvas.drawRect(
-        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
-        paint,
+        Rect.fromLTWH(0, 0, targetWidth, targetHeight),
+        bgPaint,
       );
 
-      // 원본 이미지 덧그리기
-      canvas.drawImage(image, Offset.zero, Paint());
+      // 이미지 비율 유지하면서 중앙에 배치
+      final srcRect =
+          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
+      final double scale = targetWidth / image.width;
+      final double drawHeight = image.height * scale;
+      final double top = (targetHeight - drawHeight) / 2;
+      final dstRect =
+          Rect.fromLTWH(0, top, targetWidth, drawHeight.clamp(0, targetHeight));
+
+      canvas.drawImageRect(image, srcRect, dstRect, Paint());
 
       final composedImage =
-          await recorder.endRecording().toImage(image.width, image.height);
+          await recorder.endRecording().toImage(targetWidth.toInt(), targetHeight.toInt());
 
       ByteData? byteData =
           await composedImage.toByteData(format: ui.ImageByteFormat.png);
@@ -72,14 +87,20 @@ class PhotoService {
       );
 
       if (result['isSuccess'] == true) {
-        showDaengToast(context, '갤러리에 저장되었습니다!');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('갤러리에 저장되었습니다!')),
+        );
         return true;
       } else {
-        showDaengToast(context, '저장에 실패했습니다.', isWarning: true);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('저장에 실패했습니다.')),
+        );
         return false;
       }
     } catch (e) {
-      showDaengToast(context, '저장 중 오류가 발생했습니다.', isWarning: true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
+      );
       return false;
     }
   }

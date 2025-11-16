@@ -277,11 +277,21 @@ class _HomeMiddleSectionState extends State<HomeMiddleSection> {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final album = _weeklyDiaries![index];
-          return HomeMiddlePhotoCard(
-            imagePath: album.imageUrl ?? '',
-            title: album.title ?? '',
-            date: album.date ?? '',
-            keyword: album.keyword ?? '',
+          return GestureDetector(
+            onTap: () {
+              if (album.diaryId != null) {
+                Navigator.pushNamed(
+                  context,
+                  '/diary-detail/${album.diaryId}',
+                );
+              }
+            },
+            child: HomeMiddlePhotoCard(
+              imagePath: album.imageUrl ?? '',
+              title: album.title ?? '',
+              date: album.date ?? '',
+              keyword: album.keyword ?? '',
+            ),
           );
         },
       );
