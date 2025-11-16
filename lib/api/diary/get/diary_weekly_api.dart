@@ -20,9 +20,18 @@ class DiaryWeeklyApi {
 
       print('DiaryWeeklyApi 응답: ${response.data}');
 
-      // 응답 데이터가 Map인 경우 content 필드 확인
+      // 응답 데이터가 Map인 경우, diaries 또는 content 필드 확인
       if (response.data is Map<String, dynamic>) {
         final data = response.data as Map<String, dynamic>;
+
+        // 1) 새 백엔드 구조: { diaries: [...], statistics: {...} }
+        if (data.containsKey('diaries') && data['diaries'] is List) {
+          return (data['diaries'] as List)
+              .map((json) => DiaryWeekly.fromJson(json))
+              .toList();
+        }
+
+        // 2) 기존 페이징 구조: { content: [...] }
         if (data.containsKey('content') && data['content'] is List) {
           return (data['content'] as List)
               .map((json) => DiaryWeekly.fromJson(json))
