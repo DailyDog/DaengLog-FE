@@ -4,12 +4,14 @@ class WeatherAppBar extends StatelessWidget {
   final String location;
   final VoidCallback onBackPressed;
   final double screenWidth;
+  final VoidCallback? onRefreshPressed;
 
   const WeatherAppBar({
     super.key,
     required this.location,
     required this.onBackPressed,
     required this.screenWidth,
+    this.onRefreshPressed,
   });
 
   @override
@@ -53,8 +55,26 @@ class WeatherAppBar extends StatelessWidget {
             ),
           ),
 
-          // 오른쪽 공간 (뒤로가기 버튼과 균형 맞추기)
-          const SizedBox(width: 40),
+          // 오른쪽 새로고침 버튼 (옵션)
+          if (onRefreshPressed != null)
+            GestureDetector(
+              onTap: onRefreshPressed,
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Icon(
+                  Icons.refresh,
+                  color: Colors.black,
+                  size: 20,
+                ),
+              ),
+            )
+          else
+            const SizedBox(width: 40),
         ],
       ),
     );

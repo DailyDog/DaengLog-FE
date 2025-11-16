@@ -66,7 +66,7 @@ class DiarySaveApi {
         'content': content,
         'keyword': keyword,
         'petId': petId.toString(),
-        'decoratedImage': MultipartFile.fromBytes(
+        'image': MultipartFile.fromBytes(
           compressedBytes,
           filename: 'diary_image.jpg',
         ),

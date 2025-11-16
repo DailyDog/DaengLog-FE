@@ -44,7 +44,7 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
   void didChangeDependencies() {
     // 화면 전환 시 호출되는 메서드
     super.didChangeDependencies();
-    final extra = GoRouterState.of(context).extra as Map<String, dynamic>;
+    final extra = GoRouterState.of(context).extra as Map<String, dynamic>?;
 
     if (extra != null && _messages.isEmpty) {
       final prompt = extra['prompt'] as String?; // 텍스트 입력
@@ -199,7 +199,7 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
             color: Colors.white,
             size: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
           ),
-          onPressed: () => context.go('/home'),
+          onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
@@ -209,7 +209,7 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
               size: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
             ),
             onPressed: () {
-              context.go('/chat_history');
+              context.push('/chat_history');
             },
           ),
           IconButton(

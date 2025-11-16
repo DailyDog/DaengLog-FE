@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:characters/characters.dart';
 
 class PhotoService {
   // --- 이미지 캡처 ---
@@ -13,9 +14,11 @@ class PhotoService {
     try {
       // 프레임 색상 변경이 반영되도록 더 긴 지연 시간
       await Future.delayed(const Duration(milliseconds: 200));
-      RenderRepaintBoundary boundary = contentKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      RenderRepaintBoundary boundary = contentKey.currentContext!
+          .findRenderObject() as RenderRepaintBoundary;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         return byteData.buffer.asUint8List();
       }
@@ -37,14 +40,15 @@ class PhotoService {
   }
 
   // --- 갤러리에 이미지 저장 ---
-  static Future<bool> saveImageToGallery(Uint8List capturedImageBytes, BuildContext context) async {
+  static Future<bool> saveImageToGallery(
+      Uint8List capturedImageBytes, BuildContext context) async {
     try {
       final result = await ImageGallerySaver.saveImage(
         capturedImageBytes,
         quality: 100,
         name: 'daenglog_${DateTime.now().millisecondsSinceEpoch}',
       );
-      
+
       if (result['isSuccess'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('갤러리에 저장되었습니다!')),
@@ -74,12 +78,36 @@ class PhotoService {
 
   // --- 텍스트 줄바꿈 처리 ---
   static String formatContent(String text, {int chunk = 26}) {
-    return RegExp('.{1,$chunk}').allMatches(text).map((m) => m.group(0)).join('\n');
+    if (text.isEmpty) return text;
+
+    final buffer = StringBuffer();
+    var currentLine = StringBuffer();
+    var count = 0;
+
+    // characters 패키지를 사용해 이모지/조합 문자가 중간에 끊기지 않도록 처리
+    for (final ch in text.characters) {
+      if (count >= chunk && ch != ' ') {
+        buffer.writeln(currentLine.toString().trimRight());
+        currentLine = StringBuffer();
+        count = 0;
+      }
+
+      currentLine.write(ch);
+      count++;
+    }
+
+    if (currentLine.isNotEmpty) {
+      buffer.write(currentLine.toString().trimRight());
+    }
+
+    return buffer.toString();
   }
 
   // --- 이미지 좌표 변환 ---
-  static Offset convertToImageCoordinates(Offset globalPosition, GlobalKey imageKey) {
-    final RenderBox renderBox = imageKey.currentContext!.findRenderObject() as RenderBox;
+  static Offset convertToImageCoordinates(
+      Offset globalPosition, GlobalKey imageKey) {
+    final RenderBox renderBox =
+        imageKey.currentContext!.findRenderObject() as RenderBox;
     return renderBox.globalToLocal(globalPosition);
   }
-} 
+}

@@ -122,88 +122,9 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
   }
 
 //------------------------------------------------------------
-  // 드래그 가능한 위젯 카드 생성
+  // (드래그 제거) 일반 위젯 카드만 사용
   Widget _buildDraggableWidgetCard(HomeWidgetItem widget, int index) {
-    return Draggable<String>(
-      data: widget.id,
-      feedback: Material(
-        elevation: 8,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                  overflow: TextOverflow.ellipsis, // 텍스트 오버플로우 처리
-                ),
-                const SizedBox(height: 8), // 위젯 간격
-                Expanded(
-                  child: Text(
-                    widget.description,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                    maxLines: 2, // 최대 2줄까지 표시
-                    overflow: TextOverflow.ellipsis, // 텍스트 오버플로우 처리
-                  ),
-                ),
-                const SizedBox(height: 8), // 위젯 간격
-                Align(
-                  alignment: Alignment.bottomRight, // 아이콘 위치
-                  child: Image.asset(
-                    widget.iconPath!,
-                    width: 44,
-                    height: 44,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      childWhenDragging: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey, style: BorderStyle.solid),
-        ),
-        child: Center(
-          child: Icon(
-            Icons.drag_indicator,
-            color: Colors.grey,
-            size: 32,
-          ),
-        ),
-      ),
-      child: DragTarget<String>(
-        onWillAcceptWithDetails: (details) => details.data != widget.id,
-        onAcceptWithDetails: (details) {
-          final draggedIndex = selectedWidgets.indexOf(details.data);
-          if (draggedIndex != -1) {
-            setState(() {
-              final draggedItem = selectedWidgets.removeAt(draggedIndex);
-              selectedWidgets.insert(index, draggedItem);
-            });
-          }
-        },
-        builder: (context, candidateData, rejectedData) {
-          return _buildWidgetCard(widget);
-        },
-      ),
-    );
+    return _buildWidgetCard(widget);
   }
 
 //------------------------------------------------------------

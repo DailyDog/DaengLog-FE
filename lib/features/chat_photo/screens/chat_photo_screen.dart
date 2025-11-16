@@ -399,11 +399,18 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     }
   }
 
-  void _goToCloudUpload(PhotoScreenProvider provider) {
+  Future<void> _goToCloudUpload(PhotoScreenProvider provider) async {
+    // 캡처 이미지가 없으면 먼저 한 번 더 시도
+    if (provider.capturedImageBytes == null) {
+      await _captureImage(provider);
+    }
+
     if (provider.capturedImageBytes != null) {
       final gptResponse = GoRouterState.of(context).extra as DiaryGptResponse;
+      if (!mounted) return;
       context.push('/cloud_upload', extra: gptResponse);
     } else {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('먼저 확정하기를 눌러주세요.')),
       );
