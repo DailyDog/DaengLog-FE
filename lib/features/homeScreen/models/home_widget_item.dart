@@ -4,11 +4,13 @@ class HomeWidgetItem {
   final String title;
   final String description;
   final String? iconPath; 
-
+  final String? specific;
+  
   HomeWidgetItem({
     required this.id,
     required this.title,
     required this.description,
     this.iconPath,
+    this.specific,
   });
 }

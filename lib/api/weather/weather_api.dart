@@ -23,9 +23,6 @@ class WeatherApi {
   DateTime? _lastLocationUpdate;
 
   Future<Weather> getWeather() async {
-    print('🌤️ WeatherApi.getWeather() 시작');
-    print(
-        '🔑 API Key: ${weatherApiKey.isEmpty ? "없음 (공개 API 사용)" : weatherApiKey.substring(0, 8) + "..."}');
 
     try {
       // 위치 정보 가져오기 (캐싱 적용)
@@ -103,11 +100,6 @@ class WeatherApi {
         //   weatherType = WeatherType.rainy;
         // }
 
-        print('🌧️ 생성되는 Weather 객체:');
-        print('  - weather: $weather');
-        print('  - weatherType: $weatherType');
-        print('  - temperature: $temperature');
-        print('  - location: $locationName');
 
         return Weather(
           temperature: temperature,
@@ -120,7 +112,7 @@ class WeatherApi {
       }
 
       final response = await _dio.get(
-        'https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst',
+        'https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0',
         queryParameters: {
           'serviceKey': weatherApiKey,
           'numOfRows': '10',

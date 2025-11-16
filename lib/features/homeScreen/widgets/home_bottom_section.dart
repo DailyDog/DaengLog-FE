@@ -20,27 +20,31 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
   List<String> selectedWidgets = ['일기', '산책', '오늘의 미션', '날씨'];
 
   // 사용 가능한 모든 위젯들 (동적으로 생성)
-  List<HomeWidgetItem> _getAvailableWidgets(String petName, String location) {
+  List<HomeWidgetItem> _getAvailableWidgets(String petName, String location, String specific) {
     return [
       HomeWidgetItem(
           id: '일기',
           title: '일기',
           description: '$petName의 기분은 어떨까?',
+          specific: '오늘 0건\n주간 0건',
           iconPath: 'assets/images/home/widget/Journal_icon.png'),
       HomeWidgetItem(
           id: '산책',
           title: '산책',
           description: '이번주 $petName는\n얼마나 산책을 했나?',
+          specific: '산책횟수 0번\n거리 0km',
           iconPath: 'assets/images/home/widget/dog_icon.png'),
       HomeWidgetItem(
           id: '오늘의 미션',
           title: '오늘의 미션',
           description: '$petName와 신나는 미션',
+          specific: '가능 6건\n완료 0건',
           iconPath: 'assets/images/home/widget/Goal_icon.png'),
       HomeWidgetItem(
           id: '날씨',
           title: '날씨',
           description: location,
+          specific: '날씨 | 산책가기 좋음\n미세먼지 | 좋음',
           iconPath: 'assets/images/home/widget/Sun_icon.png'),
     ];
   }
@@ -74,7 +78,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
     final displayLocation = weatherProvider.weather?.location ?? '성북구 정릉동';
 
     // 동적으로 위젯 리스트 생성
-    final availableWidgets = _getAvailableWidgets(petName, displayLocation);
+    final availableWidgets = _getAvailableWidgets(petName, displayLocation, "오늘 0건");
 
     return Container(
       color: const Color(0XFFF9F9F9),
@@ -157,7 +161,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
         ),
       );
     }
-    // 일반 위젯 카드
+    // 메인 화면 바텀 섹션에 일반 위젯 카드
     return GestureDetector(
       onTap: () {
         // 날씨 위젯 클릭 시 날씨 화면으로 이동
@@ -220,15 +224,30 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                 ),
               ),
 
-              // 아이콘
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Image.asset(
-                  widget.iconPath!,
-                  width: 50,
-                  height: 50,
-                ),
-              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.specific!,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black,
+                          fontFamily: 'Pretendard',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Image.asset(
+                    widget.iconPath!,
+                    width: 40,
+                    height: 50,
+                  ),
+                ],
+              )
             ],
           ),
         ),
