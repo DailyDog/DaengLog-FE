@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:daenglog_fe/shared/widgets/daeng_toast.dart';
 import 'package:characters/characters.dart';
 
 class PhotoService {
@@ -17,8 +18,29 @@ class PhotoService {
       RenderRepaintBoundary boundary = contentKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+
+      // 투명 배경 대신 흰색 배경으로 한 번 더 렌더링
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(
+        recorder,
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+      );
+
+      // 흰색 배경
+      final paint = Paint()..color = const Color(0xFFFFFFFF);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()),
+        paint,
+      );
+
+      // 원본 이미지 덧그리기
+      canvas.drawImage(image, Offset.zero, Paint());
+
+      final composedImage =
+          await recorder.endRecording().toImage(image.width, image.height);
+
       ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+          await composedImage.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         return byteData.buffer.asUint8List();
       }
@@ -50,20 +72,14 @@ class PhotoService {
       );
 
       if (result['isSuccess'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('갤러리에 저장되었습니다!')),
-        );
+        showDaengToast(context, '갤러리에 저장되었습니다!');
         return true;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('저장에 실패했습니다.')),
-        );
+        showDaengToast(context, '저장에 실패했습니다.', isWarning: true);
         return false;
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('저장 중 오류가 발생했습니다.')),
-      );
+      showDaengToast(context, '저장 중 오류가 발생했습니다.', isWarning: true);
       return false;
     }
   }

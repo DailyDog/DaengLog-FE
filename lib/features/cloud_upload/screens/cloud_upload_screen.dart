@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
 import 'package:daenglog_fe/features/chat_photo/providers/photo_screen_provider.dart';
+import 'package:daenglog_fe/features/chat_photo/services/photo_service.dart';
+import 'package:daenglog_fe/shared/widgets/daeng_toast.dart';
 import 'package:daenglog_fe/api/diary/post/diary_save_api.dart';
 import 'package:daenglog_fe/api/diary/models/diary_gpt_response.dart';
 
@@ -15,7 +17,6 @@ class CloudUploadScreen extends StatefulWidget {
 
 class _CloudUploadScreenState extends State<CloudUploadScreen> {
   bool _isLoading = false;
-
   @override
   void initState() {
     super.initState();
@@ -74,23 +75,25 @@ class _CloudUploadScreenState extends State<CloudUploadScreen> {
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('일기가 저장되었습니다! (${result.recordNumber}번째 기록)'),
-            backgroundColor: const Color(0xFFFF5F01),
-          ),
+        // 1) 갤러리에 이미지 저장 시도
+        await PhotoService.saveImageToGallery(
+            photoProvider.capturedImageBytes!, context);
+
+        // 2) 알림 메시지 (갤러리 저장 성공/실패 여부와 상관없이 일기 저장 완료 안내)
+        showDaengToast(
+          context,
+          '일기가 저장되었습니다! (${result.recordNumber}번째 기록)',
         );
 
-        // 홈으로 돌아가기
+        // 3) 홈으로 돌아가기
         context.go('/home');
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('일기 저장 실패: $e'),
-            backgroundColor: Colors.red,
-          ),
+        showDaengToast(
+          context,
+          '일기 저장 실패: $e',
+          isWarning: true,
         );
         // 에러 발생 시에도 홈으로 돌아가기
         context.go('/home');
@@ -181,17 +184,23 @@ class _CloudUploadScreenState extends State<CloudUploadScreen> {
             const SizedBox(height: 40),
 
             // 로딩 인디케이터
-            const CircularProgressIndicator(
-              color: Color(0xFFFF5F01),
-              strokeWidth: 3,
-            ),
+            _isLoading
+                ? const CircularProgressIndicator(
+                    color: Color(0xFFFF5F01),
+                    strokeWidth: 3,
+                  )
+                : const Icon(
+                    Icons.check_circle,
+                    color: Color(0xFFFF5F01),
+                    size: 36,
+                  ),
 
             const SizedBox(height: 24),
 
-            // 로딩 메시지
-            const Text(
-              '일기를 저장하고 있습니다...',
-              style: TextStyle(
+            // 로딩/완료 메시지
+            Text(
+              _isLoading ? '일기를 저장하고 있습니다...' : '처리가 완료되었습니다.',
+              style: const TextStyle(
                 fontFamily: 'Pretendard',
                 fontSize: 16,
                 color: Color(0xFF666666),

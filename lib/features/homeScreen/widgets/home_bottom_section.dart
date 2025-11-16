@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/features/homeScreen/models/home_widget_item.dart';
-import 'package:daenglog_fe/features/homeScreen/widgets/components/home_bottom_section_modal.dart';
 import 'package:daenglog_fe/shared/services/default_profile_provider.dart';
 import 'package:daenglog_fe/features/weather/providers/weather_provider.dart';
 import 'package:provider/provider.dart';
@@ -16,8 +15,8 @@ class HomeBottomSection extends StatefulWidget {
 }
 
 class _HomeBottomSectionState extends State<HomeBottomSection> {
-  // 선택된 위젯들 (기본값: 공지사항, 캠퍼스맵, 학사일정)
-  List<String> selectedWidgets = ['일기', '산책', '오늘의 미션', '날씨'];
+  // 고정 위젯들
+  final List<String> selectedWidgets = ['일기', '산책', '오늘의 미션', '날씨'];
 
   // 사용 가능한 모든 위젯들 (동적으로 생성)
   List<HomeWidgetItem> _getAvailableWidgets(String petName, String location, String specific) {
@@ -49,23 +48,6 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
     ];
   }
 
-  // 위젯 선택 모달 표시
-  void _showWidgetSelectionModal(
-      BuildContext context, List<HomeWidgetItem> availableWidgets) {
-    showDialog(
-      context: context,
-      builder: (context) => HomeBottomSectionModal(
-        availableWidgets: availableWidgets,
-        selectedWidgets: selectedWidgets,
-        onSelectionChanged: (newSelection) {
-          setState(() {
-            selectedWidgets = newSelection;
-          });
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<DefaultProfileProvider>().profile;
@@ -86,7 +68,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 선택된 위젯들과 위젯 선택 버튼을 함께 표시
+          // 선택된 위젯들 표시
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -96,28 +78,14 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
               mainAxisSpacing: 12, // 세로 간격
               childAspectRatio: 1, // 위젯 비율
             ),
-            itemCount: selectedWidgets.length + 1, // 위젯 개수 + 선택 버튼 1개
+            itemCount: selectedWidgets.length, // 위젯 개수만 표시
             itemBuilder: (context, index) {
-              if (index == selectedWidgets.length) {
-                // 마지막 아이템은 위젯 선택 버튼
-                return _buildWidgetCard(
-                  HomeWidgetItem(
-                    id: 'add_widget',
-                    title: '',
-                    description: '',
-                    iconPath: 'assets/images/home/widget/plus_icon.png',
-                  ),
-                  isSelectionCard: true,
-                  availableWidgets: availableWidgets,
-                );
-              } else {
-                // 위젯 카드들
-                final widgetId = selectedWidgets[index];
-                final widget =
-                    availableWidgets.firstWhere((w) => w.id == widgetId);
+              // 위젯 카드들
+              final widgetId = selectedWidgets[index];
+              final widget =
+                  availableWidgets.firstWhere((w) => w.id == widgetId);
 
-                return _buildDraggableWidgetCard(widget, index);
-              }
+              return _buildWidgetCard(widget);
             },
           ),
         ],
@@ -126,40 +94,12 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
   }
 
 //------------------------------------------------------------
-  // (드래그 제거) 일반 위젯 카드만 사용
-  Widget _buildDraggableWidgetCard(HomeWidgetItem widget, int index) {
-    return _buildWidgetCard(widget);
-  }
-
-//------------------------------------------------------------
   // 위젯 카드 생성
   Widget _buildWidgetCard(HomeWidgetItem widget,
-      {bool isSelectionCard = false, List<HomeWidgetItem>? availableWidgets}) {
+      {bool isSelectionCard = false}) {
     if (isSelectionCard) {
-      // 위젯 선택 버튼 - 아이콘을 정가운데에 배치
-      return GestureDetector(
-        onTap: () => _showWidgetSelectionModal(context, availableWidgets!),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Image.asset(
-              widget.iconPath!,
-              width: 40,
-              height: 40,
-            ),
-          ),
-        ),
-      );
+      // 현재는 선택 카드 기능 사용하지 않음
+      return const SizedBox.shrink();
     }
     // 메인 화면 바텀 섹션에 일반 위젯 카드
     return GestureDetector(
@@ -234,7 +174,7 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
                         widget.specific!,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Colors.black,
+                          color: Color(0xFF9A9A9A), // 더 연한 회색
                           fontFamily: 'Pretendard',
                           fontWeight: FontWeight.w400,
                         ),

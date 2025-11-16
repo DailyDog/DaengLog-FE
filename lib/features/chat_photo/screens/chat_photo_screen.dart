@@ -63,73 +63,81 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     final double imageWidth =
         provider.isDecorateMode ? size.width * 0.8 : size.width * 0.8;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFFFFFFF),
-      appBar: PhotoAppBar(
-        isDecorateMode: provider.isDecorateMode,
-        onSave: () => provider.setDecorateMode(false),
-        onDownload: () => _handleDownload(context, provider),
-        gptResponse: gptResponse,
-      ),
-      body: Stack(
-        children: [
-          RepaintBoundary(
-            key: captureKey,
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Consumer<PhotoScreenProvider>(
-                      builder: (context, photoProvider, child) {
-                        return _buildImageSection(context, photoProvider,
-                            gptResponse, imageWidth, imageHeight);
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTitleSection(gptResponse),
-                    const SizedBox(height: 10),
-                    if (!provider.isDecorateMode)
+    return WillPopScope(
+      onWillPop: () async {
+        return await _handleBack(context, provider);
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFFFFFFF),
+        appBar: PhotoAppBar(
+          isDecorateMode: provider.isDecorateMode,
+          onBack: () async {
+            await _handleBack(context, provider);
+          },
+          onSave: () => provider.setDecorateMode(false),
+          onDownload: () => _handleDownload(context, provider),
+          gptResponse: gptResponse,
+        ),
+        body: Stack(
+          children: [
+            RepaintBoundary(
+              key: captureKey,
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
                       Consumer<PhotoScreenProvider>(
                         builder: (context, photoProvider, child) {
-                          return _buildContentSection(
-                              context, photoProvider, gptResponse);
+                          return _buildImageSection(context, photoProvider,
+                              gptResponse, imageWidth, imageHeight);
                         },
                       ),
-                  ],
+                      const SizedBox(height: 20),
+                      _buildTitleSection(gptResponse),
+                      const SizedBox(height: 10),
+                      if (!provider.isDecorateMode)
+                        Consumer<PhotoScreenProvider>(
+                          builder: (context, photoProvider, child) {
+                            return _buildContentSection(
+                                context, photoProvider, gptResponse);
+                          },
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // 데코레이트 모드일 때 도구 위젯 표시
-          if (provider.isDecorateMode)
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: DecorationToolsWidget(
-                provider: provider,
-                selectedTool: _selectedTool,
-                onToolSelected: (tool) {
-                  setState(() {
-                    _selectedTool = tool;
-                  });
-                },
+            // 데코레이트 모드일 때 도구 위젯 표시
+            if (provider.isDecorateMode)
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: DecorationToolsWidget(
+                  provider: provider,
+                  selectedTool: _selectedTool,
+                  onToolSelected: (tool) {
+                    setState(() {
+                      _selectedTool = tool;
+                    });
+                  },
+                ),
               ),
-            ),
-        ],
+          ],
+        ),
+        bottomNavigationBar: provider.isDecorateMode
+            ? null
+            : PhotoBottomButtons(
+                isConfirmed: provider.isConfirmed,
+                imageLoaded: provider.imageLoaded,
+                onLeftButtonPressed: () => provider.setDecorateMode(true),
+                onRightButtonPressed: () => _captureImage(provider),
+                onSharePressed: () =>
+                    PhotoService.shareImage(provider.capturedImageBytes!),
+                onCloudUploadPressed: () => _goToCloudUpload(provider),
+              ),
       ),
-      bottomNavigationBar: provider.isDecorateMode
-          ? null
-          : PhotoBottomButtons(
-              isConfirmed: provider.isConfirmed,
-              imageLoaded: provider.imageLoaded,
-              onLeftButtonPressed: () => provider.setDecorateMode(true),
-              onRightButtonPressed: () => _captureImage(provider),
-              onSharePressed: () =>
-                  PhotoService.shareImage(provider.capturedImageBytes!),
-              onCloudUploadPressed: () => _goToCloudUpload(provider),
-            ),
     );
   }
 
@@ -191,8 +199,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                         }
                       },
                       onPanStart: (details) {
-                        if (!photoProvider.isDecorateMode) return;
-
                         final box = imageKey.currentContext?.findRenderObject()
                             as RenderBox?;
                         final local =
@@ -223,8 +229,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                         }
                       },
                       onPanUpdate: (details) {
-                        if (!photoProvider.isDecorateMode) return;
-
                         final box = imageKey.currentContext?.findRenderObject()
                             as RenderBox?;
                         final local =
@@ -387,10 +391,11 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     );
   }
 
+  /// 일기 썸네일/클라우드 업로드용: 꾸민 이미지(2번 이미지)만 캡처
   Future<void> _captureImage(PhotoScreenProvider provider) async {
     try {
-      print('🎯 이미지 캡처 시작...');
-      final bytes = await PhotoService.captureAndConvertToJpg(captureKey);
+      print('🎯 이미지 캡처 시작 (이미지 영역만)...');
+      final bytes = await PhotoService.captureAndConvertToJpg(imageKey);
       if (bytes != null) {
         provider.setCapturedImageBytes(bytes);
         print('✅ 이미지 캡처 성공: ${bytes.length} bytes');
@@ -402,12 +407,21 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     }
   }
 
-  void _handleDownload(BuildContext context, PhotoScreenProvider provider) {
-    if (provider.capturedImageBytes != null) {
-      PhotoService.saveImageToGallery(provider.capturedImageBytes!, context);
-    } else {
+  /// 갤러리 다운로드용: 포토카드 전체 화면(3번 이미지) 캡처
+  void _handleDownload(
+      BuildContext context, PhotoScreenProvider provider) async {
+    try {
+      final bytes = await PhotoService.captureAndConvertToJpg(captureKey);
+      if (bytes != null) {
+        await PhotoService.saveImageToGallery(bytes, context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이미지 캡처에 실패했습니다.')),
+        );
+      }
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('먼저 확정하기를 눌러주세요.')),
+        const SnackBar(content: Text('이미지 저장 중 오류가 발생했습니다.')),
       );
     }
   }
@@ -428,5 +442,76 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
         const SnackBar(content: Text('먼저 확정하기를 눌러주세요.')),
       );
     }
+  }
+
+  Future<bool> _handleBack(
+      BuildContext context, PhotoScreenProvider provider) async {
+    final hasDecoration = provider.drawingPaths.isNotEmpty ||
+        provider.placedStickers.isNotEmpty ||
+        provider.isDecorateMode;
+
+    if (!hasDecoration) {
+      context.go('/home');
+      return true;
+    }
+
+    final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (ctx) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              title: const Text(
+                '꾸미던 내용을 삭제할까요?',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                ),
+              ),
+              content: const Text(
+                '지금 나가면 일기 꾸미기 내용이 모두 삭제돼요.',
+                style: TextStyle(
+                  fontFamily: 'Pretendard',
+                  fontSize: 14,
+                  color: Color(0xFF666666),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(false),
+                  child: const Text(
+                    '취소',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(true),
+                  child: const Text(
+                    '나가기',
+                    style: TextStyle(
+                      fontFamily: 'Pretendard',
+                      color: Color(0xFFFF6600),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+
+    if (shouldExit) {
+      provider.reset();
+      context.go('/home');
+      return true;
+    }
+
+    return false;
   }
 }

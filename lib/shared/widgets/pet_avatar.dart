@@ -94,7 +94,7 @@ class _PetAvatarState extends State<PetAvatar> {
           ClipOval(
             child: _buildImageContent(),
           ),
-          // 테두리를 맨 위에 그리기
+          // 테두리는 필요할 때만 사용 (기본 마이페이지 아바타에는 발광 효과 제거)
           if (widget.borderWidth != null && widget.borderColor != null)
             CustomPaint(
               painter: CircleBorderPainter(
