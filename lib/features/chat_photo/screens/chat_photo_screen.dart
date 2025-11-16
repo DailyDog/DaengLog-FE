@@ -28,6 +28,16 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   bool _imageLoadRequested = false; // 이미지 로드 요청 플래그
 
   @override
+  void initState() {
+    super.initState();
+    // 포토카드 화면에 진입할 때마다 상태 초기화 (이전 캡처/꾸미기 상태 제거)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<PhotoScreenProvider>(context, listen: false);
+      provider.reset();
+    });
+  }
+
+  @override
   void dispose() {
     // 화면 종료 시 Provider 정리
     PhotoProviderManager.dispose();
@@ -257,14 +267,17 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
               ),
             ),
           ),
-          // 테두리
+          // 테두리 (터치 이벤트를 막지 않도록 IgnorePointer로 감싸기)
           Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(32),
-                border: Border.all(
-                  color: provider.imageAndContentColor,
-                  width: 3.0,
+            child: IgnorePointer(
+              ignoring: true,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(
+                    color: provider.imageAndContentColor,
+                    width: 3.0,
+                  ),
                 ),
               ),
             ),
