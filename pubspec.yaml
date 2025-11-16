@@ -51,6 +51,7 @@ dependencies:
   go_router: ^14.2.0 # 라우터 라이브러리
 
   google_sign_in: ^6.2.0 # 구글 로그인 라이브러리
+  image: ^4.3.0
 
 # 플러터 설정
 flutter:

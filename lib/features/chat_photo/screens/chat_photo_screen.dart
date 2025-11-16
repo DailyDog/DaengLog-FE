@@ -25,6 +25,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   final GlobalKey imageKey = GlobalKey();
   final GlobalKey captureKey = GlobalKey();
   DecorationTool _selectedTool = DecorationTool.frame;
+  bool _imageLoadRequested = false; // 이미지 로드 요청 플래그
 
   @override
   void dispose() {
@@ -47,12 +48,10 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   Widget _buildPhotoScreen(BuildContext context, PhotoScreenProvider provider) {
     final gptResponse = GoRouterState.of(context).extra as DiaryGptResponse;
     final size = MediaQuery.of(context).size;
-    final double imageHeight = provider.isDecorateMode 
-        ? size.height * 0.4 
-        : size.height * 0.4;
-    final double imageWidth = provider.isDecorateMode 
-        ? size.width * 0.8 
-        : size.width * 0.8;
+    final double imageHeight =
+        provider.isDecorateMode ? size.height * 0.4 : size.height * 0.4;
+    final double imageWidth =
+        provider.isDecorateMode ? size.width * 0.8 : size.width * 0.8;
 
     return Scaffold(
       backgroundColor: const Color(0xFFFFFFFF),
@@ -74,7 +73,8 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                   children: [
                     Consumer<PhotoScreenProvider>(
                       builder: (context, photoProvider, child) {
-                        return _buildImageSection(context, photoProvider, gptResponse, imageWidth, imageHeight);
+                        return _buildImageSection(context, photoProvider,
+                            gptResponse, imageWidth, imageHeight);
                       },
                     ),
                     const SizedBox(height: 20),
@@ -82,16 +82,17 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                     const SizedBox(height: 10),
                     if (!provider.isDecorateMode)
                       Consumer<PhotoScreenProvider>(
-                          builder: (context, photoProvider, child) {
-                            return _buildContentSection(context, photoProvider, gptResponse);
-                          },
-                        ),
+                        builder: (context, photoProvider, child) {
+                          return _buildContentSection(
+                              context, photoProvider, gptResponse);
+                        },
+                      ),
                   ],
                 ),
               ),
             ),
           ),
-          
+
           // 데코레이트 모드일 때 도구 위젯 표시
           if (provider.isDecorateMode)
             Align(
@@ -106,7 +107,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                 },
               ),
             ),
-          
         ],
       ),
       bottomNavigationBar: provider.isDecorateMode
@@ -116,7 +116,9 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
               imageLoaded: provider.imageLoaded,
               onLeftButtonPressed: () => provider.setDecorateMode(true),
               onRightButtonPressed: () => _captureImage(provider),
-              onSharePressed: () => PhotoService.shareImage(provider.capturedImageBytes!),
+              onSharePressed: () =>
+                  PhotoService.shareImage(provider.capturedImageBytes!),
+              onCloudUploadPressed: () => _goToCloudUpload(provider),
             ),
     );
   }
@@ -130,7 +132,8 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     double imageHeight,
   ) {
     // 이미지 로드 (한 번만 실행)
-    if (provider.backgroundImage == null) {
+    if (!_imageLoadRequested && provider.backgroundImage == null) {
+      _imageLoadRequested = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         provider.loadNetworkImage(gptResponse.imageUrl);
       });
@@ -157,10 +160,13 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                     return GestureDetector(
                       onTapUp: (details) {
                         // 스티커 모드일 때만 처리
-                        if (_selectedTool == DecorationTool.sticker && photoProvider.selectedSticker != null) {
-                          final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
-                          final local = box?.globalToLocal(details.globalPosition);
-                          
+                        if (_selectedTool == DecorationTool.sticker &&
+                            photoProvider.selectedSticker != null) {
+                          final box = imageKey.currentContext
+                              ?.findRenderObject() as RenderBox?;
+                          final local =
+                              box?.globalToLocal(details.globalPosition);
+
                           if (local != null) {
                             // 스티커 추가
                             photoProvider.addSticker(
@@ -176,23 +182,28 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                       },
                       onPanStart: (details) {
                         if (!photoProvider.isDecorateMode) return;
-                        
-                        final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
-                        final local = box?.globalToLocal(details.globalPosition);
-                        
+
+                        final box = imageKey.currentContext?.findRenderObject()
+                            as RenderBox?;
+                        final local =
+                            box?.globalToLocal(details.globalPosition);
+
                         if (local == null) return;
-                        
+
                         // 그리기 도구가 선택되었을 때만 그리기 실행
                         if (_selectedTool == DecorationTool.draw) {
                           photoProvider.startNewPath(local);
-                        } 
+                        }
                         // 스티커 모드일 때 스티커 선택 확인
                         else if (_selectedTool == DecorationTool.sticker) {
                           // 스티커를 클릭했는지 확인
                           int? selectedIndex;
-                          for (int i = photoProvider.placedStickers.length - 1; i >= 0; i--) {
+                          for (int i = photoProvider.placedStickers.length - 1;
+                              i >= 0;
+                              i--) {
                             final sticker = photoProvider.placedStickers[i];
-                            final distance = (sticker.position - local).distance;
+                            final distance =
+                                (sticker.position - local).distance;
                             if (distance < 30 * sticker.scale) {
                               selectedIndex = i;
                               break;
@@ -203,19 +214,23 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                       },
                       onPanUpdate: (details) {
                         if (!photoProvider.isDecorateMode) return;
-                        
-                        final box = imageKey.currentContext?.findRenderObject() as RenderBox?;
-                        final local = box?.globalToLocal(details.globalPosition);
-                        
+
+                        final box = imageKey.currentContext?.findRenderObject()
+                            as RenderBox?;
+                        final local =
+                            box?.globalToLocal(details.globalPosition);
+
                         if (local == null) return;
-                        
+
                         // 그리기 모드
                         if (_selectedTool == DecorationTool.draw) {
                           photoProvider.extendCurrentPath(local);
                         }
                         // 스티커 모드에서 선택된 스티커 이동
-                        else if (_selectedTool == DecorationTool.sticker && photoProvider.selectedStickerIndex != null) {
-                          photoProvider.updateStickerPosition(photoProvider.selectedStickerIndex!, local);
+                        else if (_selectedTool == DecorationTool.sticker &&
+                            photoProvider.selectedStickerIndex != null) {
+                          photoProvider.updateStickerPosition(
+                              photoProvider.selectedStickerIndex!, local);
                         }
                       },
                       onPanEnd: (details) {
@@ -230,7 +245,8 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                             backgroundImage: photoProvider.backgroundImage,
                             drawingPaths: photoProvider.drawingPaths,
                             placedStickers: photoProvider.placedStickers,
-                            selectedStickerIndex: photoProvider.selectedStickerIndex,
+                            selectedStickerIndex:
+                                photoProvider.selectedStickerIndex,
                           ),
                           size: Size(imageWidth, imageHeight),
                         ),
@@ -272,94 +288,104 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     );
   }
 
-  Widget _buildContentSection(BuildContext context, PhotoScreenProvider provider, DiaryGptResponse gptResponse) {
+  Widget _buildContentSection(BuildContext context,
+      PhotoScreenProvider provider, DiaryGptResponse gptResponse) {
     final formattedDate = PhotoService.formatDate(gptResponse.date);
-    final formattedContent = PhotoService.formatContent(gptResponse.content.replaceAll('\n', ' '));
+    final formattedContent =
+        PhotoService.formatContent(gptResponse.content.replaceAll('\n', ' '));
 
     return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ...formattedContent.split('\n').map((line) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 30.0, right: 15.0),
-                          child: Text(
-                            line,
-                            style: const TextStyle(
-                              fontFamily: 'Yeongdeok-Sea',
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
-                              color: Color(0xFF272727),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Container(
-                          margin: const EdgeInsets.symmetric(horizontal: 20),
-                          width: double.infinity,
-                          height: 5,
-                          child: HandDrawnWave(
-                            color: provider.imageAndContentColor,
-                            strokeWidth: 2.3,
-                            amplitude: 1,
-                            segment: 3,
-                            jitter: 1.5,
-                          ),
-                        ),
-                      ],
-                    )),
-                const SizedBox(height: 5),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 30.0),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(width: 8),
-                        Text(
-                          formattedDate,
-                          style: const TextStyle(
-                            fontFamily: 'Yeongdeok-Sea',
-                            fontSize: 19,
-                            color: Color(0xFFEB0B0B),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Image.asset(
-                          'assets/images/home/daeng.png',
-                          width: 20,
-                          height: 28,
-                        ),
-                      ],
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...formattedContent.split('\n').map((line) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 30.0, right: 15.0),
+                    child: Text(
+                      line,
+                      style: const TextStyle(
+                        fontFamily: 'Yeongdeok-Sea',
+                        fontWeight: FontWeight.w500,
+                        fontSize: 18,
+                        color: Color(0xFF272727),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20),
-                  width: double.infinity,
-                  height: 5,
-                  child: HandDrawnWave(
-                    color: provider.imageAndContentColor,
-                    strokeWidth: 2.3,
-                    amplitude: 1,
-                    segment: 3,
-                    jitter: 1.5,
+                  const SizedBox(height: 5),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    width: double.infinity,
+                    height: 5,
+                    child: HandDrawnWave(
+                      color: provider.imageAndContentColor,
+                      strokeWidth: 2.3,
+                      amplitude: 1,
+                      segment: 3,
+                      jitter: 1.5,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              )),
+          const SizedBox(height: 5),
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 30.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(width: 8),
+                  Text(
+                    formattedDate,
+                    style: const TextStyle(
+                      fontFamily: 'Yeongdeok-Sea',
+                      fontSize: 19,
+                      color: Color(0xFFEB0B0B),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Image.asset(
+                    'assets/images/home/daeng.png',
+                    width: 20,
+                    height: 28,
+                  ),
+                ],
+              ),
             ),
-          );
+          ),
+          const SizedBox(height: 4),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            width: double.infinity,
+            height: 5,
+            child: HandDrawnWave(
+              color: provider.imageAndContentColor,
+              strokeWidth: 2.3,
+              amplitude: 1,
+              segment: 3,
+              jitter: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _captureImage(PhotoScreenProvider provider) async {
-    final bytes = await PhotoService.captureAndConvertToJpg(contentKey);
-    if (bytes != null) {
-      provider.setCapturedImageBytes(bytes);
+    try {
+      print('🎯 이미지 캡처 시작...');
+      final bytes = await PhotoService.captureAndConvertToJpg(captureKey);
+      if (bytes != null) {
+        provider.setCapturedImageBytes(bytes);
+        print('✅ 이미지 캡처 성공: ${bytes.length} bytes');
+      } else {
+        print('❌ 이미지 캡처 실패: bytes가 null');
+      }
+    } catch (e) {
+      print('❌ 이미지 캡처 오류: $e');
     }
   }
 
@@ -372,5 +398,15 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
       );
     }
   }
-}
 
+  void _goToCloudUpload(PhotoScreenProvider provider) {
+    if (provider.capturedImageBytes != null) {
+      final gptResponse = GoRouterState.of(context).extra as DiaryGptResponse;
+      context.push('/cloud_upload', extra: gptResponse);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('먼저 확정하기를 눌러주세요.')),
+      );
+    }
+  }
+}
