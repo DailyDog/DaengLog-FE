@@ -1,7 +1,10 @@
 import 'dart:math';
 import 'package:geolocator/geolocator.dart';
+import 'package:daenglog_fe/shared/services/kakao_location_service.dart';
 
 class LocationService {
+  final KakaoLocationService _kakaoLocationService = KakaoLocationService();
+
   Future<Position> getCurrentPosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
@@ -22,6 +25,16 @@ class LocationService {
 
     return await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high);
+  }
+
+  /// 현재 기기의 위도/경도를 가져온 뒤,
+  /// Kakao 로컬 API를 통해 시/도, 구/군, 동/읍/면 정보를 조회한다.
+  Future<KakaoRegion> getCurrentRegion() async {
+    final position = await getCurrentPosition();
+    return _kakaoLocationService.getRegionFromLatLng(
+      latitude: position.latitude,
+      longitude: position.longitude,
+    );
   }
 
   Map<String, int> latLngToGrid(double lat, double lon) {

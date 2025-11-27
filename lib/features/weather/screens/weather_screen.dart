@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:daenglog_fe/shared/models/weather.dart';
 import '../providers/weather_provider.dart';
 import '../widgets/weather_loading.dart';
 import '../widgets/weather_error.dart';
@@ -47,13 +48,18 @@ class _WeatherScreenState extends State<WeatherScreen> {
             );
           }
 
-          return _buildWeatherUI(context, weatherProvider.weather!);
+          return _buildWeatherUI(
+            context,
+            weatherProvider.weather!,
+            weatherProvider.regionText,
+          );
         },
       ),
     );
   }
 
-  Widget _buildWeatherUI(BuildContext context, weather) {
+  Widget _buildWeatherUI(
+      BuildContext context, Weather weather, String? regionText) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -66,22 +72,22 @@ class _WeatherScreenState extends State<WeatherScreen> {
         children: [
           // 상단 고정 영역 (뒤로가기 버튼 + 위치)
           WeatherAppBar(
-            location: weather.location,
-          onBackPressed: () => Navigator.of(context).pop(),
-          onRefreshPressed: () =>
-              context.read<WeatherProvider>().loadWeather(),
+            location: regionText ?? weather.location,
+            onBackPressed: () => Navigator.of(context).pop(),
+            onRefreshPressed: () =>
+                context.read<WeatherProvider>().loadWeather(),
             screenWidth: screenWidth,
           ),
 
-          // 메인 콘텐츠 (스크롤 가능)
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
+        // 메인 콘텐츠 (스크롤 가능)
+        Expanded(
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
 
                     // 오전/오후 날씨 정보
                     Row(
