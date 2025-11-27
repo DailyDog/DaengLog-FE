@@ -124,6 +124,10 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
         if (widget.id == '날씨') {
           context.push('/weather');
         }
+        // 일기 위젯 클릭 시 기록 화면으로 이동
+        if (widget.id == '일기') {
+          context.go('/record');
+        }
         // 다른 위젯들도 필요에 따라 추가 가능
       },
       child: Container(

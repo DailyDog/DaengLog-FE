@@ -68,6 +68,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
       backgroundColor: const Color(0xFFFFFFFF),
       appBar: PhotoAppBar(
         isDecorateMode: provider.isDecorateMode,
+        onBack: () => context.pop(),
         onSave: () => provider.setDecorateMode(false),
         onDownload: () => _handleDownload(context, provider),
         gptResponse: gptResponse,

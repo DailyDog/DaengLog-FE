@@ -222,6 +222,23 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   static const tabs = ['/home', '/record', '/cloud', '/mypage', '/mypage'];
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 현재 라우터 경로에 따라 selectedIndex 업데이트
+    final location = GoRouterState.of(context).uri.path;
+    final newIndex = tabs.indexWhere((tab) => location == tab || location.startsWith(tab));
+    if (newIndex != -1 && newIndex != _selectedIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _selectedIndex = newIndex;
+          });
+        }
+      });
+    }
+  }
+
   void _onTap(int index) {
     setState(() {
       _selectedIndex = index;
@@ -240,6 +257,19 @@ class _MainScaffoldState extends State<MainScaffold> {
 
   @override
   Widget build(BuildContext context) {
+    // 현재 경로를 다시 확인하여 selectedIndex 동기화
+    final location = GoRouterState.of(context).uri.path;
+    final currentIndex = tabs.indexWhere((tab) => location == tab || location.startsWith(tab));
+    if (currentIndex != -1 && currentIndex != _selectedIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _selectedIndex = currentIndex;
+          });
+        }
+      });
+    }
+
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: commonBottomNavBar(

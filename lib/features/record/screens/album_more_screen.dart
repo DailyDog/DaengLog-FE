@@ -39,8 +39,15 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        automaticallyImplyLeading: false,
         leading: IconButton(
-          onPressed: () => context.go('/record'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/record');
+            }
+          },
           icon: const Icon(
             Icons.arrow_back_ios,
             color: Color(0xFF272727),
