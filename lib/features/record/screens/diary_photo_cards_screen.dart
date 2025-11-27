@@ -35,91 +35,55 @@ class _DiaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    
     return Material(
       color: Colors.white,
       elevation: 2,
       borderRadius: BorderRadius.circular(20),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AspectRatio(
-              aspectRatio: 9 / 16,
-              child: Container(
-                color: Colors.white,
-                child: Image.network(
+        child: SizedBox(
+          height: screenHeight * 0.85, // 고정 높이로 오버플로우 방지
+          child: Container(
+            color: Colors.white,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                // 화면 크기에 맞는 고해상도 캐싱
+                final cacheWidth = (constraints.maxWidth * 3).toInt(); // 3x 해상도로 캐싱
+                final cacheHeight = (constraints.maxHeight * 3).toInt();
+                
+                // 저장된 전체 포토카드 이미지를 그대로 표시 (이미지+제목+텍스트+선 등 모든 요소 포함)
+                return Image.network(
                   item.thumbnailUrl,
-                  fit: BoxFit.contain,
+                  fit: BoxFit.contain, // 비율 유지하며 전체 표시
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  // 고해상도 캐싱으로 화질 개선
+                  cacheWidth: cacheWidth,
+                  cacheHeight: cacheHeight,
+                  filterQuality: FilterQuality.high,
+                  isAntiAlias: true,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    );
+                  },
                   errorBuilder: (c, e, s) => Container(
                     color: Colors.grey[200],
                     child: const Icon(Icons.pets,
                         size: 60, color: Color(0xFFFF6600)),
                   ),
-                ),
-              ),
+                );
+              },
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 6),
-              child: Text(
-                item.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF272727),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                item.content,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontFamily: 'Pretendard',
-                  fontSize: 14,
-                  color: Color(0xFF3C3C43),
-                ),
-              ),
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
-              child: Row(
-                children: [
-                  Text(
-                    item.date,
-                    style: const TextStyle(
-                      fontFamily: 'Pretendard',
-                      fontSize: 13,
-                      color: Color(0xFF8E8E93),
-                    ),
-                  ),
-                  const Spacer(),
-                  if (item.keywords.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEFF6FF),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Text(
-                        item.keywords.first,
-                        style: const TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: 12,
-                          color: Color(0xFF007AFF),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            )
-          ],
+          ),
         ),
       ),
     );

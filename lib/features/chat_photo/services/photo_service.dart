@@ -9,7 +9,80 @@ import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:characters/characters.dart';
 
 class PhotoService {
-  // --- 이미지 캡처 ---
+  // --- 전체 포토카드 캡처 (이미지 + 제목 + 텍스트 + 선 등 모든 요소 포함) ---
+  static Future<Uint8List?> captureFullPhotoCard(GlobalKey contentKey) async {
+    try {
+      // 프레임 색상 변경이 반영되도록 더 긴 지연 시간
+      await Future.delayed(const Duration(milliseconds: 300));
+      final renderObject = contentKey.currentContext?.findRenderObject();
+      if (renderObject is! RenderRepaintBoundary) {
+        print('이미지 캡처 오류: 대상 위젯이 RepaintBoundary가 아닙니다.');
+        return null;
+      }
+
+      RenderRepaintBoundary boundary = renderObject;
+      ui.Image image = await boundary.toImage(pixelRatio: 3.0);
+
+      // ---- 9:16 세로 비율, 흰 배경으로 다시 그리기 ----
+      // 원본 이미지의 가로를 기준으로 9:16 세로 비율 계산
+      final double targetWidth = image.width.toDouble();
+      final double targetHeight = targetWidth * (16 / 9); // 9:16 세로 비율 (가로:세로 = 9:16)
+
+      // 상하 마진 설정 (전체 높이의 5%)
+      final double verticalMargin = targetHeight * 0.05;
+      final double contentHeight = targetHeight - (verticalMargin * 2);
+
+      final recorder = ui.PictureRecorder();
+      final canvas = Canvas(
+        recorder,
+        Rect.fromLTWH(0, 0, targetWidth, targetHeight),
+      );
+
+      // 흰색 배경 확인 및 설정
+      final bgPaint = Paint()..color = const Color(0xFFFFFFFF);
+      canvas.drawRect(
+        Rect.fromLTWH(0, 0, targetWidth, targetHeight),
+        bgPaint,
+      );
+
+      // 전체 포토카드를 contentHeight 안에 맞도록 스케일 계산
+      final double widthScale = targetWidth / image.width;
+      final double heightScale = contentHeight / image.height;
+      final double scale = widthScale < heightScale ? widthScale : heightScale; // 더 작은 스케일 사용하여 비율 유지
+      
+      final double drawWidth = image.width * scale;
+      final double drawHeight = image.height * scale;
+      final double left = (targetWidth - drawWidth) / 2;
+      final double top = verticalMargin + (contentHeight - drawHeight) / 2;
+      
+      final dstRect = Rect.fromLTWH(
+        left,
+        top,
+        drawWidth,
+        drawHeight,
+      );
+
+      canvas.drawImageRect(image, 
+        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()), 
+        dstRect, 
+        Paint()
+      );
+
+      final composedImage =
+          await recorder.endRecording().toImage(targetWidth.toInt(), targetHeight.toInt());
+
+      ByteData? byteData =
+          await composedImage.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        return byteData.buffer.asUint8List();
+      }
+    } catch (e) {
+      print('전체 포토카드 캡처 오류: $e');
+    }
+    return null;
+  }
+
+  // --- 이미지 영역만 캡처 (기존 메서드, 하위 호환성 유지) ---
   static Future<Uint8List?> captureAndConvertToJpg(GlobalKey contentKey) async {
     try {
       // 프레임 색상 변경이 반영되도록 더 긴 지연 시간
@@ -24,8 +97,13 @@ class PhotoService {
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
 
       // ---- 9:16 세로 비율, 흰 배경으로 다시 그리기 ----
+      // 원본 이미지의 가로를 기준으로 9:16 세로 비율 계산
       final double targetWidth = image.width.toDouble();
-      final double targetHeight = targetWidth * (16 / 9); // 세로 9:16
+      final double targetHeight = targetWidth * (16 / 9); // 9:16 세로 비율 (가로:세로 = 9:16)
+
+      // 상하 마진 설정 (전체 높이의 5%)
+      final double verticalMargin = targetHeight * 0.05;
+      final double contentHeight = targetHeight - (verticalMargin * 2);
 
       final recorder = ui.PictureRecorder();
       final canvas = Canvas(
@@ -33,21 +111,33 @@ class PhotoService {
         Rect.fromLTWH(0, 0, targetWidth, targetHeight),
       );
 
-      // 흰색 배경
+      // 흰색 배경 확인 및 설정
       final bgPaint = Paint()..color = const Color(0xFFFFFFFF);
       canvas.drawRect(
         Rect.fromLTWH(0, 0, targetWidth, targetHeight),
         bgPaint,
       );
 
-      // 이미지 비율 유지하면서 중앙에 배치
+      // 이미지 비율 유지하면서 중앙에 배치 (상하 마진 적용)
       final srcRect =
           Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble());
-      final double scale = targetWidth / image.width;
+      
+      // 이미지가 contentHeight 안에 맞도록 스케일 계산
+      final double widthScale = targetWidth / image.width;
+      final double heightScale = contentHeight / image.height;
+      final double scale = widthScale < heightScale ? widthScale : heightScale; // 더 작은 스케일 사용하여 비율 유지
+      
+      final double drawWidth = image.width * scale;
       final double drawHeight = image.height * scale;
-      final double top = (targetHeight - drawHeight) / 2;
-      final dstRect =
-          Rect.fromLTWH(0, top, targetWidth, drawHeight.clamp(0, targetHeight));
+      final double left = (targetWidth - drawWidth) / 2;
+      final double top = verticalMargin + (contentHeight - drawHeight) / 2;
+      
+      final dstRect = Rect.fromLTWH(
+        left,
+        top,
+        drawWidth,
+        drawHeight,
+      );
 
       canvas.drawImageRect(image, srcRect, dstRect, Paint());
 
