@@ -17,6 +17,34 @@ class _HomeTopSectionState extends State<HomeTopSection> {
   bool _loading = false;
   String? _error;
   dynamic _pickedImage;
+  String? _previousRoute;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // 라우트 변경 감지
+    final currentRoute = GoRouterState.of(context).uri.path;
+    
+    // 이전에 채팅방에 있었다가 홈으로 돌아온 경우 초기화
+    if (_previousRoute != null && 
+        _previousRoute == '/chat_communication' && 
+        currentRoute == '/home') {
+      _resetInputs();
+    }
+    
+    _previousRoute = currentRoute;
+  }
+
+  // 입력값 초기화
+  void _resetInputs() {
+    if (_controller.text.isNotEmpty || _pickedImage != null) {
+      setState(() {
+        _controller.clear();
+        _pickedImage = null;
+        _error = null;
+      });
+    }
+  }
 
   // 이미지 선택 시 처리
   void _onImageSelected(dynamic image) {
@@ -35,7 +63,12 @@ class _HomeTopSectionState extends State<HomeTopSection> {
         'prompt': text,
         'image': _pickedImage,
       },
-    );
+    ).then((_) {
+      // 채팅방에서 돌아왔을 때 초기화
+      if (mounted) {
+        _resetInputs();
+      }
+    });
   }
 
   // 채팅 서비스 취소 시 처리
@@ -43,6 +76,12 @@ class _HomeTopSectionState extends State<HomeTopSection> {
     setState(() {
       _pickedImage = null;
     });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override

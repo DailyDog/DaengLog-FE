@@ -129,7 +129,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
               onLeftButtonPressed: () => provider.setDecorateMode(true),
               onRightButtonPressed: () => _captureImage(provider),
               onSharePressed: () =>
-                  PhotoService.shareImage(provider.capturedImageBytes!),
+                  PhotoService.shareImage(provider.capturedImageBytes!, context),
               onCloudUploadPressed: () => _goToCloudUpload(provider),
             ),
     );
@@ -163,7 +163,7 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
               height: imageHeight,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(32),
-                border: Border.all(color: Colors.red, width: 2), // 테스트용 빨간 테두리
+                border: Border.all(color: Colors.red, width: 2), 
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(32),
@@ -171,7 +171,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                   builder: (context, photoProvider, child) {
                     return GestureDetector(
                       onTapUp: (details) {
-                        // 스티커 모드일 때만 처리
                         if (_selectedTool == DecorationTool.sticker &&
                             photoProvider.selectedSticker != null) {
                           final box = imageKey.currentContext
@@ -180,7 +179,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                               box?.globalToLocal(details.globalPosition);
 
                           if (local != null) {
-                            // 스티커 추가
                             photoProvider.addSticker(
                               PhotoStickerModel(
                                 sticker: photoProvider.selectedSticker!,
@@ -202,13 +200,9 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
 
                         if (local == null) return;
 
-                        // 그리기 도구가 선택되었을 때만 그리기 실행
                         if (_selectedTool == DecorationTool.draw) {
                           photoProvider.startNewPath(local);
-                        }
-                        // 스티커 모드일 때 스티커 선택 확인
-                        else if (_selectedTool == DecorationTool.sticker) {
-                          // 스티커를 클릭했는지 확인
+                        } else if (_selectedTool == DecorationTool.sticker) {
                           int? selectedIndex;
                           for (int i = photoProvider.placedStickers.length - 1;
                               i >= 0;
@@ -226,29 +220,17 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
                       },
                       onPanUpdate: (details) {
                         if (!photoProvider.isDecorateMode) return;
-
                         final box = imageKey.currentContext?.findRenderObject()
                             as RenderBox?;
                         final local =
                             box?.globalToLocal(details.globalPosition);
-
                         if (local == null) return;
-
-                        // 그리기 모드
                         if (_selectedTool == DecorationTool.draw) {
                           photoProvider.extendCurrentPath(local);
-                        }
-                        // 스티커 모드에서 선택된 스티커 이동
-                        else if (_selectedTool == DecorationTool.sticker &&
+                        } else if (_selectedTool == DecorationTool.sticker &&
                             photoProvider.selectedStickerIndex != null) {
                           photoProvider.updateStickerPosition(
                               photoProvider.selectedStickerIndex!, local);
-                        }
-                      },
-                      onPanEnd: (details) {
-                        // 그리기 종료 시 선택 해제
-                        if (_selectedTool == DecorationTool.sticker) {
-                          // 스티커 선택 유지
                         }
                       },
                       child: RepaintBoundary(
@@ -270,7 +252,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
               ),
             ),
           ),
-          // 테두리 (터치 이벤트를 막지 않도록 IgnorePointer로 감싸기)
           Positioned.fill(
             child: IgnorePointer(
               ignoring: true,
@@ -304,30 +285,49 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
     );
   }
 
+  // [변경됨] 내용 섹션: 화면 너비에 맞춰서 줄바꿈 계산 후 렌더링
   Widget _buildContentSection(BuildContext context,
       PhotoScreenProvider provider, DiaryGptResponse gptResponse) {
     final formattedDate = PhotoService.formatDate(gptResponse.date);
-    final formattedContent =
-        PhotoService.formatContent(gptResponse.content.replaceAll('\n', ' '));
+
+    // 1. 텍스트 스타일 정의
+    const contentStyle = TextStyle(
+      fontFamily: 'Yeongdeok-Sea',
+      fontWeight: FontWeight.w500,
+      fontSize: 18,
+      color: Color(0xFF272727),
+    );
+
+    // 2. 가용 가능한 가로 너비 계산
+    // 전체 너비 - (화면 Padding 20 * 2) - (텍스트 Padding Left 30 + Right 15)
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double availableWidth = screenWidth - 40 - 45;
+
+    // 3. 줄바꿈 계산 (기존 26자 고정 대신 실제 너비 사용)
+    // \n은 제거하고 한 줄로 만든 뒤 넘김
+    final splitLines = PhotoService.splitTextByWidth(
+      text: gptResponse.content.replaceAll('\n', ' '),
+      style: contentStyle,
+      maxWidth: availableWidth,
+    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ...formattedContent.split('\n').map((line) => Column(
+          // 4. 계산된 줄들을 순회하며 표시
+          ...splitLines.map((line) => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(left: 30.0, right: 15.0),
                     child: Text(
                       line,
-                      style: const TextStyle(
-                        fontFamily: 'Yeongdeok-Sea',
-                        fontWeight: FontWeight.w500,
-                        fontSize: 18,
-                        color: Color(0xFF272727),
-                      ),
+                      style: contentStyle,
+                      // softWrap: false를 주어 2차 줄바꿈 방지 (이미 잘라서 왔으므로)
+                      softWrap: false, 
+                      overflow: TextOverflow.visible,
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -393,7 +393,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   Future<void> _captureImage(PhotoScreenProvider provider) async {
     try {
       print('🎯 전체 포토카드 캡처 시작 (이미지 + 제목 + 텍스트 + 선 등 모든 요소 포함)...');
-      // 전체 포토카드를 캡처 (captureKey 사용)
       final bytes = await PhotoService.captureFullPhotoCard(captureKey);
       if (bytes != null) {
         provider.setCapturedImageBytes(bytes);
@@ -417,7 +416,6 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
   }
 
   Future<void> _goToCloudUpload(PhotoScreenProvider provider) async {
-    // 캡처 이미지가 없으면 먼저 한 번 더 시도
     if (provider.capturedImageBytes == null) {
       await _captureImage(provider);
     }

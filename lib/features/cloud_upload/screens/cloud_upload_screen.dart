@@ -85,8 +85,8 @@ class _CloudUploadScreenState extends State<CloudUploadScreen> {
           '일기가 저장되었습니다! (${result.recordNumber}번째 기록)',
         );
 
-        // 3) 홈으로 돌아가기
-        context.go('/home');
+        // 3) 일기 페이지로 돌아가기 (이전 화면)
+        context.pop();
       }
     } catch (e) {
       if (mounted) {
@@ -95,8 +95,8 @@ class _CloudUploadScreenState extends State<CloudUploadScreen> {
           '일기 저장 실패: $e',
           isWarning: true,
         );
-        // 에러 발생 시에도 홈으로 돌아가기
-        context.go('/home');
+        // 에러 발생 시에도 일기 페이지로 돌아가기 (이전 화면)
+        context.pop();
       }
     } finally {
       if (mounted) {
@@ -157,7 +157,7 @@ class _CloudUploadScreenState extends State<CloudUploadScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${profile?.petName ?? '반려동물'}의 일기를 저장하고 있어요',
+                          '일기를 저장하고 있어요',
                           style: const TextStyle(
                             fontFamily: 'Pretendard',
                             fontSize: 18,

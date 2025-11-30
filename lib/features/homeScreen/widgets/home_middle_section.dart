@@ -1,5 +1,6 @@
 // 망고의 일주일 영역
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:daenglog_fe/features/homeScreen/widgets/components/home_middl_photo_card.dart';
 import 'package:daenglog_fe/api/diary/models/diary_weekly.dart';
 import 'package:daenglog_fe/api/diary/get/diary_weekly_api.dart';
@@ -280,10 +281,7 @@ class _HomeMiddleSectionState extends State<HomeMiddleSection> {
           return GestureDetector(
             onTap: () {
               if (album.diaryId != null) {
-                Navigator.pushNamed(
-                  context,
-                  '/diary-detail/${album.diaryId}',
-                );
+                context.push('/diary-detail/${album.diaryId}');
               }
             },
             child: HomeMiddlePhotoCard(

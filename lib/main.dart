@@ -25,6 +25,8 @@ import 'features/onboding/screens/onboding_fth.dart';
 import 'features/homeScreen/screens/home_main_screen.dart';
 import 'features/record/screens/record_main_screen.dart';
 import 'features/record/screens/album_more_screen.dart';
+import 'features/record/screens/diary_photo_cards_screen.dart';
+import 'features/record/screens/diary_detail_screen.dart';
 import 'features/cloud/screens/cloud_main_screen.dart';
 import 'features/mypage/screens/mypage_main_screen.dart';
 
@@ -194,8 +196,12 @@ class MyApp extends StatelessWidget {
                     child: const SizedBox())), // TODO: Album detail screen
             GoRoute(
                 path: '/diary-detail/:diaryId',
-                pageBuilder: (context, state) => MaterialPage(
-                    child: const SizedBox())), // TODO: Diary detail screen
+                pageBuilder: (context, state) {
+                  final diaryId = int.parse(state.pathParameters['diaryId']!);
+                  return MaterialPage(
+                    child: DiaryDetailScreen(diaryId: diaryId),
+                  );
+                }),
           ],
         ),
       ],
@@ -220,7 +226,7 @@ class MainScaffold extends StatefulWidget {
 class _MainScaffoldState extends State<MainScaffold> {
   int _selectedIndex = 0;
 
-  static const tabs = ['/home', '/record', '/cloud', '/mypage', '/mypage'];
+  static const tabs = ['/home', '/record', '/cloud', '/close', '/mypage'];
 
   @override
   void didChangeDependencies() {
@@ -251,7 +257,31 @@ class _MainScaffoldState extends State<MainScaffold> {
     }
     // 라우터 이동
     else {
-      context.go(tabs[index]);
+      // 홈으로 이동할 때는 스택을 정리하여 이전 화면들을 모두 제거
+      if (index == 0) {
+        // Navigator 스택을 정리 (Navigator.push로 열린 화면들 포함)
+        // GoRouter의 경우 context.go만으로도 충분하지만, Navigator.push로 열린 화면은 별도로 처리 필요
+        final navigator = Navigator.of(context);
+        // Navigator.push로 열린 화면들을 모두 제거
+        int popCount = 0;
+        while (navigator.canPop() && popCount < 10) {
+          final currentRoute = ModalRoute.of(context);
+          if (currentRoute != null && !currentRoute.isFirst) {
+            navigator.pop();
+            popCount++;
+          } else {
+            break;
+          }
+        }
+        // 홈으로 이동 (약간의 지연을 두어 pop이 완료된 후 이동)
+        Future.microtask(() {
+          if (mounted) {
+            context.go(tabs[index]);
+          }
+        });
+      } else {
+        context.go(tabs[index]);
+      }
     }
   }
 

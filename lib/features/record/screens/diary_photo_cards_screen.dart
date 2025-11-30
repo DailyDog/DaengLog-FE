@@ -3,8 +3,13 @@ import 'package:daenglog_fe/api/diary/models/diary_by_pet.dart';
 
 class DiaryPhotoCardsScreen extends StatelessWidget {
   final List<DiaryByPet> diaries;
+  final int initialPage;
 
-  const DiaryPhotoCardsScreen({super.key, required this.diaries});
+  const DiaryPhotoCardsScreen({
+    super.key, 
+    required this.diaries,
+    this.initialPage = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +19,10 @@ class DiaryPhotoCardsScreen extends StatelessWidget {
       ),
       backgroundColor: const Color(0xFFF6F7F9),
       body: PageView.builder(
-        controller: PageController(viewportFraction: 0.86),
+        controller: PageController(
+          viewportFraction: 0.86,
+          initialPage: initialPage,
+        ),
         itemCount: diaries.length,
         itemBuilder: (context, index) {
           final item = diaries[index];
