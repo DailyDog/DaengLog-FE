@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:daenglog_fe/api/diary/get/diary_random_api.dart';
-import 'package:daenglog_fe/api/diary/models/diary_detail.dart';
-import 'package:daenglog_fe/features/record/providers/record_provider.dart';
-import 'package:go_router/go_router.dart';
 
 class MemoryWidget extends StatelessWidget {
   const MemoryWidget({super.key});
@@ -16,73 +11,29 @@ class MemoryWidget extends StatelessWidget {
     final padding = 16 * scale;
     final titleFont = (18 * scale).clamp(16.0, 20.0);
 
-    return Consumer<RecordProvider>(
-      builder: (context, recordProvider, child) {
-        if (recordProvider.selectedPet == null) {
-          return const SizedBox.shrink();
-        }
+    // 정적 더미 데이터 생성
+    final dummyDiary = _createDummyDiary();
 
-        final randomDiaryFuture =
-            DiaryRandomApi().getRandomDiary(recordProvider.selectedPet!.id);
-
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: margin),
-          child: FutureBuilder<DiaryDetail?>(
-            future: randomDiaryFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return _buildLoadingState(padding, titleFont);
-              }
-
-              if (snapshot.hasError || snapshot.data == null) {
-                // 일기가 없으면 위젯을 숨김
-                return const SizedBox.shrink();
-              }
-
-              final diary = snapshot.data!;
-              return _buildMemoryCard(
-                  diary, padding, titleFont, scale, context);
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildLoadingState(double padding, double titleFont) {
     return Container(
-      padding: EdgeInsets.all(padding),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '추억',
-            style: TextStyle(
-              fontFamily: 'Pretendard',
-              fontSize: titleFont,
-              fontWeight: FontWeight.w700,
-              color: const Color(0xFF272727),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Center(child: CircularProgressIndicator()),
-        ],
-      ),
+      margin: EdgeInsets.symmetric(horizontal: margin),
+      child: _buildMemoryCard(
+          dummyDiary, padding, titleFont, scale, context),
     );
   }
 
-  Widget _buildMemoryCard(DiaryDetail diary, double padding, double titleFont,
+  /// 정적 더미 일기 데이터 생성
+  /// TODO: 나중에 API 연결 시 제거하고 실제 데이터 사용
+  _DummyDiary _createDummyDiary() {
+    return _DummyDiary(
+      title: '🐾 조심스러운 간식 시간 🦴',
+      content:
+          '오늘도 내 자리에서 푹신푹신한 담요 위에 누웠다. 세상에서 제일 편한 이 자리, 누구도 침범할 수 없다. 근데...',
+      imageUrl: null, // 이미지가 없으면 플레이스홀더 표시
+      date: '2025.01.15',
+    );
+  }
+
+  Widget _buildMemoryCard(_DummyDiary diary, double padding, double titleFont,
       double scale, BuildContext context) {
     final hasImage = diary.imageUrl != null && diary.imageUrl!.isNotEmpty;
     final contentPreview = diary.content.length > 60
@@ -90,7 +41,10 @@ class MemoryWidget extends StatelessWidget {
         : diary.content;
 
     return GestureDetector(
-      onTap: () => context.go('/diary-detail/${diary.id}'),
+      onTap: () {
+        // TODO: 일기 상세 화면으로 이동 (API 연결 시 구현)
+        // context.go('/diary-detail/${diary.id}');
+      },
       child: Container(
         padding: EdgeInsets.all(padding),
         decoration: BoxDecoration(
@@ -134,34 +88,7 @@ class MemoryWidget extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Memory photo (왼쪽)
-                Container(
-                  width: (71 * scale).clamp(60.0, 80.0),
-                  height: (97 * scale).clamp(80.0, 110.0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: const Color(0xFFF5F5F5),
-                    image: hasImage
-                        ? DecorationImage(
-                            image: NetworkImage(diary.imageUrl!),
-                            fit: BoxFit.cover,
-                          )
-                        : null,
-                  ),
-                  child: !hasImage
-                      ? Center(
-                          child: Icon(
-                            Icons.auto_stories_outlined,
-                            size: (32 * scale).clamp(24.0, 40.0),
-                            color: const Color(0xFFCCCCCC),
-                          ),
-                        )
-                      : null,
-                ),
-
-                SizedBox(width: 16 * scale),
-
-                // Memory text content (오른쪽)
+                // Memory text content
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -209,18 +136,45 @@ class MemoryWidget extends StatelessWidget {
 
                       SizedBox(height: 8 * scale),
 
-                      // Date
-                      Text(
-                        diary.date,
-                        style: TextStyle(
-                          fontFamily: 'Pretendard',
-                          fontSize: (10 * scale).clamp(9.0, 12.0),
-                          fontWeight: FontWeight.w400,
-                          color: const Color(0xFFCCCCCC),
-                        ),
-                      ),
+                      // Date (더미 데이터에서는 숨김 처리)
+                      // Text(
+                      //   diary.date,
+                      //   style: TextStyle(
+                      //     fontFamily: 'Pretendard',
+                      //     fontSize: (10 * scale).clamp(9.0, 12.0),
+                      //     fontWeight: FontWeight.w400,
+                      //     color: const Color(0xFFCCCCCC),
+                      //   ),
+                      // ),
                     ],
                   ),
+                ),
+
+                SizedBox(width: 16 * scale),
+
+                // Memory photo
+                Container(
+                  width: (71 * scale).clamp(60.0, 80.0),
+                  height: (97 * scale).clamp(80.0, 110.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    color: const Color(0xFFF5F5F5),
+                    image: hasImage
+                        ? DecorationImage(
+                            image: NetworkImage(diary.imageUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: !hasImage
+                      ? Center(
+                          child: Icon(
+                            Icons.auto_stories_outlined,
+                            size: (32 * scale).clamp(24.0, 40.0),
+                            color: const Color(0xFFCCCCCC),
+                          ),
+                        )
+                      : null,
                 ),
               ],
             ),
@@ -229,4 +183,20 @@ class MemoryWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+/// 정적 더미 일기 데이터 모델
+/// TODO: 나중에 API 연결 시 DiaryDetail 모델 사용
+class _DummyDiary {
+  final String title;
+  final String content;
+  final String? imageUrl;
+  final String date;
+
+  _DummyDiary({
+    required this.title,
+    required this.content,
+    this.imageUrl,
+    required this.date,
+  });
 }
