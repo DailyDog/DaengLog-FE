@@ -292,16 +292,17 @@ class _RecordMainScreenState extends State<RecordMainScreen> {
   void _showPetDropdown(BuildContext context, RecordProvider recordProvider) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 드롭다운 헤더
+            const SizedBox(height: 12),
+            // Handle bar
             Container(
               width: 40,
               height: 4,
@@ -310,73 +311,105 @@ class _RecordMainScreenState extends State<RecordMainScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 20),
-
-            // 제목
+            const SizedBox(height: 24),
+            
+            // Title
             const Text(
               '반려동물 선택',
               style: TextStyle(
                 fontFamily: 'Pretendard',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF272727),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
-            // 반려동물 목록
+            // List
             if (recordProvider.isLoadingPets)
               const Padding(
-                padding: EdgeInsets.all(20),
-                child: CircularProgressIndicator(),
+                padding: EdgeInsets.all(32),
+                child: CircularProgressIndicator(color: Color(0xFFFF5F01)),
               )
             else
-              ...recordProvider.petList.map((pet) => ListTile(
-                    leading: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: const Color(0xFFFF5F01).withOpacity(0.1),
-                      backgroundImage: pet.profileImageUrl != null
-                          ? NetworkImage(pet.profileImageUrl!)
-                          : null,
-                      child: pet.profileImageUrl == null
-                          ? const Icon(
-                              Icons.pets,
-                              color: Color(0xFFFF5F01),
-                              size: 20,
-                            )
-                          : null,
-                    ),
-                    title: Text(
-                      pet.name,
-                      style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF272727),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  itemCount: recordProvider.petList.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final pet = recordProvider.petList[index];
+                    final isSelected = recordProvider.selectedPet?.id == pet.id;
+                    
+                    return InkWell(
+                      onTap: () {
+                        recordProvider.selectPet(pet);
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFFFF5F0) : Colors.grey[50],
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFFFF5F01) : Colors.transparent,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundColor: Colors.grey[200],
+                              backgroundImage: pet.profileImageUrl != null
+                                  ? NetworkImage(pet.profileImageUrl!)
+                                  : null,
+                              child: pet.profileImageUrl == null
+                                  ? Icon(Icons.pets, color: Colors.grey[400], size: 24)
+                                  : null,
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    pet.name,
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontSize: 18,
+                                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                                      color: const Color(0xFF272727),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${pet.age}살',
+                                    style: TextStyle(
+                                      fontFamily: 'Pretendard',
+                                      fontSize: 14,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isSelected)
+                              const Icon(
+                                Icons.check_circle,
+                                color: Color(0xFFFF5F01),
+                                size: 24,
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
-                    subtitle: Text(
-                      '${pet.age}살',
-                      style: const TextStyle(
-                        fontFamily: 'Pretendard',
-                        fontSize: 14,
-                        color: Color(0xFF666666),
-                      ),
-                    ),
-                    trailing: recordProvider.selectedPet?.id == pet.id
-                        ? const Icon(
-                            Icons.check,
-                            color: Color(0xFFFF5F01),
-                            size: 20,
-                          )
-                        : null,
-                    onTap: () {
-                      recordProvider.selectPet(pet);
-                      Navigator.pop(context);
-                    },
-                  )),
-
-            const SizedBox(height: 20),
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: 40),
           ],
         ),
       ),
