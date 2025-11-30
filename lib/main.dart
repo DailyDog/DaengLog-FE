@@ -48,6 +48,9 @@ import 'features/pet_info/screens/pet_info_profile_screen.dart';
 import 'features/pet_detail/screens/pet_detail_screen.dart';
 import 'features/pet_detail/screens/pet_basic_edit_screen.dart';
 import 'features/pet_detail/screens/pet_personality_edit_screen.dart';
+import 'features/family_share/screens/invite_member_main_screen.dart';
+import 'features/family_share/screens/invite_code_send_screen.dart';
+import 'features/family_share/screens/invite_code_register_screen.dart';
 // import 'features/family_share/screens/family_share_screen.dart';
 // import 'features/family_share/screens/family_send_screen.dart';
 // import 'features/family_share/screens/envelope_receive_screen.dart';
@@ -197,7 +200,9 @@ class MyApp extends StatelessWidget {
                     ),
                   );
                 }),
-
+        GoRoute(path: '/invite-member-main', builder: (context, state) => const InviteMemberMainScreen()),
+        GoRoute(path: '/invite-code-send', builder: (context, state) => const InviteCodeSendScreen()),
+        GoRoute(path: '/invite-code-register', builder: (context, state) => const InviteCodeRegisterScreen()),
         // 메인 탭 구조 - 하단바 고정
         ShellRoute(
           builder: (context, state, child) {
