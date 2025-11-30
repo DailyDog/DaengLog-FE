@@ -60,11 +60,12 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
 
     return Container(
       color: const Color(0XFFF9F9F9),
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // 선택된 위젯들과 위젯 선택 버튼을 함께 표시
+          // 선택된 위젯들만 표시 (4개)
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
@@ -74,28 +75,14 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
               mainAxisSpacing: 12, // 세로 간격
               childAspectRatio: 1, // 위젯 비율
             ),
-            itemCount: selectedWidgets.length + 1, // 위젯 개수 + 선택 버튼 1개
+            itemCount: selectedWidgets.length, // 위젯 4개만 표시
             itemBuilder: (context, index) {
-              if (index == selectedWidgets.length) {
-                // 마지막 아이템은 위젯 선택 버튼
-                return _buildWidgetCard(
-                  HomeWidgetItem(
-                    id: 'add_widget',
-                    title: '',
-                    description: '',
-                    iconPath: 'assets/images/home/widget/plus_icon.png',
-                  ),
-                  isSelectionCard: true,
-                  availableWidgets: availableWidgets,
-                );
-              } else {
-                // 위젯 카드들
-                final widgetId = selectedWidgets[index];
-                final widget =
-                    availableWidgets.firstWhere((w) => w.id == widgetId);
+              // 위젯 카드들
+              final widgetId = selectedWidgets[index];
+              final widget =
+                  availableWidgets.firstWhere((w) => w.id == widgetId);
 
-                return _buildDraggableWidgetCard(widget, index);
-              }
+              return _buildDraggableWidgetCard(widget, index);
             },
           ),
         ],

@@ -230,7 +230,7 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                               HomeMiddleSection(),
                               HomeBottomSection(),
                               // 위젯 섹션 밑으로 스크롤 방지를 위한 최소 패딩 (하단 네비게이션 바만 고려)
-                              SizedBox(height: MediaQuery.of(context).padding.bottom + 88),
+                              // const SizedBox(height: 20),
                             ],
                           ),
                         ),

@@ -170,7 +170,7 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
                 ),
 
                 // 나머지 공간은 DraggableScrollableSheet가 채움
-                Expanded(child: Container()),
+                // Expanded(child: Container()),
               ],
             ),
           ),
