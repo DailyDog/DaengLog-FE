@@ -130,13 +130,17 @@ class _PetCard extends StatelessWidget {
               color: isSelected ? const Color(0xFFFF5F01) : Colors.grey[300]!,
               width: screenWidth * 0.006,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF5F01).withOpacity(0.6),
-                blurRadius: screenWidth * 0.02,
-                spreadRadius: screenWidth * 0.001,
-              ),
-            ],
+            // boxShadow: [
+            //   BoxShadow(
+            //     // 빛나는 효과 조절: withOpacity 값으로 투명도 조절 (0.0 ~ 1.0)
+            //     // 예: 0.3 = 더 연하게, 0.8 = 더 진하게
+            //     color: const Color(0xFFFF5F01).withOpacity(0.6),
+            //     // blurRadius: 블러 반경 조절 (값이 클수록 더 넓게 번짐)
+            //     blurRadius: screenWidth * 0.02,
+            //     // spreadRadius: 확산 반경 조절 (값이 클수록 더 크게 확산)
+            //     spreadRadius: screenWidth * 0.001,
+            //   ),
+            // ],
           ),
           child: PetAvatar(
             imageUrl: imageUrl,

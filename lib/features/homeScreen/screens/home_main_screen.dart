@@ -216,22 +216,22 @@ class _HomeMainScreenState extends State<HomeMainScreen> {
                         child: SingleChildScrollView(
                           controller: scrollController,
                           physics: const ClampingScrollPhysics(),
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 88),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                HomeTopSection(),
-                                // 회색 박스 추가
-                                Container(
-                                  width: double.infinity,
-                                  height: 8,
-                                  color: Colors.grey[200],
-                                ),
-                                HomeMiddleSection(),
-                                HomeBottomSection(),
-                              ],
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              HomeTopSection(),
+                              // 회색 박스 추가
+                              Container(
+                                width: double.infinity,
+                                height: 8,
+                                color: Colors.grey[200],
+                              ),
+                              HomeMiddleSection(),
+                              HomeBottomSection(),
+                              // 위젯 섹션 밑으로 스크롤 방지를 위한 최소 패딩 (하단 네비게이션 바만 고려)
+                              SizedBox(height: MediaQuery.of(context).padding.bottom + 88),
+                            ],
                           ),
                         ),
                       ),

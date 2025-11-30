@@ -199,13 +199,6 @@ class _MyPageMainScreenState extends State<MyPageMainScreen> {
                     topLeft: Radius.circular(20),
                     topRight: Radius.circular(20),
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 12,
-                      offset: Offset(0, -4),
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [

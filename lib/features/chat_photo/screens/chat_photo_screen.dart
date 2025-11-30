@@ -392,16 +392,17 @@ class _ChatPhotoScreenState extends State<ChatPhotoScreen> {
 
   Future<void> _captureImage(PhotoScreenProvider provider) async {
     try {
-      print('🎯 이미지 캡처 시작 (이미지 영역만)...');
-      final bytes = await PhotoService.captureAndConvertToJpg(imageCaptureKey);
+      print('🎯 전체 포토카드 캡처 시작 (이미지 + 제목 + 텍스트 + 선 등 모든 요소 포함)...');
+      // 전체 포토카드를 캡처 (captureKey 사용)
+      final bytes = await PhotoService.captureFullPhotoCard(captureKey);
       if (bytes != null) {
         provider.setCapturedImageBytes(bytes);
-        print('✅ 이미지 캡처 성공: ${bytes.length} bytes');
+        print('✅ 전체 포토카드 캡처 성공: ${bytes.length} bytes');
       } else {
-        print('❌ 이미지 캡처 실패: bytes가 null');
+        print('❌ 전체 포토카드 캡처 실패: bytes가 null');
       }
     } catch (e) {
-      print('❌ 이미지 캡처 오류: $e');
+      print('❌ 전체 포토카드 캡처 오류: $e');
     }
   }
 

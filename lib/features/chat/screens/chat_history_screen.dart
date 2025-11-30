@@ -127,35 +127,6 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
 
         return Stack(
           children: [
-            // Date Badge
-            Positioned(
-              top: dateBadgeTop,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  width: dateBadgeWidth,
-                  height: dateBadgeHeight,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFEEDB),
-                    borderRadius: BorderRadius.circular(
-                        dateBadgeHeight * 0.74), // height의 74%
-                  ),
-                  child: Center(
-                    child: Text(
-                      '25.05.03(금)',
-                      style: TextStyle(
-                        color: const Color(0xFFFF5F01),
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.24,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
             // Empty State Content
             Positioned(
               top: emptyStateTop,
