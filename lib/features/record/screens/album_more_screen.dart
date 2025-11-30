@@ -146,7 +146,7 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
           final album = albums[index];
           return _AlbumGridCard(
             album: album,
-            onTap: () => context.go('/album-detail/${album.albumId}'),
+            onTap: () => context.push('/album-detail/${album.albumId}?name=${Uri.encodeComponent(album.name)}'),
           );
         },
       ),
@@ -163,7 +163,7 @@ class _AlbumMoreScreenState extends State<AlbumMoreScreen> {
           padding: EdgeInsets.only(bottom: 12 * scale),
           child: _AlbumListCard(
             album: album,
-            onTap: () => context.go('/album-detail/${album.albumId}'),
+            onTap: () => context.push('/album-detail/${album.albumId}?name=${Uri.encodeComponent(album.name)}'),
           ),
         );
       },
