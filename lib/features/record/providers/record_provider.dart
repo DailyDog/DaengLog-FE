@@ -65,8 +65,13 @@ class RecordProvider extends ChangeNotifier {
     }
   }
 
+  bool _isPickingImage = false;
+
   Future<void> takePhotoWithCamera(BuildContext context) async {
+    if (_isPickingImage) return;
+    
     try {
+      _isPickingImage = true;
       final picker = ImagePicker();
       final XFile? picked = await picker.pickImage(
         source: ImageSource.camera,
@@ -82,10 +87,14 @@ class RecordProvider extends ChangeNotifier {
         notifyListeners();
 
         // Navigate to image upload screen
-        context.go('/image_upload');
+        if (context.mounted) {
+          context.go('/image_upload');
+        }
       }
     } catch (e) {
       debugPrint('Camera pick error: $e');
+    } finally {
+      _isPickingImage = false;
     }
   }
 
