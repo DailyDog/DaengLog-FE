@@ -27,6 +27,8 @@ import 'features/record/screens/record_main_screen.dart';
 import 'features/record/screens/album_more_screen.dart';
 import 'features/record/screens/diary_photo_cards_screen.dart';
 import 'features/record/screens/diary_detail_screen.dart';
+import 'features/album/screens/album_detail_screen.dart';
+import 'features/album/screens/album_date_view_screen.dart';
 import 'features/cloud/screens/cloud_main_screen.dart';
 import 'features/mypage/screens/mypage_main_screen.dart';
 
@@ -161,6 +163,34 @@ class MyApp extends StatelessWidget {
         GoRoute(
             path: '/weather',
             builder: (context, state) => const WeatherScreen()),
+        GoRoute(
+                path: '/album-more',
+                pageBuilder: (context, state) =>
+                    MaterialPage(child: const AlbumMoreScreen())),
+            GoRoute(
+                path: '/album-detail/:albumId',
+                pageBuilder: (context, state) {
+                  final albumId = int.tryParse(state.pathParameters['albumId'] ?? '') ?? 0;
+                  final albumName = state.uri.queryParameters['name'] ?? '앨범';
+                  return MaterialPage(
+                    child: AlbumDetailScreen(
+                      albumId: albumId,
+                      albumName: albumName,
+                    ),
+                  );
+                }),
+            GoRoute(
+                path: '/album-date-view/:albumId',
+                pageBuilder: (context, state) {
+                  final albumId = int.tryParse(state.pathParameters['albumId'] ?? '') ?? 0;
+                  final albumName = state.uri.queryParameters['name'] ?? '앨범';
+                  return MaterialPage(
+                    child: AlbumDateViewScreen(
+                      albumId: albumId,
+                      albumName: albumName,
+                    ),
+                  );
+                }),
 
         // 메인 탭 구조 - 하단바 고정
         ShellRoute(
@@ -186,14 +216,6 @@ class MyApp extends StatelessWidget {
                     NoTransitionPage(child: const MyPageMainScreen())),
 
             // Album and diary routes (inside ShellRoute for proper navigation)
-            GoRoute(
-                path: '/album-more',
-                pageBuilder: (context, state) =>
-                    MaterialPage(child: const AlbumMoreScreen())),
-            GoRoute(
-                path: '/album-detail/:albumId',
-                pageBuilder: (context, state) => MaterialPage(
-                    child: const SizedBox())), // TODO: Album detail screen
             GoRoute(
                 path: '/diary-detail/:diaryId',
                 pageBuilder: (context, state) {

@@ -134,7 +134,7 @@ class MemoryWidget extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Memory photo
+                // Memory photo (왼쪽)
                 Container(
                   width: (71 * scale).clamp(60.0, 80.0),
                   height: (97 * scale).clamp(80.0, 110.0),
@@ -161,7 +161,7 @@ class MemoryWidget extends StatelessWidget {
 
                 SizedBox(width: 16 * scale),
 
-                // Memory text content
+                // Memory text content (오른쪽)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

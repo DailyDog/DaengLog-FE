@@ -155,7 +155,8 @@ class AlbumWidget extends StatelessWidget {
 
   void _onAlbumTap(BuildContext context, AlbumItem album) {
     // 앨범 상세 페이지로 이동
-    context.go('/album-detail/${album.albumId}');
+    // context.push()를 사용하여 네비게이션 스택에 쌓이도록 함 (뒤로가기 가능)
+    context.push('/album-detail/${album.albumId}?name=${Uri.encodeComponent(album.name)}');
   }
 }
 
