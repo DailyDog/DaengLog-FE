@@ -116,6 +116,9 @@ class _HomeBottomSectionState extends State<HomeBottomSection> {
           context.go('/record');
         }
         // 다른 위젯들도 필요에 따라 추가 가능
+        if (widget.id == '오늘의 미션') {
+          context.go('/mission');
+        }
       },
       child: Container(
         decoration: BoxDecoration(

@@ -32,6 +32,7 @@ import 'features/album/screens/album_detail_screen.dart';
 import 'features/album/screens/album_date_view_screen.dart';
 import 'features/cloud/screens/cloud_main_screen.dart';
 import 'features/mypage/screens/mypage_main_screen.dart';
+import 'features/mission/screens/mission_main_screen.dart';
 
 // Additional screens
 import 'features/chat/screens/chat_main_prompt_screen.dart';
@@ -164,6 +165,10 @@ class MyApp extends StatelessWidget {
         GoRoute(
             path: '/weather',
             builder: (context, state) => const WeatherScreen()),
+        GoRoute(
+            path: '/mission',
+            builder: (context, state) => const MissionMainScreen()
+            ),
         GoRoute(
                 path: '/album-more',
                 pageBuilder: (context, state) =>
