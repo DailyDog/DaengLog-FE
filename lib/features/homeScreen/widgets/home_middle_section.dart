@@ -18,18 +18,23 @@ class _HomeMiddleSectionState extends State<HomeMiddleSection> {
   List<DiaryWeekly>? _weeklyDiaries;
   bool _isLoading = true;
   String? _error;
+  int? _lastPetId;
 
   @override
   void initState() {
     super.initState();
-    _loadWeeklyDiaries();
+    // initState에서는 didChangeDependencies에서 처리하므로 호출하지 않음
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 프로필이 변경될 때마다 다시 로드
-    _loadWeeklyDiaries();
+    // 프로필이 변경될 때만 다시 로드
+    final profile = context.read<DefaultProfileProvider>().profile;
+    if (profile?.id != _lastPetId) {
+      _lastPetId = profile?.id;
+      _loadWeeklyDiaries();
+    }
   }
 
   Future<void> _loadWeeklyDiaries() async {
