@@ -141,7 +141,11 @@ class RecordProvider extends ChangeNotifier {
           await DiaryFirstDateApi().getFirstDiaryDate(petId: _selectedPet!.id);
       if (firstDate != null) {
         final now = DateTime.now();
-        final difference = now.difference(firstDate);
+        // 날짜만 비교하기 위해 시간 정보를 제거 (normalize)
+        final normalizedFirst = DateTime(firstDate.year, firstDate.month, firstDate.day);
+        final normalizedNow = DateTime(now.year, now.month, now.day);
+        
+        final difference = normalizedNow.difference(normalizedFirst);
         _daysSinceFirstDiary = difference.inDays + 1; // 첫 날도 포함
       } else {
         _daysSinceFirstDiary = 0;

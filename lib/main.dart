@@ -12,6 +12,7 @@ import 'features/pet_info/providers/pet_info_provider.dart';
 import 'shared/services/pet_profile_provider.dart';
 import 'features/weather/providers/weather_provider.dart';
 import 'features/chat_photo/providers/photo_screen_provider.dart';
+import 'package:daenglog_fe/api/diary/models/diary_by_pet.dart';
 
 // Screens
 import 'features/login/login.dart';
@@ -216,6 +217,14 @@ class MyApp extends StatelessWidget {
                     NoTransitionPage(child: const MyPageMainScreen())),
 
             // Album and diary routes (inside ShellRoute for proper navigation)
+            GoRoute(
+                path: '/diary-photo-cards',
+                pageBuilder: (context, state) {
+                  final diaries = state.extra as List<DiaryByPet>;
+                  return MaterialPage(
+                    child: DiaryPhotoCardsScreen(diaries: diaries),
+                  );
+                }),
             GoRoute(
                 path: '/diary-detail/:diaryId',
                 pageBuilder: (context, state) {

@@ -6,6 +6,7 @@ import 'package:daenglog_fe/api/diary/get/diary_by_pet_api.dart';
 import 'package:daenglog_fe/features/record/screens/diary_photo_cards_screen.dart';
 import 'package:daenglog_fe/features/record/providers/record_provider.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:go_router/go_router.dart';
 
 class CalendarWidget extends StatefulWidget {
   const CalendarWidget({super.key});
@@ -74,7 +75,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
         });
 
         return Container(
-          height: 334,
+          // height: 334, // 고정 높이 제거하여 동적으로 조절되도록 함
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(20),
@@ -188,36 +189,41 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               ),
 
               // Calendar grid
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: FutureBuilder<DiaryMonthlyCalendarModel>(
-                    future: _monthlyFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (snapshot.hasError) {
-                        return const Center(child: Text('달력 데이터를 불러오지 못했습니다.'));
-                      }
-                      final model = snapshot.data;
-                      final dayMap = <int, DiaryMonthlyCalendarDay>{};
-                      if (model != null) {
-                        for (final d in model.calendarDays) {
-                          final parts = d.date.split('-');
-                          if (parts.length == 3) {
-                            final day = int.tryParse(parts[2]);
-                            if (day != null) {
-                              dayMap[day] = d;
-                            }
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: FutureBuilder<DiaryMonthlyCalendarModel>(
+                  future: _monthlyFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox(
+                        height: 200,
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    if (snapshot.hasError) {
+                      return const SizedBox(
+                        height: 200,
+                        child: Center(child: Text('달력 데이터를 불러오지 못했습니다.')),
+                      );
+                    }
+                    final model = snapshot.data;
+                    final dayMap = <int, DiaryMonthlyCalendarDay>{};
+                    if (model != null) {
+                      for (final d in model.calendarDays) {
+                        final parts = d.date.split('-');
+                        if (parts.length == 3) {
+                          final day = int.tryParse(parts[2]);
+                          if (day != null) {
+                            dayMap[day] = d;
                           }
                         }
                       }
-                      return _buildCalendarGrid(dayMap);
-                    },
-                  ),
+                    }
+                    return _buildCalendarGrid(dayMap);
+                  },
                 ),
               ),
+              const SizedBox(height: 20), // 하단 여백 추가
             ],
           ),
         );
@@ -299,12 +305,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
       final filtered = diaries.where((e) => e.date == target).toList();
       if (!mounted) return;
       if (filtered.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => DiaryPhotoCardsScreen(diaries: filtered),
-          ),
-        );
+        context.push('/diary-photo-cards', extra: filtered);
       }
     } catch (e) {
       // ignore for now or show snackbar
