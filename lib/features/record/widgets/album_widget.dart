@@ -155,7 +155,7 @@ class AlbumWidget extends StatelessWidget {
 
   void _onAlbumTap(BuildContext context, AlbumItem album) {
     // 앨범 상세 페이지로 이동
-    context.go('/album-detail/${album.albumId}');
+    context.go('/album-detail/${album.albumId}?name=${Uri.encodeComponent(album.name)}');
   }
 }
 

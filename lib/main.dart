@@ -25,6 +25,7 @@ import 'features/onboding/screens/onboding_fth.dart';
 import 'features/homeScreen/screens/home_main_screen.dart';
 import 'features/record/screens/record_main_screen.dart';
 import 'features/record/screens/album_more_screen.dart';
+import 'features/album/screens/album_detail_screen.dart';
 import 'features/cloud/screens/cloud_main_screen.dart';
 import 'features/mypage/screens/mypage_main_screen.dart';
 
@@ -190,8 +191,16 @@ class MyApp extends StatelessWidget {
                     MaterialPage(child: const AlbumMoreScreen())),
             GoRoute(
                 path: '/album-detail/:albumId',
-                pageBuilder: (context, state) => MaterialPage(
-                    child: const SizedBox())), // TODO: Album detail screen
+                pageBuilder: (context, state) {
+                  final albumId = int.tryParse(state.pathParameters['albumId'] ?? '') ?? 0;
+                  final albumName = state.uri.queryParameters['name'] ?? '앨범';
+                  return MaterialPage(
+                    child: AlbumDetailScreen(
+                      albumId: albumId,
+                      albumName: albumName,
+                    ),
+                  );
+                }),
             GoRoute(
                 path: '/diary-detail/:diaryId',
                 pageBuilder: (context, state) => MaterialPage(
