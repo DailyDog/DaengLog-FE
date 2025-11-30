@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class FamilyMembersWidget extends StatelessWidget {
   const FamilyMembersWidget({super.key});
@@ -40,23 +41,28 @@ class FamilyMembersWidget extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: screenWidth * 0.02,
-                  vertical: screenHeight * 0.005,
-                ),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Color(0xFF757575), width: 0.5),
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                child: Text(
-                  '+ 추가',
-                  style: TextStyle(
-                    fontSize: screenWidth * 0.022,
-                    color: Color(0xFF272727),
+              GestureDetector(
+                onTap: () {
+                  context.push('/invite-member-main');
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: screenWidth * 0.02,
+                    vertical: screenHeight * 0.005,
+                  ),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xFF757575), width: 0.5),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    '+ 추가',
+                    style: TextStyle(
+                      fontSize: screenWidth * 0.022,
+                      color: Color(0xFF272727),
+                    ),
                   ),
                 ),
-              ),
+              )
             ],
           ),
           SizedBox(height: screenHeight * 0.02),
