@@ -24,6 +24,9 @@ class _InviteCodeSendScreenState extends State<InviteCodeSendScreen> {
   /// 초대 코드 (TODO: API에서 받아오기)
   String _inviteCode = 'EASCNE2421';
 
+  /// 버튼 위치 추적을 위한 GlobalKey
+  final GlobalKey _buttonKey = GlobalKey();
+
   /// 카카오톡으로 초대 코드 전송
   /// 
   /// share_plus를 사용하여 초대 코드를 카카오톡으로 공유합니다.
@@ -42,11 +45,27 @@ class _InviteCodeSendScreenState extends State<InviteCodeSendScreen> {
 
 앱에서 초대 코드를 입력하고 우리 반려동물의 소중한 순간들을 함께 기록해요! 📸✨''';
 
+      // iOS에서 sharePositionOrigin 에러 방지: 버튼의 위치 정보 가져오기
+      Rect? sharePositionOrigin;
+      final RenderBox? box = _buttonKey.currentContext?.findRenderObject() as RenderBox?;
+      
+      if (box != null && box.hasSize) {
+        final size = box.size;
+        final offset = box.localToGlobal(Offset.zero);
+        sharePositionOrigin = Rect.fromLTWH(
+          offset.dx,
+          offset.dy,
+          size.width,
+          size.height,
+        );
+      }
+
       // share_plus를 사용하여 공유
-      // 사용자가 카카오톡을 선택할 수 있음
+      // iOS에서는 sharePositionOrigin이 필수입니다 (특히 iPad)
       await Share.share(
         message,
         subject: '댕댕일기 초대장',
+        sharePositionOrigin: sharePositionOrigin,
       );
 
       // 공유 완료 피드백 (선택적)
@@ -172,6 +191,7 @@ class _InviteCodeSendScreenState extends State<InviteCodeSendScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Container(
+                  key: _buttonKey, // 버튼 위치 추적을 위한 key
                   width: double.infinity,
                   height: 57,
                   decoration: BoxDecoration(
