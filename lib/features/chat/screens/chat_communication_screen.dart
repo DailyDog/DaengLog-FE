@@ -212,16 +212,6 @@ class _ChatCommunicationScreenState extends State<ChatCommunicationScreen> {
               context.push('/chat_history');
             },
           ),
-          IconButton(
-            icon: Icon(
-              Icons.cloud_upload,
-              color: Colors.white,
-              size: MediaQuery.of(context).size.width * 0.06, // 화면 너비의 6%
-            ),
-            onPressed: () {
-              // 클라우드 아이콘 클릭 시 동작
-            },
-          ),
           SizedBox(
               width: MediaQuery.of(context).size.width * 0.02), // 화면 너비의 2%
         ],
