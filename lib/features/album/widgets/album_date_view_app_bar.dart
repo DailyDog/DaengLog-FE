@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// 앨범 상세 페이지 앱바 위젯
+/// 앨범 날짜별 정렬 화면 앱바 위젯
 /// 
-/// 앨범 상세 화면의 상단 헤더를 담당합니다.
-/// - 일반 모드: 앨범 이름 표시, "선택" 버튼
+/// 앨범 날짜별 정렬 화면의 상단 헤더를 담당합니다.
+/// - 일반 모드: 앨범 이름 표시, Plus Circle 아이콘, "선택" 버튼
 /// - 선택 모드: "선택" 제목, "전체 선택/선택 해제" 버튼, "취소" 버튼
 /// 
-/// Figma 디자인: 4-1.1-4 앨범 상세 페이지 (앱바)
-class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
-  /// 앨범 이름 (일반 모드일 때 표시)
+/// Figma 디자인: 4-1.1-5 앨범 접속 (일 기준) (앱바)
+class AlbumDateViewAppBar extends StatelessWidget implements PreferredSizeWidget {
+  /// 앨범 이름
   final String albumName;
   
   /// 선택 모드 활성화 여부
@@ -20,30 +20,30 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
   /// 뒤로가기 버튼 콜백
   final VoidCallback onBack;
   
+  /// Plus Circle 아이콘 클릭 콜백
+  final VoidCallback onPlusTap;
+  
   /// 선택 모드 진입 버튼 콜백
   final VoidCallback onSelect;
   
   /// 선택 모드 취소 버튼 콜백
   final VoidCallback onCancel;
   
-  /// Plus Circle 아이콘 클릭 콜백 (날짜별 정렬 화면으로 이동)
-  final VoidCallback? onPlusTap;
-  
-  /// 전체 선택 버튼 콜백 (선택 모드일 때)
+  /// 전체 선택 버튼 콜백
   final VoidCallback? onSelectAll;
   
-  /// 전체 선택 해제 버튼 콜백 (선택 모드일 때)
+  /// 전체 선택 해제 버튼 콜백
   final VoidCallback? onDeselectAll;
 
-  const AlbumDetailAppBar({
+  const AlbumDateViewAppBar({
     super.key,
     required this.albumName,
     required this.isSelectionMode,
     required this.selectedCount,
     required this.onBack,
+    required this.onPlusTap,
     required this.onSelect,
     required this.onCancel,
-    this.onPlusTap,
     this.onSelectAll,
     this.onDeselectAll,
   });
@@ -75,27 +75,26 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       actions: [
-        // 일반 모드: Plus Circle 아이콘 + "선택" 버튼 (우측)
+        // 일반 모드: Plus Circle 아이콘 + 선택 버튼
         if (!isSelectionMode) ...[
-          // Plus Circle 아이콘 (날짜별 정렬 화면으로 이동)
-          if (onPlusTap != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: IconButton(
-                icon: const Icon(
-                  Icons.add_circle,
-                  color: Color(0xFFFF5F01),
-                  size: 26,
-                ),
-                onPressed: onPlusTap,
+          // Plus Circle 아이콘
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: IconButton(
+              icon: const Icon(
+                Icons.add_circle,
+                color: Color(0xFFFF5F01),
+                size: 26,
               ),
+              onPressed: onPlusTap,
             ),
+          ),
           // 선택 버튼
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: GestureDetector(
-                onTap: onSelect, // 선택 모드로 진입
+                onTap: onSelect,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -103,10 +102,10 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                   decoration: BoxDecoration(
                     border: Border.all(
-                      color: const Color(0xFFFF5F01), // 주황색 테두리
+                      color: const Color(0xFFFF5F01),
                       width: 1,
                     ),
-                    borderRadius: BorderRadius.circular(17), // 둥근 모서리
+                    borderRadius: BorderRadius.circular(17),
                   ),
                   child: const Text(
                     '선택',
@@ -114,7 +113,7 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                       fontFamily: 'Pretendard',
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFFFF5F01), // 주황색 텍스트
+                      color: Color(0xFFFF5F01),
                     ),
                   ),
                 ),
@@ -122,9 +121,8 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
             ),
           ),
         ]
-        else
-          // 선택 모드: "전체 선택/선택 해제" 버튼 (좌측)
-          // Figma 디자인: 검정 배경(전체 선택) / 회색 배경(선택 해제)
+        else ...[
+          // 선택 모드: 전체 선택/해제 버튼 (좌측)
           Padding(
             padding: const EdgeInsets.only(left: 33),
             child: Center(
@@ -136,10 +134,9 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    // 선택된 항목이 있으면 회색, 없으면 검정
                     color: selectedCount > 0
-                        ? const Color(0xFFDEDEDE) // 회색
-                        : Colors.black, // 검정
+                        ? const Color(0xFFDEDEDE)
+                        : Colors.black,
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: Text(
@@ -149,29 +146,27 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: selectedCount > 0
-                          ? const Color(0xFF272727) // 회색 배경일 때 검정 텍스트
-                          : Colors.white, // 검정 배경일 때 흰색 텍스트
+                          ? const Color(0xFF272727)
+                          : Colors.white,
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        // 선택 모드: "취소" 버튼 (우측)
-        // Figma 디자인: 회색 배경의 둥근 버튼
-        if (isSelectionMode)
+          // 선택 모드: 취소 버튼 (우측)
           Padding(
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: GestureDetector(
-                onTap: onCancel, // 선택 모드 취소
+                onTap: onCancel,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 13,
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFDEDEDE), // 회색 배경
+                    color: const Color(0xFFDEDEDE),
                     borderRadius: BorderRadius.circular(15),
                   ),
                   child: const Text(
@@ -180,13 +175,14 @@ class AlbumDetailAppBar extends StatelessWidget implements PreferredSizeWidget {
                       fontFamily: 'Pretendard',
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF272727), // 검정 텍스트
+                      color: Color(0xFF272727),
                     ),
                   ),
                 ),
               ),
             ),
           ),
+        ],
       ],
     );
   }
