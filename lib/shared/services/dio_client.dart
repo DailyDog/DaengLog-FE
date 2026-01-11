@@ -1,4 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../utils/secure_token_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -8,7 +11,19 @@ Future<String?> refreshAccessToken(String refreshToken) async {
     print('[refreshAccessToken] 요청 시작 - refreshToken: $refreshToken');
     final refreshUrl = dotenv.env['REFRESH_API_URL']!;
 
-    final response = await Dio().post(
+    final dio = Dio();
+    
+    // 개발 환경(디버그 모드)에서만 SSL 인증서 검증 우회
+    if (kDebugMode) {
+      (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (client) {
+        client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+          return true;
+        };
+        return client;
+      };
+    }
+
+    final response = await dio.post(
       // 토큰 갱신 요청
       refreshUrl,
       options: Options(
@@ -36,6 +51,16 @@ Future<String?> refreshAccessToken(String refreshToken) async {
 Dio getDioWithAuth(String uri) {
   // 기본 요청 토큰 자동 부착 -> 특정 uri마다 붙이는 것은 따로 처리해야하는거 아닌가?
   final dio = Dio(BaseOptions(baseUrl: '${dotenv.env['API_URL']!}/$uri'));
+
+  // 개발 환경(디버그 모드)에서만 SSL 인증서 검증 우회
+  if (kDebugMode) {
+    (dio.httpClientAdapter as IOHttpClientAdapter).onHttpClientCreate = (client) {
+      client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+        return true;
+      };
+      return client;
+    };
+  }
 
   // 동시 401 처리 방지용 (null이면 현재 갱신 중 아님)
   Future<String?>? _refreshing;
